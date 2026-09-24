@@ -13,17 +13,20 @@ import styles from "./Header.module.css";
  */
 export function Header() {
   const { itemCount } = useCart();
+  const cartLabel = `Cart, ${itemCount} ${itemCount === 1 ? "item" : "items"}`;
 
   return (
     <header className={styles.header}>
-      <Link href="/" className={styles.homeLink} aria-label="Go to home">
-        <Icon name="home" ariaHidden />
-        <span>Mobile Store</span>
-      </Link>
-      <Link href="/cart" className={styles.cartLink} aria-label={`Cart, ${itemCount} items`}>
-        <Icon name="cart" ariaHidden />
-        <Badge count={itemCount} />
-      </Link>
+      <nav className={styles.nav} aria-label="Primary">
+        <Link href="/" className={styles.homeLink} aria-label="Go to home">
+          <Icon name="home" ariaHidden />
+          <span>Mobile Store</span>
+        </Link>
+        <Link href="/cart" className={styles.cartLink} aria-label={cartLabel}>
+          <Icon name="cart" ariaHidden />
+          <Badge count={itemCount} />
+        </Link>
+      </nav>
     </header>
   );
 }
