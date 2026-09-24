@@ -8,6 +8,9 @@ out
 # storybook
 storybook-static
 
+# design QA — regenerated locally via `pnpm screenshots`, not source
+design/app-screenshots
+
 # testing / coverage
 coverage
 
