@@ -24,7 +24,9 @@
      width instead of clipping/scrolling within the viewport. */
   min-width: 0;
   margin: 0;
-  padding: 0;
+  /* Compensates .item's matching negative margin below (see .item
+     comment), so the row's outer left edge stays put. */
+  padding: 0 0 0 var(--border-width-hairline);
   list-style: none;
   scroll-snap-type: x proximity;
   /* Hide the native scrollbar — replaced by .scrollTrack/.scrollThumb below,
@@ -40,6 +42,9 @@
   flex: 0 0 auto;
   width: 200px;
   scroll-snap-align: start;
+  /* Same double-hairline-border fix as PhoneGrid.module.css's .item —
+     a single horizontal row here, so only the left margin is needed. */
+  margin-left: calc(-1 * var(--border-width-hairline));
 }
 
 .scrollTrack {

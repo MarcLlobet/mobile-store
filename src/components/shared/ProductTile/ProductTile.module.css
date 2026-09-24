@@ -47,14 +47,15 @@
 }
 
 .brand {
-  font-size: var(--font-size-xs);
+  font-size: 10px; /* CONFIRMED — style_2969e998; no token matches this exactly */
+  font-weight: var(--font-weight-light); /* CONFIRMED */
   color: var(--color-text-secondary);
   text-transform: uppercase;
 }
 
 .name {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-xs); /* CONFIRMED — style_13cb6e9a, 12px (not 14px) */
+  font-weight: var(--font-weight-light); /* CONFIRMED — not regular */
   text-transform: uppercase;
   letter-spacing: 0.02em;
   overflow: hidden;
@@ -63,7 +64,7 @@
 }
 
 .price {
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-xs); /* CONFIRMED — style_6817ba4d, 12px */
   font-weight: var(--font-weight-light);
   white-space: nowrap;
 }

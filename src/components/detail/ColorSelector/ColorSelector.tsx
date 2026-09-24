@@ -11,9 +11,11 @@ import styles from "./ColorSelector.module.css";
  * `aria-pressed` buttons — `aria-pressed` doesn't apply to `role="radio"`
  * elements (and `eslint-plugin-jsx-a11y`'s `role-supports-aria-props` rule
  * rejects the combination). Selection state is conveyed to assistive tech
- * via `aria-checked` and to sighted users via a ring + checkmark, not color
- * alone (a hue-only difference would fail for colorblind users when two
- * swatches are close in hue, and does nothing at all for AT).
+ * via `aria-checked`, to sighted users via the border color change (a
+ * lightness/value contrast, not hue-only, so it still works for colorblind
+ * users) plus the visible color-name label below the swatches — matches
+ * the real Figma "Color" component exactly (border-color swap, no
+ * checkmark, same border width both states).
  */
 export interface ColorSelectorProps {
   colors: ColorOption[];

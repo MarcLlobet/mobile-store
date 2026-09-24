@@ -39,21 +39,10 @@
 .selected {
   /* CONFIRMED — Selected=True is the SAME 1px stroke weight as
      Selected=False, just black instead of grey (20605:5137) — no
-     box-shadow ring, no thicker border. */
+     box-shadow ring, no thicker border, no checkmark overlay. Selection
+     is conveyed by the border color change alone (+ aria-checked for
+     assistive tech, + the visible color-name label below). */
   border-color: var(--color-black);
-}
-
-.selected::after {
-  content: "\2713";
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-white);
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-bold);
-  mix-blend-mode: difference;
 }
 
 .selectedName {

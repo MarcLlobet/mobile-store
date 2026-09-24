@@ -1,7 +1,8 @@
 .wrapper {
   position: relative;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 510 / 630; /* CONFIRMED — EL-e4c6e429 "Img" frame, 510x630 (not a 1:1 square) */
   width: 100%;
+  max-width: 510px; /* CONFIRMED */
   overflow: hidden;
 }
 

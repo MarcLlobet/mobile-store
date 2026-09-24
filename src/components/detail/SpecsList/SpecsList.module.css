@@ -27,7 +27,16 @@
      gap (mobile/desktop, see .term below), not space-between. */
   gap: 12px;
   padding: var(--space-2) 0; /* CONFIRMED — 16px 0, same at both breakpoints */
-  border-bottom: var(--border-width-hairline) solid var(--color-border-subtle);
+  /* CONFIRMED — EL-1c753fd9/EL-87bc8593 strokes are fill_34dc0314 (BLACK),
+     not the grey border-subtle token. */
+  border-bottom: var(--border-width-hairline) solid var(--color-black);
+}
+
+.row:first-child {
+  /* CONFIRMED — the first "Specification row" (Brand) has a top stroke
+     too ("0.5px 0px" = top+bottom), closing the table visually at the
+     top; every other row only has the bottom stroke. */
+  border-top: var(--border-width-hairline) solid var(--color-black);
 }
 
 @media (min-width: 1024px) {
@@ -56,7 +65,7 @@
 .value {
   font-family: var(--font-family-base);
   font-size: var(--font-size-xs); /* CONFIRMED — style_4d0f87d8, 12px (not 14px) */
-  font-weight: var(--font-weight-regular);
+  font-weight: var(--font-weight-light); /* CONFIRMED — style_4d0f87d8 is weight 300, not regular */
   color: var(--color-text-primary);
   text-align: left; /* CONFIRMED — style_4d0f87d8 textAlignHorizontal: LEFT, not right */
   margin: 0;

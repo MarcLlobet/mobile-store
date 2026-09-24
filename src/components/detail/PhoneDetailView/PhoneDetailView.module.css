@@ -16,15 +16,21 @@
 }
 
 .layout {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-4);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .layout {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
+    /* CONFIRMED — EL-b127533e "Product info + Img": a row with
+       justify-content:space-between, NOT two equal-width columns. The
+       hero image is a fixed 510px (see PhoneHero.module.css) and the
+       info column caps at 380px (below); space-between distributes the
+       rest of the 1200px content width as the gap between them. */
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
   }
 }
 
@@ -32,6 +38,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-7); /* CONFIRMED — EL-2c3e7564 "Product info" gap, 64px */
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .info {
+    max-width: 380px; /* CONFIRMED — EL-2c3e7564 fixed width */
+  }
 }
 
 .titlePrice {
@@ -42,18 +55,28 @@
 
 .name {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-lg); /* CONFIRMED — style_1649381d, 20px (not 32px) */
+  font-size: var(--font-size-lg); /* CONFIRMED mobile/tablet — style_1649381d, 20px */
   font-weight: var(
     --font-weight-light
   ); /* CONFIRMED — every sampled Figma text style is weight 300; there is no bold anywhere in this design */
-  text-transform: uppercase; /* CONFIRMED — style_1649381d textCase: UPPER */
+  text-transform: uppercase; /* CONFIRMED — textCase: UPPER */
   color: var(--color-text-primary);
   margin: 0;
 }
 
 .price {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-sm); /* CONFIRMED — style_a68ff54b, 14px (not 24px) */
+  font-size: var(--font-size-sm); /* CONFIRMED mobile — style_a68ff54b, 14px */
   font-weight: var(--font-weight-light); /* CONFIRMED */
   margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .name {
+    font-size: var(--font-size-xl); /* CONFIRMED desktop — style_aaa3e1b5, 24px */
+  }
+
+  .price {
+    font-size: var(--font-size-lg); /* CONFIRMED desktop — style_60414b43, 20px */
+  }
 }
