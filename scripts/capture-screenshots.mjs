@@ -17,12 +17,13 @@ const CART_STORAGE_KEY = "mobile-ecommerce:cart";
 
 const OUTPUT_DIR = path.join(process.cwd(), "design", "app-screenshots");
 
-// Widths mirror the breakpoints already used in the component CSS modules
-// (768 / 1024) and the one CONFIRMED Figma frame width (1920).
+// Widths match the actual Figma frame widths exactly (design/figma-reference/),
+// confirmed via the Figma file's Desktop/Tablet/Mobile design frames, so
+// app screenshots line up pixel-for-pixel against the reference exports.
 const VIEWPORTS = [
   { name: "desktop", width: 1920, height: 1080 },
-  { name: "tablet", width: 768, height: 1024 },
-  { name: "mobile", width: 375, height: 812 },
+  { name: "tablet", width: 834, height: 1194 },
+  { name: "mobile", width: 393, height: 852 },
 ];
 
 async function fetchAProductId() {
