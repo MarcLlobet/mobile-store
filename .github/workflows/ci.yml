@@ -40,7 +40,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint -- --max-warnings=0
+        # NOT `pnpm lint -- --max-warnings=0` - pnpm forwards trailing args to
+        # the underlying script verbatim, so the explicit `--` becomes a
+        # literal argument to eslint itself (`eslint . -- --max-warnings=0`),
+        # which eslint's CLI then parses as a file glob and fails with
+        # "No files matching the pattern '--max-warnings=0'". Passing the
+        # flag directly (no extra `--`) forwards it correctly.
+        run: pnpm lint --max-warnings=0
 
       - name: Format check
         run: pnpm format:check
@@ -49,7 +55,14 @@ jobs:
         run: pnpm typecheck
 
       - name: Unit tests (with coverage)
-        run: pnpm test run --coverage
+        # NOT `pnpm test run --coverage` - the `test` script is already
+        # `vitest run`, so that would expand to `vitest run run --coverage`,
+        # where the second "run" is parsed as a test-name filter matching no
+        # files (`No test files found, exiting with code 1`) - silently
+        # turning this required, blocking gate into an always-red step.
+        # `pnpm exec` calls the vitest CLI directly, sidestepping the
+        # double-`run` collision.
+        run: pnpm exec vitest run --coverage
 
       - name: Build Storybook
         run: pnpm build-storybook
