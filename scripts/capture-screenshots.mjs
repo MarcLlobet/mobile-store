@@ -74,7 +74,28 @@ async function seedCart(page, product) {
   );
 }
 
+async function loadLazyImages(page) {
+  // next/image defaults to loading="lazy" (correct, real-user behavior —
+  // IntersectionObserver fires as someone actually scrolls). A fullPage
+  // screenshot never scrolls the viewport at all, so anything below the
+  // fold never triggers that observer and renders blank — a screenshot-tool
+  // artifact, not an app bug. Scroll the whole page once, in viewport-sized
+  // steps (in-view, not instant-jump, so each step is actually observed),
+  // before capturing.
+  await page.evaluate(async () => {
+    const step = window.innerHeight;
+    const height = document.body.scrollHeight;
+    for (let y = 0; y < height; y += step) {
+      window.scrollTo(0, y);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    window.scrollTo(0, 0);
+  });
+  await page.waitForLoadState("networkidle");
+}
+
 async function capture(page, name) {
+  await loadLazyImages(page);
   await page.screenshot({ path: path.join(OUTPUT_DIR, `${name}.png`), fullPage: true });
   console.log(`  wrote ${name}.png`);
 }
