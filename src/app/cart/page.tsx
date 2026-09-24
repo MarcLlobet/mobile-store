@@ -1,12 +1,35 @@
+"use client";
+
+import { useCart } from "@/context/CartContext";
+import { CartList } from "@/components/cart/CartList";
+import { CartSummary } from "@/components/cart/CartSummary";
+import { EmptyCart } from "@/components/cart/EmptyCart";
+import styles from "./page.module.css";
+
 /**
- * Placeholder — the real Cart view (line items, remove, total, continue
- * shopping) is Phase 1's job (see plan §4, workstream C). This stub only
- * exists so the app boots and routes correctly during Phase 0.
+ * Cart view. Pure client-side `useCart()` consumer — there is nothing to
+ * fetch or SSG here, the cart lives entirely in localStorage (see
+ * `CartContext`). This is the only place in the cart subtree that reads the
+ * cart context; `CartList`/`CartItem`/`CartSummary`/`EmptyCart` are all
+ * prop-driven so they stay agnostic and Storybook-friendly (plan §4/§Cart).
  */
 export default function CartPage() {
+  const { items, removeItem, totalPrice } = useCart();
+
+  if (items.length === 0) {
+    return (
+      <main className={styles.main}>
+        <h1 className={styles.heading}>Your cart</h1>
+        <EmptyCart />
+      </main>
+    );
+  }
+
   return (
-    <main>
-      <p>Cart view — coming in Phase 1.</p>
+    <main className={styles.main}>
+      <h1 className={styles.heading}>Your cart</h1>
+      <CartList items={items} onRemove={removeItem} />
+      <CartSummary totalPrice={totalPrice} />
     </main>
   );
 }
