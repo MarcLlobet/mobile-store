@@ -37,12 +37,16 @@
 }
 
 .selected {
-  /* CONFIRMED — Selected=True is the SAME 1px stroke weight as
-     Selected=False, just black instead of grey (20605:5137) — no
-     box-shadow ring, no thicker border, no checkmark overlay. Selection
-     is conveyed by the border color change alone (+ aria-checked for
-     assistive tech, + the visible color-name label below). */
-  border-color: var(--color-black);
+  /* Two concentric rings when selected: a white gap ring right at the
+     swatch edge (so the outer dark ring reads clearly regardless of the
+     swatch's own fill color — critical for a black/dark swatch, where a
+     plain border-color swap to black would be invisible), then a dark
+     outer ring as the actual selection indicator. Layered via box-shadow
+     rather than a second border so the swatch's own 24x24 box size and
+     its base 1px border are untouched. */
+  box-shadow:
+    0 0 0 2px var(--color-white) inset,
+    0 0 0 4px var(--color-black);
 }
 
 .selectedName {

@@ -56,6 +56,19 @@
   border-color: var(--color-black);
 }
 
+.option.selected {
+  /* `.option + .option { border-left: none }` above removes the shared
+     left edge for the mosaic collapse, and its border-left-STYLE:none
+     wins over plain `.selected`'s border-color (same specificity, but
+     style and color are independent longhands — the color change alone
+     can't repaint a side whose style is "none"). A selected option is
+     the one being called out, not merged into its neighbor, so it
+     needs its own real left border back, in black — `.option.selected`
+     ties `.option + .option`'s specificity and this rule comes later,
+     so it wins that side back. */
+  border-left: var(--border-width-thin) solid var(--color-black);
+}
+
 .capacity {
   font-size: var(--font-size-xs); /* CONFIRMED — style_799d6c11, 12px (not 14px) */
   font-weight: var(--font-weight-light); /* CONFIRMED — no bold anywhere in this design */

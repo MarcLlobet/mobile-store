@@ -8,5 +8,10 @@
 
 .image {
   object-fit: contain;
+  /* The box's aspect-ratio (510/630) is the confirmed Figma frame ratio,
+     but a given phone photo's own intrinsic ratio can differ slightly —
+     object-fit:contain would otherwise center the leftover space
+     top+bottom. Anchor it to the top instead ("flex-start" for images). */
+  object-position: top;
   padding: var(--space-4);
 }
