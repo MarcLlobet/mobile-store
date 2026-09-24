@@ -26,20 +26,32 @@ const VIEWPORTS = [
   { name: "mobile", width: 393, height: 852 },
 ];
 
-async function fetchAProductId() {
-  const response = await fetch(`${API_BASE_URL}/products?limit=1`, {
+async function fetchAScreenshotProduct() {
+  const listResponse = await fetch(`${API_BASE_URL}/products?limit=1`, {
     headers: { "x-api-key": API_KEY },
   });
-  if (!response.ok) {
-    throw new Error(`Could not fetch a product id to screenshot (status ${response.status})`);
+  if (!listResponse.ok) {
+    throw new Error(`Could not fetch a product id to screenshot (status ${listResponse.status})`);
   }
-  const [product] = await response.json();
-  return product.id;
+  const [{ id }] = await listResponse.json();
+
+  const detailResponse = await fetch(`${API_BASE_URL}/products/${id}`, {
+    headers: { "x-api-key": API_KEY },
+  });
+  if (!detailResponse.ok) {
+    throw new Error(`Could not fetch product ${id} detail to seed the cart (status ${detailResponse.status})`);
+  }
+  return detailResponse.json();
 }
 
-async function seedCart(page, productId) {
+async function seedCart(page, product) {
+  const color = product.colorOptions[0];
+  const storage = product.storageOptions[0];
   // Runs before every navigation in this page's context, so the cart is
-  // populated before the app's first render reads localStorage.
+  // populated before the app's first render reads localStorage. Uses real
+  // product data (not empty/placeholder strings) so the seeded row doesn't
+  // trigger real console errors (e.g. an empty next/image src) that would
+  // otherwise look like — but aren't — an app bug in the screenshot.
   await page.addInitScript(
     ({ key, item }) => {
       window.localStorage.setItem(key, JSON.stringify([item]));
@@ -47,14 +59,14 @@ async function seedCart(page, productId) {
     {
       key: CART_STORAGE_KEY,
       item: {
-        cartItemId: `${productId}-screenshot-seed`,
-        productId,
-        name: "Screenshot seed device",
-        brand: "Seed",
-        imageUrl: "",
-        color: "Seed color",
-        storage: "128GB",
-        unitPrice: 999,
+        cartItemId: `${product.id}-${color.name}-${storage.capacity}`,
+        productId: product.id,
+        name: product.name,
+        brand: product.brand,
+        imageUrl: color.imageUrl,
+        color: color.name,
+        storage: storage.capacity,
+        unitPrice: storage.price,
       },
     },
   );
@@ -68,9 +80,9 @@ async function capture(page, name) {
 async function main() {
   await mkdir(OUTPUT_DIR, { recursive: true });
 
-  console.log("Fetching a real product id for the detail screenshot...");
-  const productId = await fetchAProductId();
-  console.log(`Using product ${productId}`);
+  console.log("Fetching a real product for the detail/cart screenshots...");
+  const product = await fetchAScreenshotProduct();
+  console.log(`Using product ${product.id}`);
 
   const browser = await chromium.launch();
 
@@ -86,12 +98,12 @@ async function main() {
     await listing.close();
 
     const detail = await context.newPage();
-    await detail.goto(`${BASE_URL}/phones/${productId}/`, { waitUntil: "networkidle" });
+    await detail.goto(`${BASE_URL}/phones/${product.id}/`, { waitUntil: "networkidle" });
     await capture(detail, `${viewport.name}-detail`);
     await detail.close();
 
     const cart = await context.newPage();
-    await seedCart(cart, productId);
+    await seedCart(cart, product);
     await cart.goto(`${BASE_URL}/cart/`, { waitUntil: "networkidle" });
     await capture(cart, `${viewport.name}-cart`);
     await cart.close();
