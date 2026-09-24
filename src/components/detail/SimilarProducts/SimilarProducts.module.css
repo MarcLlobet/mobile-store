@@ -1,7 +1,13 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-5); /* CONFIRMED — EL-c45b16e5 "Similar items" gap, 40px */
+  /* The gap before this section (between it and the Specifications table
+     above) needs to read as clearly larger than the other section gaps
+     on this page — .page's own flex gap (--space-4, 32px) plus this
+     extra margin totals --space-7 (64px), the same "distinct section"
+     gap already used for Product info's own internal spacing. */
+  margin-top: var(--space-4);
 }
 
 .heading {
