@@ -14,12 +14,12 @@ import styles from "./page.module.css";
  * prop-driven so they stay agnostic and Storybook-friendly (plan §4/§Cart).
  */
 export default function CartPage() {
-  const { items, removeItem, totalPrice } = useCart();
+  const { items, itemCount, removeItem, totalPrice } = useCart();
 
   if (items.length === 0) {
     return (
       <main className={styles.main}>
-        <h1 className={styles.heading}>Your cart</h1>
+        <h1 className={styles.heading}>{`Cart (${itemCount})`}</h1>
         <EmptyCart />
       </main>
     );
@@ -27,7 +27,7 @@ export default function CartPage() {
 
   return (
     <main className={styles.main}>
-      <h1 className={styles.heading}>Your cart</h1>
+      <h1 className={styles.heading}>{`Cart (${itemCount})`}</h1>
       <CartList items={items} onRemove={removeItem} />
       <CartSummary totalPrice={totalPrice} />
     </main>

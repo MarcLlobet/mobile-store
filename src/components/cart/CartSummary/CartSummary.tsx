@@ -28,7 +28,7 @@ export function CartSummary({ totalPrice }: CartSummaryProps) {
           <Price value={totalPrice} />
         </span>
       </div>
-      <Button variant="primary" onClick={() => router.push("/")}>
+      <Button variant="standard" onClick={() => router.push("/")}>
         Continue shopping
       </Button>
     </div>

@@ -3,9 +3,6 @@
   align-items: center;
   gap: var(--space-5);
   padding: var(--space-2);
-  border: var(--border-width-thin) solid var(--color-border-subtle);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-surface);
 }
 
 .imageWrapper {
@@ -14,8 +11,6 @@
   width: 96px;
   height: 96px;
   overflow: hidden;
-  border-radius: var(--radius-sm);
-  background-color: var(--color-surface-alt);
 }
 
 .image {
