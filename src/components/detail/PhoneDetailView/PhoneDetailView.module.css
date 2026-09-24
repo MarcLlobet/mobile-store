@@ -31,16 +31,13 @@
 .info {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-7); /* CONFIRMED — EL-2c3e7564 "Product info" gap, 64px */
 }
 
-.brand {
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-light); /* CONFIRMED — no bold anywhere in this design */
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  margin: 0;
+.titlePrice {
+  display: flex;
+  flex-direction: column;
+  gap: 11px; /* CONFIRMED — EL-830fc452 "Title + price" gap */
 }
 
 .name {

@@ -19,10 +19,10 @@
 
 .swatch {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 24px; /* CONFIRMED — Color component (20617:355), 24x24 both states */
+  height: 24px;
   border-radius: 2px;
-  border: var(--border-width-thin) solid var(--color-border-subtle);
+  border: var(--border-width-thin) solid var(--color-border-subtle); /* CONFIRMED — Selected=False stroke #CCCCCC, 1px */
   cursor: pointer;
   padding: 0;
 }
@@ -37,9 +37,10 @@
 }
 
 .selected {
-  box-shadow:
-    0 0 0 2px var(--color-white) inset,
-    0 0 0 4px var(--color-black);
+  /* CONFIRMED — Selected=True is the SAME 1px stroke weight as
+     Selected=False, just black instead of grey (20605:5137) — no
+     box-shadow ring, no thicker border. */
+  border-color: var(--color-black);
 }
 
 .selected::after {

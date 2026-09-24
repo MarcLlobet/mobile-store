@@ -58,14 +58,16 @@ beforeEach(() => {
 const eur = (value: number) => `${Math.round(value)} EUR`;
 
 describe("PhoneDetailView", () => {
-  it("renders name and brand", () => {
+  it("renders the name as the heading and brand in the specs table (not above the title)", () => {
     renderView();
     expect(
       screen.getByRole("heading", { level: 1, name: "iPhone 15 Pro Max" }),
     ).toBeInTheDocument();
+    // Brand is no longer shown above the title (confirmed real Figma layout
+    // has no such label) — it's only in the Specifications table now.
     // "Apple" also appears on the similar-products ProductTile, so scope to
-    // the brand element specifically rather than asserting a single match.
-    expect(screen.getByText("Apple", { selector: "p" })).toBeInTheDocument();
+    // the specs row's <dd> specifically rather than asserting a single match.
+    expect(screen.getByText("Apple", { selector: "dd" })).toBeInTheDocument();
   });
 
   it("defaults the hero image to the first color and the price to basePrice before any selection", () => {

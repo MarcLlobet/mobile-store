@@ -45,11 +45,14 @@ export function PhoneDetailView({ product }: PhoneDetailViewProps) {
       <div className={styles.layout}>
         <PhoneHero imageUrl={heroImageUrl} name={product.name} />
         <div className={styles.info}>
-          <p className={styles.brand}>{product.brand}</p>
-          <h1 className={styles.name}>{product.name}</h1>
-          <p className={styles.price}>
-            <Price value={displayPrice} />
-          </p>
+          {/* CONFIRMED: the real Figma layout has no brand label above the
+              title — brand is only shown in the Specifications table below. */}
+          <div className={styles.titlePrice}>
+            <h1 className={styles.name}>{product.name}</h1>
+            <p className={styles.price}>
+              <Price value={displayPrice} />
+            </p>
+          </div>
           <SelectorsPanel
             colors={product.colorOptions}
             selectedColor={selectedColor}

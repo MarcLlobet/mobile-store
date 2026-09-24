@@ -14,7 +14,10 @@
 .group {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  /* CONFIRMED — EL-a75c3b19 "Storage options" row has no gap property.
+     Options collapse edge-to-edge; each shares a border with the next
+     (see .option + .option below) instead of doubling up at 2px. */
+  gap: 0;
 }
 
 .option {
@@ -30,6 +33,10 @@
   color: var(--color-text-primary);
   font-family: var(--font-family-base);
   cursor: pointer;
+}
+
+.option + .option {
+  border-left: none;
 }
 
 .option:hover {
