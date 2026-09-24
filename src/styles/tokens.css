@@ -1,0 +1,118 @@
+/**
+ * Design tokens.
+ *
+ * Values marked CONFIRMED were read directly from the Figma file
+ * (fileKey Nuic7ePgOfUQ0hcBrUUQrb) via mcp__figma__get_figma_data before the
+ * Figma REST API rate-limited this session out (429, "Retry after ~400000s"
+ * — the account's viewer-seat quota was already close to exhausted from an
+ * earlier exploration pass before Phase 0 started). Nodes actually read:
+ * Header instance (20620:3075), Smartphone card instance (20742:6946),
+ * Cart item component set (20620:3184), SDS Button component set
+ * (20605:5253, metadata only — variant fills/colors could not be reached
+ * before the limit hit), and a depth-1 pass over the Desktop/Tablet/Mobile
+ * canvas sections (20620:9054 / 20669:2483 / 20669:2484 — only returned
+ * section wrapper sizes, not individual per-breakpoint screen-frame widths).
+ *
+ * Values marked PLACEHOLDER are reasonable, internally-consistent stand-ins
+ * (kept on an 8px base grid matching the confirmed 16/24/40px figures, and a
+ * neutral grey ramp) used only where the real Figma value could not be
+ * fetched. They are isolated to CSS variables in this single file
+ * specifically so Phase 2 (or a follow-up Figma pull once the rate limit
+ * resets) can true them up without touching component code.
+ */
+
+:root {
+  /* Typography — brief overrides Figma's type family regardless of what
+     Figma's text styles say (Figma uses "Helvetica Neue"); brief mandates: */
+  --font-family-base: Helvetica, Arial, sans-serif; /* per instructions.md, not Figma */
+
+  /* Font sizes. 12px/16px CONFIRMED (Smartphone card price = 12px,
+     Header bag count = 16px). Rest of the scale is PLACEHOLDER, built as a
+     conventional type ramp around those two confirmed points. */
+  --font-size-xs: 12px; /* CONFIRMED — product card price */
+  --font-size-sm: 14px; /* PLACEHOLDER */
+  --font-size-md: 16px; /* CONFIRMED — header bag count */
+  --font-size-lg: 20px; /* PLACEHOLDER */
+  --font-size-xl: 24px; /* PLACEHOLDER */
+  --font-size-2xl: 32px; /* PLACEHOLDER */
+
+  --font-weight-light: 300; /* CONFIRMED — Figma text uses weight 300 throughout observed nodes */
+  --font-weight-regular: 400; /* PLACEHOLDER */
+  --font-weight-bold: 700; /* PLACEHOLDER */
+
+  --line-height-tight: 16px; /* CONFIRMED — header bag count lineHeight */
+  --line-height-base: 1.4; /* PLACEHOLDER */
+
+  /* Color palette. Black/white CONFIRMED (Header background #FFFFFF,
+     icon/text fill #000000 on Header + Smartphone card + Cart item).
+     Grey ramp and any accent are PLACEHOLDER — no accent color was reached
+     before the rate limit; the app currently has no confirmed non-neutral
+     brand color, so none is invented here. */
+  --color-black: #000000; /* CONFIRMED */
+  --color-white: #ffffff; /* CONFIRMED */
+
+  --color-grey-100: #f5f5f5; /* PLACEHOLDER — skeleton/surface background */
+  --color-grey-200: #ebebeb; /* PLACEHOLDER — seen only as a Figma canvas/section backdrop, not a UI surface; kept as the lightest grey step */
+  --color-grey-300: #e0e0e0; /* PLACEHOLDER — hairline borders */
+  --color-grey-500: #9e9e9e; /* PLACEHOLDER — disabled state */
+  --color-grey-700: #757575; /* PLACEHOLDER — secondary text */
+  --color-grey-900: #212121; /* PLACEHOLDER — near-black text alt */
+
+  --color-text-primary: var(--color-black);
+  --color-text-secondary: var(--color-grey-700);
+  --color-text-disabled: var(--color-grey-500);
+  --color-background: var(--color-white);
+  --color-surface: var(--color-white);
+  --color-surface-alt: var(--color-grey-100);
+  --color-border: var(--color-black); /* CONFIRMED — Smartphone card stroke is #000000 */
+  --color-border-subtle: var(--color-grey-300); /* PLACEHOLDER */
+
+  /* Button states — SDS Button component set (20605:5253) was located but
+     its per-variant fills (Primary/Standard × Default/Hover/Active/Disabled)
+     could not be read before the rate limit. Using the confirmed black/white
+     pair for primary and a bordered-black-on-white pattern for standard,
+     consistent with every other confirmed node's black-on-white styling. */
+  --color-button-primary-bg: var(
+    --color-black
+  ); /* PLACEHOLDER, consistent with confirmed black/white palette */
+  --color-button-primary-bg-hover: var(--color-grey-900); /* PLACEHOLDER */
+  --color-button-primary-text: var(--color-white); /* PLACEHOLDER */
+  --color-button-standard-bg: var(--color-white); /* PLACEHOLDER */
+  --color-button-standard-border: var(--color-black); /* PLACEHOLDER */
+  --color-button-standard-text: var(--color-black); /* PLACEHOLDER */
+  --color-button-disabled-bg: var(--color-grey-300); /* PLACEHOLDER */
+  --color-button-disabled-text: var(--color-grey-500); /* PLACEHOLDER */
+
+  /* Spacing scale — 8px/16px/24px/40px CONFIRMED (Header padding 24px,
+     Smartphone card padding 16px + gap 24px, Cart item padding 16px + gap
+     40px). Built out to a full 8px-based scale; 8px/48/64 steps PLACEHOLDER. */
+  --space-1: 8px; /* PLACEHOLDER (base unit, inferred from confirmed multiples) */
+  --space-2: 16px; /* CONFIRMED — Smartphone card / Cart item padding */
+  --space-3: 24px; /* CONFIRMED — Header padding-block / Smartphone card gap */
+  --space-4: 32px; /* PLACEHOLDER */
+  --space-5: 40px; /* CONFIRMED — Cart item gap */
+  --space-6: 48px; /* PLACEHOLDER */
+  --space-7: 64px; /* PLACEHOLDER */
+  --space-header-x: 100px; /* CONFIRMED — Header horizontal padding at desktop width 1920px */
+
+  /* Radius / borders */
+  --radius-sm: 5px; /* CONFIRMED — Cart item borderRadius */
+  --radius-md: 8px; /* PLACEHOLDER */
+  --border-width-hairline: 0.5px; /* CONFIRMED — Smartphone card stroke weight */
+  --border-width-thin: 1px; /* CONFIRMED — SDS Button / Cart item component-set stroke weight */
+
+  /* Breakpoints (px). The Desktop/Tablet/Mobile canvas SECTIONS were
+     reached (20620:9054 / 20669:2483 / 20669:2484) but only returned
+     section-wrapper bounding sizes, not the individual screen frame widths,
+     before the rate limit hit — so these are PLACEHOLDER, using
+     conventional desktop/tablet/mobile viewport widths. The Header instance
+     itself was CONFIRMED at a 1920px designed width at desktop. */
+  --breakpoint-desktop: 1920px; /* CONFIRMED — Header instance designedWidth */
+  --breakpoint-tablet: 768px; /* PLACEHOLDER */
+  --breakpoint-mobile: 375px; /* PLACEHOLDER */
+
+  /* Layout */
+  --header-height: 80px; /* CONFIRMED — Header instance designedHeight */
+  --z-header: 100;
+  --z-overlay: 200;
+}

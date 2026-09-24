@@ -1,0 +1,32 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--header-height);
+  padding: var(--space-3) var(--space-2);
+  background-color: var(--color-white);
+  border-bottom: var(--border-width-thin) solid var(--color-border-subtle);
+}
+
+@media (min-width: 1024px) {
+  .header {
+    padding: var(--space-3) var(--space-header-x);
+  }
+}
+
+.homeLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.cartLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  color: var(--color-text-primary);
+  position: relative;
+}
