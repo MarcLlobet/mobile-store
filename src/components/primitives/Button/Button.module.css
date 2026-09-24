@@ -3,23 +3,34 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  min-height: 44px; /* touch target */
+  /* CONFIRMED — the real "Add to cart" SDS Button instance is a fixed
+     56px tall at the mobile/tablet breakpoint variant (componentId
+     20821:4909, "Breakpoint=XS-M") and 48px at desktop
+     (20821:4893, "Breakpoint=L-XL"). */
+  min-height: 56px;
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-sm);
   border: var(--border-width-thin) solid transparent;
   font-family: var(--font-family-base);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs); /* CONFIRMED — style_c80d5008, 12px (not 14px) */
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-base);
   /* Figma's SDS Button is always rendered uppercase with tracked letter-
      spacing ("AÑADIR" / "PAY" / "CONTINUE SHOPPING") — one shared change
-     here covers every Button consumer (AddToCartButton, CartSummary, ...). */
+     here covers every Button consumer (AddToCartButton, CartSummary, ...).
+     CONFIRMED letter-spacing — style_c80d5008 is 0.08em (not 0.04em). */
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   transition:
     background-color 0.15s ease,
     color 0.15s ease,
     border-color 0.15s ease;
+}
+
+@media (min-width: 1024px) {
+  .button {
+    min-height: 48px;
+  }
 }
 
 .primary {

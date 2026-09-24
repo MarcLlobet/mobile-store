@@ -5,7 +5,8 @@ const meta: Meta<typeof SpecsList> = {
   title: "Detail/SpecsList",
   component: SpecsList,
   args: {
-    basePrice: 1319,
+    brand: "Apple",
+    name: "iPhone 15 Pro",
     description: "The latest iPhone, with a titanium design and the A17 Pro chip.",
     specs: {
       screen: "6.7 inch OLED",

@@ -6,8 +6,8 @@
 
 .heading {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg); /* CONFIRMED — style_60414b43, 20px */
+  font-weight: var(--font-weight-light); /* CONFIRMED — style_60414b43 is weight 300, not bold */
   color: var(--color-text-primary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -23,26 +23,41 @@
 .row {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: var(--space-2) 0;
+  /* CONFIRMED real Figma row layout: a FIXED label column + a 12px/48px
+     gap (mobile/desktop, see .term below), not space-between. */
+  gap: 12px;
+  padding: var(--space-2) 0; /* CONFIRMED — 16px 0, same at both breakpoints */
   border-bottom: var(--border-width-hairline) solid var(--color-border-subtle);
+}
+
+@media (min-width: 1024px) {
+  .row {
+    gap: 48px; /* CONFIRMED — Desktop / Detail / Filled row gap */
+  }
 }
 
 .term {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs); /* CONFIRMED — style_13cb6e9a, 12px (not 14px) */
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin: 0;
+  flex-shrink: 0;
+  width: 150px; /* CONFIRMED — Mobile / Detail / Filled label column width */
+}
+
+@media (min-width: 1024px) {
+  .term {
+    width: 300px; /* CONFIRMED — Desktop / Detail / Filled label column width */
+  }
 }
 
 .value {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs); /* CONFIRMED — style_4d0f87d8, 12px (not 14px) */
   font-weight: var(--font-weight-regular);
   color: var(--color-text-primary);
-  text-align: right;
+  text-align: left; /* CONFIRMED — style_4d0f87d8 textAlignHorizontal: LEFT, not right */
   margin: 0;
 }

@@ -1,5 +1,4 @@
 import { useId } from "react";
-import { Price } from "@/components/primitives/Price";
 import type { ProductSpecs } from "@/lib/api/types";
 import styles from "./SpecsList.module.css";
 
@@ -10,34 +9,41 @@ const SPEC_FIELDS: { key: keyof ProductSpecs; label: string }[] = [
   { key: "mainCamera", label: "Main camera" },
   { key: "selfieCamera", label: "Selfie camera" },
   { key: "battery", label: "Battery" },
-  { key: "os", label: "Operating system" },
+  { key: "os", label: "OS" },
   { key: "screenRefreshRate", label: "Screen refresh rate" },
 ];
 
 /**
- * Renders all 8 ProductSpecs fields plus base price and the product
- * description as a labelled list.
+ * Renders brand, name, description and all 8 ProductSpecs fields as a
+ * labelled list, in the exact row order confirmed on the real Figma
+ * "Specification row" instances (node 20758:10425, Desktop / Detail /
+ * Filled, and its mobile equivalent 20758:18953): Brand, Name,
+ * Description, then the 8 technical fields. There is no "base price" row
+ * in the real spec table — price is only shown once, near the title.
  */
 export interface SpecsListProps {
+  brand: string;
+  name: string;
   specs: ProductSpecs;
-  basePrice: number;
   description: string;
 }
 
-export function SpecsList({ specs, basePrice, description }: SpecsListProps) {
+export function SpecsList({ brand, name, specs, description }: SpecsListProps) {
   const headingId = useId();
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
       <h2 id={headingId} className={styles.heading}>
-        Technical specifications
+        Specifications
       </h2>
       <dl className={styles.list}>
         <div className={styles.row}>
-          <dt className={styles.term}>Base price</dt>
-          <dd className={styles.value}>
-            <Price value={basePrice} />
-          </dd>
+          <dt className={styles.term}>Brand</dt>
+          <dd className={styles.value}>{brand}</dd>
+        </div>
+        <div className={styles.row}>
+          <dt className={styles.term}>Name</dt>
+          <dd className={styles.value}>{name}</dd>
         </div>
         <div className={styles.row}>
           <dt className={styles.term}>Description</dt>

@@ -74,7 +74,6 @@ describe("PhoneDetailView", () => {
       "src",
       "https://example.com/black.png",
     );
-    // 1319 shows both as the headline price and as SpecsList's "Base price".
     expect(screen.getAllByText(eur(1319)).length).toBeGreaterThan(0);
   });
 
@@ -117,7 +116,7 @@ describe("PhoneDetailView", () => {
 
   it("renders the full specs list and the similar products section", () => {
     renderView();
-    expect(screen.getByRole("heading", { name: "Technical specifications" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Specifications" })).toBeInTheDocument();
     expect(screen.getByText("A17 Pro")).toBeInTheDocument();
     expect(screen.getByText("The latest iPhone.")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Similar products" })).toBeInTheDocument();

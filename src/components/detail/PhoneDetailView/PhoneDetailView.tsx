@@ -66,8 +66,9 @@ export function PhoneDetailView({ product }: PhoneDetailViewProps) {
             selectedStorage={selectedStorage}
           />
           <SpecsList
+            brand={product.brand}
+            name={product.name}
             specs={product.specs}
-            basePrice={product.basePrice}
             description={product.description}
           />
         </div>
