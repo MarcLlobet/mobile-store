@@ -16,7 +16,7 @@
 
 .list {
   display: flex;
-  gap: var(--space-3);
+  gap: 0;
   overflow-x: auto;
   /* Flex items default to min-width:auto, i.e. "don't shrink below content
      size" — without this, the row of fixed-width items forces this list
