@@ -1,4 +1,7 @@
 import type { Preview } from "@storybook/nextjs-vite";
+// Arimo only ships 400/500/600/700 weight files (no 300/Light) — see
+// app/layout.tsx.
+import "@fontsource/arimo/400.css";
 import "../src/styles/reset.css";
 import "../src/styles/tokens.css";
 import "../src/app/globals.css";

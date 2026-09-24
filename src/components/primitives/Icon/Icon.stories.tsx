@@ -3,12 +3,14 @@ import { Icon, type IconName } from "./Icon";
 
 const names: IconName[] = [
   "home",
-  "cart",
   "back",
   "trash",
   "chevron-left",
   "chevron-right",
   "search",
+  "bag-empty",
+  "bag-filled",
+  "logo",
 ];
 
 const meta: Meta<typeof Icon> = {

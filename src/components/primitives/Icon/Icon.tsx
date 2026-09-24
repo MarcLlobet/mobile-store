@@ -1,45 +1,42 @@
 import type { JSX, SVGProps } from "react";
 
 /**
- * Minimal outline icon set (simple, MIT-style Feather-icon-shaped paths).
- *
- * NOTE: exact Figma icon glyphs could not be pulled for this set — the
- * Figma REST API rate-limited this session (429, ~4.6 day retry window)
- * right after the design-token pull. These are deliberately plain,
- * recognizable outline icons so the app is usable and accessible now;
- * swap the `<svg>` contents per `name` for the pixel-accurate Figma
- * exports in Phase 2 once Figma access is available again — the `Icon`
- * component's public API (`name`/`size`/`ariaHidden`) does not need to
- * change to do that.
+ * Two icon sources:
+ * - `strokePaths`: hand-drawn outline glyphs (Feather-style) for names the
+ *   real Figma file's icon library never reached before the Figma REST API
+ *   rate-limited this session out — kept as a reasonable, accessible stand-in.
+ * - `assetIcons`: real Figma exports (design/figma-assets/, mirrored into
+ *   public/icons/figma/), downloaded via mcp__figma__download_figma_images
+ *   (a separate quota from the rate-limited get_figma_data, confirmed still
+ *   working) — node IDs cited in the plan/tokens.css. Rendered as `<img>`
+ *   since two of them are only available as a flattened PNG export, and the
+ *   two real SVGs are already flat black fills with no need for
+ *   currentColor theming in this monochrome design.
  */
 export type IconName =
-  "home" | "cart" | "back" | "trash" | "chevron-left" | "chevron-right" | "search";
+  | "home"
+  | "back"
+  | "trash"
+  | "chevron-left"
+  | "chevron-right"
+  | "search"
+  | "bag-empty"
+  | "bag-filled"
+  | "logo";
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "width" | "height" | "name"> {
   name: IconName;
   size?: number;
   ariaHidden?: boolean;
   title?: string;
+  className?: string;
 }
 
-const paths: Record<IconName, JSX.Element> = {
+const strokePaths: Partial<Record<IconName, JSX.Element>> = {
   home: (
     <>
       <path d="M3 9.5 12 2l9 7.5" />
       <path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10" />
-    </>
-  ),
-  cart: (
-    <>
-      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-      <path d="M3 6h18" />
-      <path d="M16 10a4 4 0 0 1-8 0" />
-    </>
-  ),
-  back: (
-    <>
-      <path d="M19 12H5" />
-      <path d="M12 19l-7-7 7-7" />
     </>
   ),
   trash: (
@@ -61,7 +58,32 @@ const paths: Record<IconName, JSX.Element> = {
   ),
 };
 
-export function Icon({ name, size = 24, ariaHidden = true, title, ...rest }: IconProps) {
+// Native pixel dimensions of each exported asset, used to preserve aspect
+// ratio when `size` scales the rendered width.
+const assetIcons: Partial<Record<IconName, { src: string; width: number; height: number }>> = {
+  back: { src: "/icons/figma/chevron-left.png", width: 80, height: 80 },
+  "bag-empty": { src: "/icons/figma/bag-empty.svg", width: 24, height: 24 },
+  "bag-filled": { src: "/icons/figma/bag-filled.svg", width: 24, height: 24 },
+  logo: { src: "/icons/figma/logo.svg", width: 77, height: 29 },
+};
+
+export function Icon({ name, size = 24, ariaHidden = true, title, className, ...rest }: IconProps) {
+  const asset = assetIcons[name];
+  if (asset) {
+    const height = Math.round((asset.height / asset.width) * size);
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- tiny decorative/static icon assets, not content images; no next/image benefit
+      <img
+        src={asset.src}
+        alt={ariaHidden ? "" : (title ?? name)}
+        aria-hidden={ariaHidden ? "true" : undefined}
+        width={size}
+        height={height}
+        className={className}
+      />
+    );
+  }
+
   return (
     <svg
       width={size}
@@ -72,12 +94,13 @@ export function Icon({ name, size = 24, ariaHidden = true, title, ...rest }: Ico
       strokeWidth={1.75}
       strokeLinecap="round"
       strokeLinejoin="round"
+      className={className}
       aria-hidden={ariaHidden ? "true" : undefined}
       role={ariaHidden ? undefined : "img"}
       {...rest}
     >
       {!ariaHidden && title ? <title>{title}</title> : null}
-      {paths[name]}
+      {strokePaths[name]}
     </svg>
   );
 }

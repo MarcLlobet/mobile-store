@@ -17,7 +17,7 @@ export function EmptyCart() {
 
   return (
     <div className={styles.container}>
-      <Icon name="cart" size={48} ariaHidden />
+      <Icon name="bag-empty" size={48} ariaHidden />
       <p className={styles.message}>Your cart is empty.</p>
       <Button variant="primary" onClick={() => router.push("/")}>
         Continue shopping

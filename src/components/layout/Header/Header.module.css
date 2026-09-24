@@ -23,16 +23,18 @@
 .homeLink {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-  color: var(--color-text-primary);
-  font-weight: var(--font-weight-bold);
 }
 
 .cartLink {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 0;
+  gap: 6px; /* CONFIRMED — Bag component (20605:4459) icon-to-count gap */
+  padding: 4px 0; /* CONFIRMED — Bag component padding */
   color: var(--color-text-primary);
   position: relative;
+}
+
+.cartCount {
+  font-size: var(--font-size-md); /* CONFIRMED — style_0658ea89 */
+  line-height: var(--line-height-tight);
 }

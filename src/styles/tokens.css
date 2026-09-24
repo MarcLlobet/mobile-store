@@ -22,9 +22,20 @@
  */
 
 :root {
-  /* Typography — brief overrides Figma's type family regardless of what
-     Figma's text styles say (Figma uses "Helvetica Neue"); brief mandates: */
-  --font-family-base: Helvetica, Arial, sans-serif; /* per instructions.md, not Figma */
+  /* Typography. Figma's own text styles (style_0658ea89, style_2df23738,
+     style_13cb6e9a, ...) confirm every text node in the design is set in
+     "Helvetica Neue", weight 300. Helvetica Neue is a commercial Monotype
+     font with no legal free package (Fontsource only hosts open-licensed
+     fonts) — so this is a font STACK, not a single download: real
+     "Helvetica Neue" first (used automatically wherever the OS actually
+     ships it, i.e. every Mac/iOS device — matches Figma exactly there),
+     then Helvetica/Arial (the brief's own literal mandate, and Windows'
+     built-in equivalent), then @fontsource/arimo (installed; imported in
+     app/layout.tsx and .storybook/preview.tsx) as the guaranteed final
+     fallback — Arimo is Google's free, open, metrically-Arial/Helvetica-
+     compatible font, so anywhere without Arial (Linux/Android/etc.) still
+     renders visually near-identical instead of a generic sans-serif. */
+  --font-family-base: "Helvetica Neue", Helvetica, Arial, "Arimo", sans-serif;
 
   /* Font sizes. 12px/16px CONFIRMED (Smartphone card price = 12px,
      Header bag count = 16px). Rest of the scale is PLACEHOLDER, built as a
@@ -53,10 +64,11 @@
 
   --color-grey-100: #f5f5f5; /* PLACEHOLDER — skeleton/surface background */
   --color-grey-200: #ebebeb; /* PLACEHOLDER — seen only as a Figma canvas/section backdrop, not a UI surface; kept as the lightest grey step */
-  --color-grey-300: #e0e0e0; /* PLACEHOLDER — hairline borders */
+  --color-grey-300: #cccccc; /* CONFIRMED (fill_06d3d4fc) — storage-option / color-swatch list-item border */
   --color-grey-500: #9e9e9e; /* PLACEHOLDER — disabled state */
-  --color-grey-700: #757575; /* PLACEHOLDER — secondary text */
+  --color-grey-700: #79736d; /* CONFIRMED (fill_13646f2e) — warm grey, product-card brand label */
   --color-grey-900: #212121; /* PLACEHOLDER — near-black text alt */
+  --color-placeholder: #aaaaaa; /* CONFIRMED — search input placeholder text fill */
 
   --color-text-primary: var(--color-black);
   --color-text-secondary: var(--color-grey-700);
@@ -65,7 +77,7 @@
   --color-surface: var(--color-white);
   --color-surface-alt: var(--color-grey-100);
   --color-border: var(--color-black); /* CONFIRMED — Smartphone card stroke is #000000 */
-  --color-border-subtle: var(--color-grey-300); /* PLACEHOLDER */
+  --color-border-subtle: var(--color-grey-300); /* CONFIRMED, see --color-grey-300 above */
 
   /* Button states — SDS Button component set (20605:5253) was located but
      its per-variant fills (Primary/Standard × Default/Hover/Active/Disabled)

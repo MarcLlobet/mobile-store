@@ -40,12 +40,12 @@ describe("Header", () => {
     expect(screen.getByRole("link", { name: /cart/i })).toHaveAttribute("href", "/cart");
   });
 
-  it("shows no badge when the cart is empty", () => {
+  it("always shows the item count, including 0 when the cart is empty", () => {
     render(<Header />, { wrapper: CartProvider });
-    expect(screen.queryByText(/^[1-9]/)).not.toBeInTheDocument();
+    expect(screen.getByText("0")).toBeInTheDocument();
   });
 
-  it("shows the item count badge once the cart has items", async () => {
+  it("updates the visible count once the cart has items", async () => {
     render(<HeaderWithAddButton />, { wrapper: CartProvider });
     await userEvent.click(screen.getByRole("button", { name: "Add" }));
     await waitFor(() => {
