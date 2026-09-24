@@ -1,0 +1,29 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.heading {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.list {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  margin: 0;
+  padding: 0 0 var(--space-2) 0;
+  list-style: none;
+  scroll-snap-type: x proximity;
+}
+
+.item {
+  flex: 0 0 auto;
+  width: 200px;
+  scroll-snap-align: start;
+}

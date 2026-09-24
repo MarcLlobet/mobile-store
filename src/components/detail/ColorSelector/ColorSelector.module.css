@@ -1,0 +1,56 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.label {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.swatch {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: var(--border-width-thin) solid var(--color-border-subtle);
+  cursor: pointer;
+  padding: 0;
+}
+
+.swatch:hover {
+  border-color: var(--color-black);
+}
+
+.swatch:focus-visible {
+  outline: var(--border-width-thin) solid var(--color-black);
+  outline-offset: 3px;
+}
+
+.selected {
+  box-shadow:
+    0 0 0 2px var(--color-white) inset,
+    0 0 0 4px var(--color-black);
+}
+
+.selected::after {
+  content: "\2713";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  mix-blend-mode: difference;
+}
