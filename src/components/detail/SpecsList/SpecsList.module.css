@@ -9,6 +9,8 @@
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   margin: 0;
 }
 
@@ -31,6 +33,8 @@
   font-family: var(--font-family-base);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   margin: 0;
 }
 

@@ -12,7 +12,9 @@ const options = [
 describe("StorageSelector", () => {
   it("renders a radio group with one radio per storage option", () => {
     render(<StorageSelector options={options} selected={null} onSelect={vi.fn()} />);
-    expect(screen.getByRole("radiogroup", { name: "Storage" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("radiogroup", { name: "STORAGE. HOW MUCH SPACE DO YOU NEED?" }),
+    ).toBeInTheDocument();
     expect(screen.getAllByRole("radio")).toHaveLength(3);
   });
 

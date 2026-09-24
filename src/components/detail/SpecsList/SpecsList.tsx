@@ -14,13 +14,17 @@ const SPEC_FIELDS: { key: keyof ProductSpecs; label: string }[] = [
   { key: "screenRefreshRate", label: "Screen refresh rate" },
 ];
 
-/** Renders all 8 ProductSpecs fields plus base price as a labelled list. */
+/**
+ * Renders all 8 ProductSpecs fields plus base price and the product
+ * description as a labelled list.
+ */
 export interface SpecsListProps {
   specs: ProductSpecs;
   basePrice: number;
+  description: string;
 }
 
-export function SpecsList({ specs, basePrice }: SpecsListProps) {
+export function SpecsList({ specs, basePrice, description }: SpecsListProps) {
   const headingId = useId();
 
   return (
@@ -34,6 +38,10 @@ export function SpecsList({ specs, basePrice }: SpecsListProps) {
           <dd className={styles.value}>
             <Price value={basePrice} />
           </dd>
+        </div>
+        <div className={styles.row}>
+          <dt className={styles.term}>Description</dt>
+          <dd className={styles.value}>{description}</dd>
         </div>
         {SPEC_FIELDS.map(({ key, label }) => (
           <div className={styles.row} key={key}>

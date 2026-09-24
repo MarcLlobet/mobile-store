@@ -13,9 +13,11 @@ const specs = {
   screenRefreshRate: "120Hz",
 };
 
+const description = "The latest iPhone.";
+
 describe("SpecsList", () => {
   it("renders all 8 spec fields plus the base price", () => {
-    render(<SpecsList specs={specs} basePrice={1319} />);
+    render(<SpecsList specs={specs} basePrice={1319} description={description} />);
 
     expect(screen.getByText("Base price")).toBeInTheDocument();
     expect(screen.getByText("1319 EUR")).toBeInTheDocument();
@@ -25,8 +27,14 @@ describe("SpecsList", () => {
     }
   });
 
+  it("renders a description row from the product description", () => {
+    render(<SpecsList specs={specs} basePrice={1319} description={description} />);
+    expect(screen.getByText("Description")).toBeInTheDocument();
+    expect(screen.getByText(description)).toBeInTheDocument();
+  });
+
   it("renders a heading that labels the section", () => {
-    render(<SpecsList specs={specs} basePrice={1319} />);
+    render(<SpecsList specs={specs} basePrice={1319} description={description} />);
     expect(screen.getByRole("region", { name: "Technical specifications" })).toBeInTheDocument();
   });
 });

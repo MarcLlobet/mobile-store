@@ -11,7 +11,9 @@ const colors = [
 describe("ColorSelector", () => {
   it("renders a radio group with one radio per color", () => {
     render(<ColorSelector colors={colors} selected={null} onSelect={vi.fn()} />);
-    expect(screen.getByRole("radiogroup", { name: "Color" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("radiogroup", { name: "COLOR. PICK YOUR FAVOURITE." }),
+    ).toBeInTheDocument();
     expect(screen.getAllByRole("radio")).toHaveLength(2);
   });
 
@@ -34,5 +36,16 @@ describe("ColorSelector", () => {
     await userEvent.click(screen.getByRole("radio", { name: "Black" }));
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect).toHaveBeenCalledWith(colors[0]);
+  });
+
+  it("renders the selected color's name as visible text below the swatch row", () => {
+    render(<ColorSelector colors={colors} selected={colors[1] ?? null} onSelect={vi.fn()} />);
+    expect(screen.getByText("Blue")).toBeInTheDocument();
+  });
+
+  it("renders no name text when nothing is selected", () => {
+    render(<ColorSelector colors={colors} selected={null} onSelect={vi.fn()} />);
+    expect(screen.queryByText("Black")).not.toBeInTheDocument();
+    expect(screen.queryByText("Blue")).not.toBeInTheDocument();
   });
 });

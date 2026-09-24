@@ -6,6 +6,7 @@ const meta: Meta<typeof SpecsList> = {
   component: SpecsList,
   args: {
     basePrice: 1319,
+    description: "The latest iPhone, with a titanium design and the A17 Pro chip.",
     specs: {
       screen: "6.7 inch OLED",
       resolution: "2796 x 1290",

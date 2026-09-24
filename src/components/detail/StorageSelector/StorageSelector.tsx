@@ -24,7 +24,7 @@ export function StorageSelector({ options, selected, onSelect }: StorageSelector
   return (
     <div className={styles.wrapper}>
       <span id={labelId} className={styles.label}>
-        Storage
+        STORAGE. HOW MUCH SPACE DO YOU NEED?
       </span>
       <div className={styles.group} role="radiogroup" aria-labelledby={labelId}>
         {options.map((option) => {

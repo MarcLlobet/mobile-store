@@ -2,8 +2,6 @@
   position: relative;
   aspect-ratio: 1 / 1;
   width: 100%;
-  background-color: var(--color-surface-alt);
-  border-radius: var(--radius-md);
   overflow: hidden;
 }
 

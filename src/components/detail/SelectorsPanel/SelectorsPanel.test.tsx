@@ -18,8 +18,12 @@ describe("SelectorsPanel", () => {
         onSelectStorage={vi.fn()}
       />,
     );
-    expect(screen.getByRole("radiogroup", { name: "Color" })).toBeInTheDocument();
-    expect(screen.getByRole("radiogroup", { name: "Storage" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("radiogroup", { name: "COLOR. PICK YOUR FAVOURITE." }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("radiogroup", { name: "STORAGE. HOW MUCH SPACE DO YOU NEED?" }),
+    ).toBeInTheDocument();
   });
 
   it("forwards color selection to onSelectColor", async () => {

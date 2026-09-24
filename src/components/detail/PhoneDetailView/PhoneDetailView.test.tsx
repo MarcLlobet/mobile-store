@@ -119,6 +119,7 @@ describe("PhoneDetailView", () => {
     renderView();
     expect(screen.getByRole("heading", { name: "Technical specifications" })).toBeInTheDocument();
     expect(screen.getByText("A17 Pro")).toBeInTheDocument();
+    expect(screen.getByText("The latest iPhone.")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Similar products" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /iPhone 15 Pro/ })).toHaveAttribute(
       "href",

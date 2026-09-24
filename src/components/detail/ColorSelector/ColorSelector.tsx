@@ -27,7 +27,7 @@ export function ColorSelector({ colors, selected, onSelect }: ColorSelectorProps
   return (
     <div className={styles.wrapper}>
       <span id={labelId} className={styles.label}>
-        Color
+        COLOR. PICK YOUR FAVOURITE.
       </span>
       <div className={styles.group} role="radiogroup" aria-labelledby={labelId}>
         {colors.map((color) => {
@@ -47,6 +47,7 @@ export function ColorSelector({ colors, selected, onSelect }: ColorSelectorProps
           );
         })}
       </div>
+      {selected && <p className={styles.selectedName}>{selected.name}</p>}
     </div>
   );
 }
