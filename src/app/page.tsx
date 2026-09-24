@@ -1,12 +1,21 @@
+import { fetchProducts } from "@/lib/api/api";
+import { PhoneListing } from "@/components/listing/PhoneListing";
+
+const LISTING_LIMIT = 20;
+
 /**
- * Placeholder — the real Listing view (grid, search, results count) is
- * Phase 1's job (see plan §4, workstream A). This stub only exists so the
- * app boots and routes correctly during Phase 0.
+ * Listing view ("/"). Server Component - under `output:'export'` this runs
+ * once at build time (SSG, not per-request SSR; see next.config.ts and the
+ * plan's "no backend + GitHub Pages" section), fetching the first 20
+ * products so the page never ships an empty first paint. Live, real-time
+ * search from here on is handled client-side by `PhoneListing`.
  */
-export default function HomePage() {
+export default async function HomePage() {
+  const initialProducts = await fetchProducts({ limit: LISTING_LIMIT, offset: 0 });
+
   return (
     <main>
-      <p>Listing view — coming in Phase 1.</p>
+      <PhoneListing initialProducts={initialProducts} />
     </main>
   );
 }
