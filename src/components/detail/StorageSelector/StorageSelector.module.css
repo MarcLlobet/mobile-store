@@ -27,7 +27,7 @@
   gap: 4px;
   min-height: 44px;
   padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
+  /* CONFIRMED — no borderRadius on either "Storage" component state (Selected=True 20617:461 / Selected=False 20605:5131): square corners. */
   border: var(--border-width-thin) solid var(--color-border-subtle);
   background-color: var(--color-surface);
   color: var(--color-text-primary);
@@ -49,10 +49,11 @@
 }
 
 .selected {
+  /* CONFIRMED — neither Storage state has a `fills` property at all (no
+     background fill either way); the only difference is the stroke
+     color (grey #CCCCCC -> black), same border width both states. No
+     filled background, no white text — matches ColorSelector exactly. */
   border-color: var(--color-black);
-  border-width: var(--border-width-thin);
-  background-color: var(--color-black);
-  color: var(--color-white);
 }
 
 .capacity {

@@ -21,7 +21,7 @@
   position: relative;
   width: 24px; /* CONFIRMED — Color component (20617:355), 24x24 both states */
   height: 24px;
-  border-radius: 2px;
+  /* CONFIRMED — no borderRadius on either Color component state: square corners. */
   border: var(--border-width-thin) solid var(--color-border-subtle); /* CONFIRMED — Selected=False stroke #CCCCCC, 1px */
   cursor: pointer;
   padding: 0;

@@ -1,16 +1,17 @@
 "use client";
 
 import { useId } from "react";
-import { Price } from "@/components/primitives/Price";
 import type { StorageOption } from "@/lib/api/types";
 import styles from "./StorageSelector.module.css";
 
 /**
  * Storage capacity selector. Same single-select radio-group pattern as
- * ColorSelector. Each option shows its own ABSOLUTE price for that capacity
- * (confirmed live-API quirk — storageOptions[].price is not a delta added to
- * basePrice), via the shared Price primitive, so the price comparison across
- * tiers is visible directly in the selector, not just after selection.
+ * ColorSelector. Options render only the capacity ("256 GB") — no price —
+ * matching the real Figma component exactly. The real-time price update
+ * the brief asks for still happens: PhoneDetailView's headline price
+ * derives from `selectedStorage.price` (the confirmed live-API quirk that
+ * storageOptions[].price is an ABSOLUTE value, not a delta over basePrice),
+ * it's just not duplicated onto every option button too.
  */
 export interface StorageSelectorProps {
   options: StorageOption[];
@@ -39,7 +40,6 @@ export function StorageSelector({ options, selected, onSelect }: StorageSelector
               onClick={() => onSelect(option)}
             >
               <span className={styles.capacity}>{option.capacity}</span>
-              <Price value={option.price} />
             </button>
           );
         })}

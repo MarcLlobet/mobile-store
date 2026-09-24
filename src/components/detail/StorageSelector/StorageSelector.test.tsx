@@ -18,12 +18,12 @@ describe("StorageSelector", () => {
     expect(screen.getAllByRole("radio")).toHaveLength(3);
   });
 
-  it("shows each option's own absolute price, not basePrice + delta", () => {
+  it("renders only the capacity per option — no price (matches the real Figma component)", () => {
     render(<StorageSelector options={options} selected={null} onSelect={vi.fn()} />);
-    const eur = (value: number) => `${Math.round(value)} EUR`;
-    expect(screen.getByText(eur(1319))).toBeInTheDocument();
-    expect(screen.getByText(eur(1449))).toBeInTheDocument();
-    expect(screen.getByText(eur(1699))).toBeInTheDocument();
+    expect(screen.getByText("256GB")).toBeInTheDocument();
+    expect(screen.getByText("512GB")).toBeInTheDocument();
+    expect(screen.getByText("1TB")).toBeInTheDocument();
+    expect(screen.queryByText(/EUR/)).not.toBeInTheDocument();
   });
 
   it("marks the matching option as checked", () => {
