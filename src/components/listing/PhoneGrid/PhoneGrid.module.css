@@ -7,7 +7,7 @@
      anything in between too. (340px only fits 4 columns at 1920px.) */
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: var(--space-3);
+  gap: 0;
   list-style: none;
   margin: 0;
   padding: 0;

@@ -2,7 +2,6 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { useDebouncedValue } from "@/lib/utils/useDebouncedValue";
-import { Icon } from "@/components/primitives/Icon";
 import styles from "./SearchBar.module.css";
 
 export interface SearchBarProps {
@@ -46,7 +45,6 @@ export function SearchBar({
       <label htmlFor={inputId} className={styles.label}>
         {label}
       </label>
-      <Icon name="search" size={18} ariaHidden className={styles.icon} />
       <input
         id={inputId}
         type="search"
