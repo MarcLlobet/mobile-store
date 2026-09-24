@@ -1,10 +1,12 @@
 .grid {
   /* auto-fill instead of hardcoded per-breakpoint column counts: at the
-     three CONFIRMED Figma frame widths (393/834/1920, tokens.css) this
-     produces the same 1/2/5 columns the design uses, without pinning to
-     those exact widths — it scales cleanly for anything in between too. */
+     three CONFIRMED Figma frame widths (393/834/1920, tokens.css), once the
+     page's own padding (--space-2/--space-header-x) and this gap are
+     subtracted, a 320px track produces the same 1/2/5 columns the design
+     uses, without pinning to those exact widths — it scales cleanly for
+     anything in between too. (340px only fits 4 columns at 1920px.) */
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: var(--space-3);
   list-style: none;
   margin: 0;

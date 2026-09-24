@@ -2,4 +2,6 @@
   margin: 0;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }

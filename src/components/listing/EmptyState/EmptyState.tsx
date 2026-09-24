@@ -7,9 +7,9 @@ export interface EmptyStateProps {
 
 /**
  * Shown when a search returns zero results (brief §1 / Figma "Results"
- * state with no matches). `ResultsCount` already announces "No results
- * found" via its own `aria-live` region, so this block is purely visual and
- * does not repeat that announcement.
+ * state with no matches). `ResultsCount` already announces "No results" via
+ * its own `aria-live` region, so this block is purely visual and does not
+ * repeat that announcement.
  */
 export function EmptyState({ query }: EmptyStateProps) {
   return (

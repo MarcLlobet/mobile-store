@@ -69,10 +69,7 @@ export function PhoneListing({ initialProducts }: PhoneListingProps) {
   }, [query]);
 
   return (
-    <section className={styles.listing} aria-labelledby="listing-heading">
-      <h1 id="listing-heading" className={styles.heading}>
-        Phones
-      </h1>
+    <section className={styles.listing}>
       <SearchBar onSearch={handleSearch} />
       <ResultsCount count={products.length} isLoading={isLoading} />
       {hasError ? (

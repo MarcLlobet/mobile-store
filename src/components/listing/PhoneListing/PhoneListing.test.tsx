@@ -40,7 +40,7 @@ describe("PhoneListing", () => {
 
   it("shows the results count for the initial products", () => {
     render(<PhoneListing initialProducts={initialProducts} />);
-    expect(screen.getByText("2 results found")).toBeInTheDocument();
+    expect(screen.getByText("2 results")).toBeInTheDocument();
   });
 
   it("re-fetches from the API and renders the filtered results when the user searches", async () => {
@@ -68,7 +68,7 @@ describe("PhoneListing", () => {
     await waitFor(() => {
       expect(screen.getByText("No phones match “zzzz”.")).toBeInTheDocument();
     });
-    expect(screen.getByText("No results found")).toBeInTheDocument();
+    expect(screen.getByText("No results")).toBeInTheDocument();
   });
 
   it("shows an error message if the search request fails", async () => {
