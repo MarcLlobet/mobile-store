@@ -16,6 +16,11 @@
   display: flex;
   gap: var(--space-3);
   overflow-x: auto;
+  /* Flex items default to min-width:auto, i.e. "don't shrink below content
+     size" — without this, the row of fixed-width items forces this list
+     (and every flex/grid ancestor up to <body>) to grow to their combined
+     width instead of clipping/scrolling within the viewport. */
+  min-width: 0;
   margin: 0;
   padding: 0 0 var(--space-2) 0;
   list-style: none;
