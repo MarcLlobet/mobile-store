@@ -39,7 +39,9 @@ async function fetchAScreenshotProduct() {
     headers: { "x-api-key": API_KEY },
   });
   if (!detailResponse.ok) {
-    throw new Error(`Could not fetch product ${id} detail to seed the cart (status ${detailResponse.status})`);
+    throw new Error(
+      `Could not fetch product ${id} detail to seed the cart (status ${detailResponse.status})`,
+    );
   }
   return detailResponse.json();
 }

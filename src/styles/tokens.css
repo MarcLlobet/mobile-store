@@ -101,15 +101,13 @@
   --border-width-hairline: 0.5px; /* CONFIRMED — Smartphone card stroke weight */
   --border-width-thin: 1px; /* CONFIRMED — SDS Button / Cart item component-set stroke weight */
 
-  /* Breakpoints (px). The Desktop/Tablet/Mobile canvas SECTIONS were
-     reached (20620:9054 / 20669:2483 / 20669:2484) but only returned
-     section-wrapper bounding sizes, not the individual screen frame widths,
-     before the rate limit hit — so these are PLACEHOLDER, using
-     conventional desktop/tablet/mobile viewport widths. The Header instance
-     itself was CONFIRMED at a 1920px designed width at desktop. */
-  --breakpoint-desktop: 1920px; /* CONFIRMED — Header instance designedWidth */
-  --breakpoint-tablet: 768px; /* PLACEHOLDER */
-  --breakpoint-mobile: 375px; /* PLACEHOLDER */
+  /* Breakpoints (px). CONFIRMED via mcp__figma__download_figma_images on the
+     final Desktop/Tablet/Mobile design frames (20620:7013 / 20620:9064 /
+     20655:2811), which returns each frame's real rendered pixel dimensions
+     directly — no longer a placeholder guess. */
+  --breakpoint-desktop: 1920px; /* CONFIRMED */
+  --breakpoint-tablet: 834px; /* CONFIRMED */
+  --breakpoint-mobile: 393px; /* CONFIRMED */
 
   /* Layout */
   --header-height: 80px; /* CONFIRMED — Header instance designedHeight */

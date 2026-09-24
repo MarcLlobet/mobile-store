@@ -11,6 +11,11 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-base);
+  /* Figma's SDS Button is always rendered uppercase with tracked letter-
+     spacing ("AÑADIR" / "PAY" / "CONTINUE SHOPPING") — one shared change
+     here covers every Button consumer (AddToCartButton, CartSummary, ...). */
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   transition:
     background-color 0.15s ease,
     color 0.15s ease,

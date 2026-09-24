@@ -29,10 +29,7 @@ describe("ProductTile", () => {
 
   it("renders the formatted base price", () => {
     render(<ProductTile {...product} />);
-    const formatted = new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR" }).format(
-      1319,
-    );
-    expect(screen.getByText(formatted)).toBeInTheDocument();
+    expect(screen.getByText("1319 EUR")).toBeInTheDocument();
   });
 
   it("links to /phones/[id]", () => {

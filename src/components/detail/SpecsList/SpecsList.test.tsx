@@ -18,11 +18,7 @@ describe("SpecsList", () => {
     render(<SpecsList specs={specs} basePrice={1319} />);
 
     expect(screen.getByText("Base price")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR" }).format(1319),
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText("1319 EUR")).toBeInTheDocument();
 
     for (const value of Object.values(specs)) {
       expect(screen.getByText(value)).toBeInTheDocument();

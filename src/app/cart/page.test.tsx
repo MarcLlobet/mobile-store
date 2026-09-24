@@ -52,7 +52,7 @@ function renderWithCart(items: NewCartItem[] = []) {
 }
 
 function formatEUR(value: number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR" }).format(value);
+  return `${Math.round(value)} EUR`;
 }
 
 describe("CartPage", () => {

@@ -25,10 +25,7 @@ describe("CartItem", () => {
     expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
     expect(screen.getByText("Apple")).toBeInTheDocument();
     expect(screen.getByText("Color: Space Black · Storage: 256GB")).toBeInTheDocument();
-    const formatted = new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR" }).format(
-      1319,
-    );
-    expect(screen.getByText(formatted)).toBeInTheDocument();
+    expect(screen.getByText("1319 EUR")).toBeInTheDocument();
   });
 
   it("normalizes http image urls to https", () => {

@@ -79,7 +79,7 @@ const iPhoneDetail: ProductDetail = {
 };
 
 function eur(value: number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR" }).format(value);
+  return `${Math.round(value)} EUR`;
 }
 
 type Screen = "listing" | "detail" | "cart";

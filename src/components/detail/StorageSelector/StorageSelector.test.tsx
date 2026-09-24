@@ -18,8 +18,7 @@ describe("StorageSelector", () => {
 
   it("shows each option's own absolute price, not basePrice + delta", () => {
     render(<StorageSelector options={options} selected={null} onSelect={vi.fn()} />);
-    const eur = (value: number) =>
-      new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR" }).format(value);
+    const eur = (value: number) => `${Math.round(value)} EUR`;
     expect(screen.getByText(eur(1319))).toBeInTheDocument();
     expect(screen.getByText(eur(1449))).toBeInTheDocument();
     expect(screen.getByText(eur(1699))).toBeInTheDocument();

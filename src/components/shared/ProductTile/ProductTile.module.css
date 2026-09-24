@@ -19,7 +19,8 @@
   aspect-ratio: 1 / 1;
   width: 100%;
   overflow: hidden;
-  background-color: var(--color-surface-alt);
+  /* Figma renders every product photo on plain white, not a grey tile. */
+  background-color: var(--color-surface);
 }
 
 .image {
@@ -51,6 +52,8 @@
 .name {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-regular);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

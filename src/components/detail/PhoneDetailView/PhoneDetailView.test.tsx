@@ -55,8 +55,7 @@ beforeEach(() => {
   window.localStorage.clear();
 });
 
-const eur = (value: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR" }).format(value);
+const eur = (value: number) => `${Math.round(value)} EUR`;
 
 describe("PhoneDetailView", () => {
   it("renders name and brand", () => {

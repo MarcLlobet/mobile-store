@@ -24,10 +24,7 @@ describe("CartSummary", () => {
   it("renders the formatted total price associated with 'Total'", () => {
     render(<CartSummary totalPrice={2818} />);
     expect(screen.getByText("Total")).toBeInTheDocument();
-    const formatted = new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR" }).format(
-      2818,
-    );
-    expect(screen.getByText(formatted)).toBeInTheDocument();
+    expect(screen.getByText("2818 EUR")).toBeInTheDocument();
   });
 
   it("navigates to / when Continue shopping is clicked", async () => {
