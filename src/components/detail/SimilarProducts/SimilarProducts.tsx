@@ -25,7 +25,7 @@ export function SimilarProducts({ products }: SimilarProductsProps) {
   return (
     <section aria-labelledby={headingId} className={styles.section}>
       <h2 id={headingId} className={styles.heading}>
-        Similar products
+        Similar items
       </h2>
       <ul className={styles.list}>
         {products.map((product, index) => (

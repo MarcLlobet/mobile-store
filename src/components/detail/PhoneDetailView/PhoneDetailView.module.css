@@ -36,7 +36,8 @@
 
 .brand {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-light); /* CONFIRMED — no bold anywhere in this design */
   color: var(--color-text-secondary);
   text-transform: uppercase;
   margin: 0;
@@ -44,15 +45,18 @@
 
 .name {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg); /* CONFIRMED — style_1649381d, 20px (not 32px) */
+  font-weight: var(
+    --font-weight-light
+  ); /* CONFIRMED — every sampled Figma text style is weight 300; there is no bold anywhere in this design */
+  text-transform: uppercase; /* CONFIRMED — style_1649381d textCase: UPPER */
   color: var(--color-text-primary);
   margin: 0;
 }
 
 .price {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-sm); /* CONFIRMED — style_a68ff54b, 14px (not 24px) */
+  font-weight: var(--font-weight-light); /* CONFIRMED */
   margin: 0;
 }

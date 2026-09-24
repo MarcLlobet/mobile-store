@@ -30,7 +30,7 @@ describe("SimilarProducts", () => {
 
   it("renders a labelled section heading", () => {
     render(<SimilarProducts products={products} />);
-    expect(screen.getByRole("heading", { name: "Similar products" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Similar items" })).toBeInTheDocument();
   });
 
   it("renders nothing when there are no similar products", () => {

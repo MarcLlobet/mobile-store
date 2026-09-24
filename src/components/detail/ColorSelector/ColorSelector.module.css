@@ -7,7 +7,7 @@
 .label {
   font-family: var(--font-family-base);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-light); /* CONFIRMED — no bold anywhere in this design */
   color: var(--color-text-primary);
 }
 

@@ -6,8 +6,8 @@
 
 .heading {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg); /* CONFIRMED — style_60414b43, same as SpecsList's heading */
+  font-weight: var(--font-weight-light); /* CONFIRMED — no bold anywhere in this design */
   color: var(--color-text-primary);
   text-transform: uppercase;
   letter-spacing: 0.04em;

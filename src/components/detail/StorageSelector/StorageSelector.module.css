@@ -7,7 +7,7 @@
 .label {
   font-family: var(--font-family-base);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-light); /* CONFIRMED — no bold anywhere in this design */
   color: var(--color-text-primary);
 }
 
@@ -49,6 +49,6 @@
 }
 
 .capacity {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xs); /* CONFIRMED — style_799d6c11, 12px (not 14px) */
+  font-weight: var(--font-weight-light); /* CONFIRMED — no bold anywhere in this design */
 }

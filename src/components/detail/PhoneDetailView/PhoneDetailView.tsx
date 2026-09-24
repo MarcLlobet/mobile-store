@@ -65,14 +65,18 @@ export function PhoneDetailView({ product }: PhoneDetailViewProps) {
             selectedColor={selectedColor}
             selectedStorage={selectedStorage}
           />
-          <SpecsList
-            brand={product.brand}
-            name={product.name}
-            specs={product.specs}
-            description={product.description}
-          />
         </div>
       </div>
+      {/* CONFIRMED structure: on the real Figma frame, "Specs" is a
+          full-width sibling of "Product info + Img" (same level as
+          "Similar items"), not nested inside the narrow info column next
+          to the image. */}
+      <SpecsList
+        brand={product.brand}
+        name={product.name}
+        specs={product.specs}
+        description={product.description}
+      />
       <SimilarProducts products={product.similarProducts} />
     </main>
   );
