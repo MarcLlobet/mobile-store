@@ -30,9 +30,9 @@
      width instead of clipping/scrolling within the viewport. */
   min-width: 0;
   margin: 0;
-  /* Compensates .item's matching negative margin below (see .item
-     comment), so the row's outer left edge stays put. */
-  padding: 0 0 0 var(--border-width-hairline);
+  /* No compensating padding: only `.item + .item` is pulled, so the first
+     card already starts flush with the content edge. */
+  padding: 0;
   list-style: none;
   scroll-snap-type: x proximity;
   /* Hide the native scrollbar — replaced by .scrollTrack/.scrollThumb below,
@@ -45,12 +45,48 @@
 }
 
 .item {
+  /* CONFIRMED — Figma card box is 344x344 here (377x377 at tablet). The width
+     carries +1 because `.item + .item` pulls each card 1px left to merge the
+     shared border, so the *pitch* — the visible card — lands on 344. The
+     height gets no such pull (single row, nothing overlaps vertically), so it
+     is the Figma number exactly. */
+  width: 345px;
+  height: 344px;
   flex: 0 0 auto;
-  width: 200px;
+  /* CONFIRMED — the Figma "Smartphone card" is 344px wide here, the same
+     width it has in the listing grid (measured on both the desktop and
+     mobile detail frames in design/figma-reference/). It was 200px, which
+     is why the same card looked a different size in this row than in the
+     grid. Fixed rather than fluid: on the mobile frame the card stays 344
+     against a 361px content width, so the next card peeks in. */
   scroll-snap-align: start;
-  /* Same double-hairline-border fix as PhoneGrid.module.css's .item —
-     a single horizontal row here, so only the left margin is needed. */
-  margin-left: calc(-1 * var(--border-width-hairline));
+  /* Merges this card's left border onto the previous card's right border so
+     only one line paints between them.
+     The pull is a whole pixel, NOT `-1 * --border-width-hairline`. A 0.5px
+     border is rounded UP to a full device pixel when it paints at 1x, so a
+     0.5px pull only half-covers it: the leftover half-pixel lands on a
+     different device pixel for every other card, and the seams alternate
+     between one and two pixels — which reads as the cards being different
+     widths. Pulling a whole pixel also keeps every card's left edge on an
+     integer x, so nothing is left to round inconsistently. */
+}
+
+@media (min-width: 834px) {
+  .item {
+    width: 378px;
+    height: 377px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .item {
+    width: 345px;
+    height: 344px;
+  }
+}
+
+.item + .item {
+  margin-left: -1px;
 }
 
 .scrollTrack {

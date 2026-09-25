@@ -1,17 +1,39 @@
 .wrapper {
-  position: relative;
-  aspect-ratio: 510 / 630; /* CONFIRMED — EL-e4c6e429 "Img" frame, 510x630 (not a 1:1 square) */
   width: 100%;
-  max-width: 510px; /* CONFIRMED */
-  overflow: hidden;
+  max-width: 510px; /* CONFIRMED — EL-e4c6e429 "Img" frame width */
+  box-sizing: border-box;
+  padding: var(--space-4);
+}
+
+/* All color variants share a single grid cell, so the box is as tall as the
+   tallest photo and selecting a color never reflows the page. `start` keeps
+   the top-aligned hero (grid's default `stretch` would squash a photo whose
+   intrinsic ratio differs from the tallest one). */
+.stack {
+  display: grid;
+  grid-template-areas: "stack";
+  align-items: start;
 }
 
 .image {
-  object-fit: contain;
-  /* The box's aspect-ratio (510/630) is the confirmed Figma frame ratio,
-     but a given phone photo's own intrinsic ratio can differ slightly —
-     object-fit:contain would otherwise center the leftover space
-     top+bottom. Anchor it to the top instead ("flex-start" for images). */
-  object-position: top;
-  padding: var(--space-4);
+  grid-area: stack;
+  display: block;
+  width: 100%;
+  height: auto; /* follows the real photo's own aspect ratio, not a forced box */
+  opacity: 0;
+  /* Hidden variants are loaded-but-inert: they must not catch clicks or
+     drags meant for the visible photo. */
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+
+.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image {
+    transition: none;
+  }
 }

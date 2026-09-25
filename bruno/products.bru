@@ -1,0 +1,21 @@
+meta {
+  name: products
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{NEXT_PUBLIC_API_BASE_URL}}/products
+  body: none
+  auth: apikey
+}
+
+auth:apikey {
+  key: x-api-key
+  value: {{NEXT_PUBLIC_API_KEY}}
+  placement: header
+}
+
+settings {
+  encodeUrl: true
+}

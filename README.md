@@ -77,6 +77,109 @@ are served from a sub-path of `github.io`, not the domain root) with
 default Jekyll processing otherwise ignores the `_next/` output folder
 because it starts with `_`).
 
+### Data fetching: TanStack (React) Query over a direct API client
+
+There are two layers, and the split matters:
+
+- `lib/api/api.ts` is a thin **transport**: it builds the request, attaches the
+  `x-api-key` header, bounds it with a timeout, retries a dropped/5xx request
+  with a backoff (Render free-tier cold starts), and turns a non-OK response
+  into a typed `ApiError` carrying the API's own `{ error, message }`. It has
+  no cache and no React in it, so the same function runs at build time and in
+  the browser.
+- `lib/api/queries.ts` is the **cache contract**: one `queryOptions` per
+  endpoint, with the query keys everything else shares.
+
+Each route's Server Component prefetches into a throwaway `QueryClient` at
+build time and serializes it into `<HydrationBoundary>`; the Client Component
+below reads the same key with `useQuery`. Because the keys match (and
+`staleTime` keeps hydrated data fresh), the browser renders the build's data
+without re-requesting it on mount — the static export still ships fully
+populated HTML — and from then on React Query owns every request: one cache
+entry per `search` value, deduplicated, with `keepPreviousData` holding the
+current grid on screen while the next search resolves. Navigating
+listing → detail → back is served from that cache, not the network.
+
+There are no Route Handlers in between (`output: 'export'` has no server to
+run them), so the `queryFn` calls the external API directly from both sides.
+`src/lib/query/` holds the provider and the client factory — one client per
+server render, one long-lived client in the browser.
+
+### Colour variants: prefetched, pre-decoded, previewed in CSS
+
+The Detail view never fetches an image in response to an interaction. Every
+colour variant's `<img>` is in the statically exported HTML with
+`loading="eager"`, so the browser's preload scanner requests the whole set
+during parse, before any JavaScript runs — the selected one at
+`fetchPriority="high"`, the rest at `low`, so cache-warming can't delay LCP.
+The hidden variants are `opacity: 0`, not `display: none`, so they are painted
+(and therefore decoded); `PhoneHero` also calls `img.decode()` on each one to
+make that a guarantee rather than a browser behaviour.
+
+Previewing a colour on hover is then **pure CSS, with no React state at all**.
+A `:has()` rule in `PhoneDetailView.module.css` reads the hovered swatch and
+flips which already-decoded image is opaque:
+
+```css
+.layout:has([data-color-index="3"]:hover) [data-variant-index="3"] {
+  opacity: 1;
+}
+```
+
+`.layout` is the nearest ancestor of both the swatches and the hero, which is
+why the rules live there; they match `data-` attributes rather than class names
+because CSS Module names are hashed per file and wouldn't resolve across them.
+The pairing is positional — `PhoneDetailView` builds the swatch list and the
+variant list from `product.colorOptions` in order and never dedupes, so index
+_n_ means the same colour on both sides. That is also the one part a unit test
+can check here, and it does; the rule itself needs a real browser, since jsdom
+can't evaluate `:has()` with `:hover`.
+
+Doing it in CSS means hovering triggers no render, no handler and no state, so
+a preview structurally cannot leak into what gets added to the cart, and the
+hero's `alt` stays pinned to the selected colour instead of churning on every
+pointer move. The whole block sits behind
+`@media (hover: hover) and (pointer: fine)` so a tap can't leave a swatch stuck
+in a phantom `:hover`.
+
+### One state for "selected", seeded from the cart
+
+`PhoneDetailView` holds exactly one piece of state — `chosen`, what the user
+picked on this visit. Everything rendered is derived from it, per field:
+
+```
+selection  =  chosen  ->  the cart's most recent line for this phone  ->  null
+heroColor  =  selection.color  ->  the first colour
+```
+
+so the persisted choice and the live one are the same value rather than two
+states kept in sync. Consequences worth knowing:
+
+- **The cart is read through `useCart()`, never `localStorage` directly.** This
+  route is prerendered at build time, so reading storage during render would
+  make the server HTML and the first client render disagree — a hydration
+  warning, which the brief's clean-console requirement forbids. `CartProvider`
+  already does that read exactly once, after mount.
+- **Showing a colour is not selecting one.** Both fields start `null`, so
+  Add-to-cart stays gated on the pair, exactly as the brief asks. The hero
+  still needs an image though, so `heroColor` derives its own fallback to the
+  first option — that fallback never reaches `selection`, the swatches'
+  `aria-checked`, or the cart.
+- **The colour-name label can't shift the layout.** It always renders a name
+  (the selected one, or the first colour as a stand-in) so its line box exists
+  from the first paint, and CSS hides it with `visibility: hidden` while no
+  swatch is `aria-checked` — which also keeps it out of the accessibility tree,
+  so no colour is announced as chosen before one is. That reads the
+  `aria-checked` the swatches already publish, so it costs no extra prop, state
+  or modifier class.
+- **A cart line does select**, both fields, so returning to a phone you already
+  added shows it checked and the button live (you did choose it before).
+- **A stale cart line can't resurrect a dead variant.** Colour and storage are
+  looked up by name/capacity against the _current_ options, so a discontinued
+  one falls through to the default.
+- **Picking one field promotes the whole derived selection into state**, so the
+  field the user didn't touch keeps whatever it had resolved to.
+
 ### Why the API key ships in the client bundle
 
 The brief requires an `x-api-key` header on every request, and requires
@@ -101,8 +204,8 @@ in context.
 ```
 src/
 ├─ app/                      # Next.js App Router routes
-│  ├─ layout.tsx              # <CartProvider><Header/>{children}</CartProvider>, global font/reset
-│  ├─ page.tsx / loading.tsx  # "/" — Listing (Server Component: SSG-fetches first 20 at build)
+│  ├─ layout.tsx              # <QueryProvider><CartProvider><Header/>…, global font/reset
+│  ├─ page.tsx / loading.tsx  # "/" — Listing (Server Component: prefetches + hydrates first 20 at build)
 │  ├─ phones/[id]/            # Detail — generateStaticParams() over all product ids
 │  ├─ cart/page.tsx           # "/cart" — pure client CartContext consumer
 │  └─ integration.test.tsx    # Listing -> Detail -> Cart walk-through (see Testing)
@@ -111,14 +214,28 @@ src/
 │  ├─ shared/ProductTile/     # reused by the listing grid AND Detail's "Similar products"
 │  ├─ layout/Header/          # global nav bar, reads useCart() itself
 │  ├─ listing/                # SearchBar, ResultsCount, PhoneGrid, EmptyState
-│  ├─ detail/                 # PhoneHero, Color/StorageSelector, SpecsList, AddToCartButton, SimilarProducts
+│  ├─ detail/                 # PhoneDetail (React Query boundary), PhoneHero, Color/StorageSelector, SpecsList, AddToCartButton, SimilarProducts
 │  └─ cart/                   # CartList, CartItem, CartSummary, EmptyCart
 ├─ context/CartContext.tsx    # the only piece of app state; localStorage-persisted
 ├─ lib/
-│  ├─ api/{types,api,transform}.ts  # direct-to-external-API client + documented quirk workarounds
+│  ├─ api/{types,api,transform}.ts  # direct-to-external-API transport + documented quirk workarounds
+│  ├─ api/queries.ts                # React Query keys + queryOptions (the shared cache contract)
+│  ├─ query/                        # QueryClient factory + the client-side QueryProvider
 │  └─ utils/useDebouncedValue.ts
 ├─ styles/{tokens.css,reset.css}    # CSS custom properties + a small reset
+├─ test/                            # test-only helpers (renderWithQuery, request tracking)
 └─ types/cart.ts
+
+mocks/                    # recorded API responses + the MSW handlers that serve them
+├─ products.json          # GET /products
+├─ products_id.json       # GET /products/{id}
+├─ not_found.json         # 404 body
+├─ invalid_key.json       # 401 body
+├─ fixtures.ts            # typed re-exports; `satisfies` pins them to lib/api/types.ts
+├─ handlers.ts            # MSW handlers (auth + search/limit/offset) and failure scenarios
+└─ server.ts              # setupServer() used by vitest.setup.ts
+
+bruno/                    # Bruno collection used to record the responses above
 ```
 
 Every component folder follows the same convention: `Component.tsx`,
@@ -154,8 +271,32 @@ pnpm test:watch    # vitest, watch mode
 pnpm exec vitest run --coverage   # same as CI's blocking gate, with a coverage report
 ```
 
-Vitest + React Testing Library, `jsdom` environment. As of this writing: 29
-test files, 114 tests, ~99% statement coverage. What's covered:
+Vitest + React Testing Library, `jsdom` environment, **MSW** at the network
+boundary. As of this writing: 33 test files, 158 tests.
+
+### The network is mocked; the app is not
+
+No test stubs `fetch`, and no test mocks `lib/api/api.ts`. Instead
+`vitest.setup.ts` starts the MSW server in `mocks/server.ts` for the whole
+suite, with `onUnhandledRequest: "error"` so a request no handler covers fails
+the test loudly rather than escaping to the real network.
+
+What MSW serves are **recorded responses**, not invented ones: the JSON files
+in `mocks/` were captured from the live API with the Bruno collection in
+`bruno/`, and `mocks/fixtures.ts` asserts each one `satisfies` the matching
+type in `lib/api/types.ts` — so a change to the recorded payload that no
+longer matches the types is a compile error, and a type that drifts from the
+real payload can't pass unnoticed.
+
+The handlers are a faithful fake rather than a lookup table: they check the
+`x-api-key` header, and they implement `search`/`limit`/`offset` the way the
+real endpoint does. So "searching for iphone returns the two iPhones" is
+decided by the same server-side filtering the app depends on, and the real
+request-building, retry and error-parsing code in `api.ts` runs in every test.
+Failure modes are opt-in per test via `server.use(...scenarios.x())` —
+`invalidApiKey`, `productNotFound`, `serverError`, `networkError`.
+
+What's covered:
 
 - **`CartContext`**: empty initial state, `addItem`'s exact `cartItemId`
   shape, no-merge-by-design, `removeItem`, `itemCount`/`totalPrice`
@@ -163,26 +304,59 @@ test files, 114 tests, ~99% statement coverage. What's covered:
   storage never throws.
 - **Primitives**: disabled-button blocks `onClick`, icon-per-`name`,
   zero-count badge renders nothing, price formatting.
-- **Listing**: debounced search calls the API with the right params,
-  results-count text/`aria-live`, the grid renders every field with no
-  duplicate-key warning against the _known_ duplicate-id fixture, the empty
-  state, the error state, skeleton loading.
-- **Detail**: color click swaps the hero image `src`; storage click updates
-  the displayed price to that tier's absolute price (not `basePrice + delta`);
-  "Add to cart" stays disabled until both are picked, then calls `addItem`
-  exactly once with the right payload; specs render all 8 fields; similar
-  products render with correct hrefs.
+- **The API contract** (`lib/api/api.test.ts`): the recorded list and detail
+  shapes, the `x-api-key` header, server-side `search` (by name and by brand,
+  case-insensitively — the catalog really does contain both `Xiaomi` and
+  `XIAOMI`), `limit`/`offset` paging, a 404 resolving to `null` rather than
+  throwing, a 401 surfacing as an `ApiError` carrying `UNAUTHORIZED`, and the
+  5xx retry path.
+- **The cache contract** (`lib/api/queries.test.ts`): that the key a page
+  prefetches is byte-for-byte the key its Client Component reads, including
+  normalized defaults, and that a server-side prefetch survives
+  dehydrate → hydrate. A mismatch here is invisible in the rendered output but
+  silently doubles every request, so it gets its own tests.
+- **Listing**: renders the prefetched page from the hydrated cache **with no
+  request on mount**, searches through the API and renders what the API
+  actually returned, keeps the previous grid on screen mid-search, serves a
+  repeated search from cache without a second request, results-count
+  text/`aria-live`, the empty state, the error state after the retries are
+  exhausted, an invalid key reported as a failure (not as an empty catalog),
+  and no duplicate-key warning against the _known_ duplicate-id data.
+- **Detail selection and hover preview**: that the hero shows the first colour
+  while nothing is selected, and that the name label still renders its line so
+  selecting cannot shift the layout; that Add-to-cart is gated on both fields;
+  that a cart line for this phone
+  seeds both fields, that the _most recent_ line wins, and that a line naming a
+  discontinued variant is ignored; that picking one field keeps the other. For
+  the hover preview, the `:has()` rule itself needs a real browser, so the
+  tests pin the positional `data-color-index`/`data-variant-index` pairing it
+  matches on, and assert that hovering changes nothing in React. `PhoneHero`
+  additionally asserts every variant is rendered, pre-decoded, and that
+  changing the active variant reuses the **same DOM nodes** rather than
+  remounting — the guarantee that a swap is an opacity flip, never a refetch.
+- **Detail**: colour click swaps the hero image `src`; storage click updates
+  the displayed price to that tier's absolute price — exercised against the
+  recorded product whose cheapest tier (256 GB, 1229) is _below_ `basePrice`
+  (1329), which a `basePrice + delta` reading would get wrong; the hero comes
+  from `colorOptions` because the recorded detail response has no top-level
+  `imageUrl`; "Add to cart" stays disabled until both are picked, then calls
+  `addItem` exactly once with the right payload; specs render all 8 fields;
+  similar products render with correct hrefs. `PhoneDetail`, the React Query
+  boundary, additionally covers a cold cache, a since-deleted product (404)
+  and a failed request.
 - **Cart**: every item field renders, remove calls `removeItem` and the row
   disappears, the total recalculates, the empty state appears at 0 items,
   "Continue shopping" navigates to `/` from both the populated and the empty
   state.
 - **`src/app/integration.test.tsx`**: the one true end-to-end walk across all
-  three views sharing a single `CartProvider` instance — search the listing,
+  three views sharing a single `CartProvider` **and** a single
+  `QueryClientProvider` — search the listing,
   click a card, land on the exact product's Detail page, select color +
   storage, add to cart, switch to the Cart view and verify the line item has
   the _selected_ color/storage/price (not defaults), remove it, and see the
-  empty state. This is the seam three independently-built view "workstreams"
-  can't verify on their own.
+  empty state. A second case walks back to the listing and asserts the catalog
+  came from the shared query cache rather than a fresh request. This is the
+  seam three independently-built view "workstreams" can't verify on their own.
 - **Storybook** is the manual/visual agnosticism check, not a Vitest
   replacement: every component renders standalone in its own story, with any
   app-state dependency (router, cart) made explicit via a decorator.
@@ -241,11 +415,27 @@ The catalog API (`https://prueba-tecnica-api-tienda-moviles.onrender.com`,
 few load-bearing quirks that are handled deliberately in code — a reviewer
 should read the following as documented, tested behavior, not bugs:
 
+Every one of them is pinned to a recorded response in `mocks/` and exercised
+by the test suite through MSW, so they can't silently stop being true.
+
 - **`storageOptions[].price` is the absolute price for that capacity**, not a
-  delta added to `basePrice` (verified live: iPhone 15 Pro Max 256GB price
-  1319 == `basePrice` 1319; 512GB = 1449; 1TB = 1699). The Detail view's
-  "real-time price update" simply displays `selectedStorage.price` directly
-  — see `StorageSelector` and `PhoneDetailView`.
+  delta added to `basePrice` — and it can be _lower_ than `basePrice`
+  (recorded: Galaxy S24 Ultra `basePrice` 1329, but 256 GB = 1229, 512 GB =
+  1329, 1 TB = 1529). The Detail view's "real-time price update" simply
+  displays `selectedStorage.price` directly — see `StorageSelector` and
+  `PhoneDetailView`.
+- **`GET /products/{id}` returns no top-level `imageUrl`.** Only the listing
+  shape carries one. Every image on the Detail route therefore comes from
+  `colorOptions[].imageUrl`, which is why `ProductDetail` deliberately does
+  _not_ extend `ProductListItem` in `lib/api/types.ts`.
+- **Brand casing is inconsistent** — the catalog contains both `Xiaomi` and
+  `XIAOMI` — so any brand matching (including the API's own `search`) has to
+  be case-insensitive.
+- **Two differently-named colours can share one photo.** `PhoneHero` therefore
+  addresses variants by colour _name_, never by image URL: deduping by URL
+  would collapse the pair, so previewing the second colour would show the
+  first one's image. Two variants with the same `src` render as two `<img>`
+  elements and the browser coalesces them into one request.
 - **Color selection has no price effect.** `colorOptions` only carries
   `name`/`hexCode`/`imageUrl`; it swaps the hero image and nothing else.
 - **The live `/products` listing can contain duplicate `id`s** (confirmed:

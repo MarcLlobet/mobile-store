@@ -8,6 +8,7 @@ import "@/styles/reset.css";
 import "@/styles/tokens.css";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+import { QueryProvider } from "@/lib/query";
 import { Header } from "@/components/layout/Header";
 
 export const metadata: Metadata = {
@@ -19,10 +20,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <CartProvider>
-          <Header />
-          {children}
-        </CartProvider>
+        {/* QueryProvider is outermost so every route's <HydrationBoundary>
+            hydrates into the same browser cache — that shared cache is what
+            makes listing -> detail -> back instant. */}
+        <QueryProvider>
+          <CartProvider>
+            <Header />
+            {children}
+          </CartProvider>
+        </QueryProvider>
       </body>
     </html>
   );

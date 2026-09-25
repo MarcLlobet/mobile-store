@@ -21,7 +21,9 @@ export default function Loading() {
         <ul className={styles.grid} role="list">
           {Array.from({ length: SKELETON_TILE_COUNT }, (_, index) => (
             <li key={index}>
-              <Skeleton height={220} radius={8} />
+              {/* Height comes from the li, which carries the responsive Figma
+                  card box — see loading.module.css. */}
+              <Skeleton height="100%" radius={8} />
             </li>
           ))}
         </ul>

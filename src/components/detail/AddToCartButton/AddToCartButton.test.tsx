@@ -42,28 +42,28 @@ beforeEach(() => {
 describe("AddToCartButton", () => {
   it("is disabled when neither color nor storage is selected", () => {
     renderWithCart({});
-    expect(screen.getByRole("button", { name: "Add to cart" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Añadir" })).toBeDisabled();
   });
 
   it("is disabled when only color is selected", () => {
     renderWithCart({ selectedColor: color });
-    expect(screen.getByRole("button", { name: "Add to cart" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Añadir" })).toBeDisabled();
   });
 
   it("is disabled when only storage is selected", () => {
     renderWithCart({ selectedStorage: storage });
-    expect(screen.getByRole("button", { name: "Add to cart" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Añadir" })).toBeDisabled();
   });
 
   it("is enabled once both color and storage are selected", () => {
     renderWithCart({ selectedColor: color, selectedStorage: storage });
-    expect(screen.getByRole("button", { name: "Add to cart" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Añadir" })).toBeEnabled();
   });
 
   it("calls addItem once with the exact expected payload, normalizing the image url", async () => {
     renderWithCart({ selectedColor: color, selectedStorage: storage });
 
-    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await userEvent.click(screen.getByRole("button", { name: "Añadir" }));
 
     expect(screen.getByTestId("cart-count")).toHaveTextContent("1");
     const items = JSON.parse(screen.getByTestId("cart-items").textContent ?? "[]");
@@ -77,12 +77,5 @@ describe("AddToCartButton", () => {
       storage: "256GB",
       unitPrice: 1319,
     });
-  });
-
-  it("shows an accessible hint explaining why the button is disabled", () => {
-    renderWithCart({});
-    expect(
-      screen.getByText("Select a color and a storage option to add this phone to your cart."),
-    ).toBeInTheDocument();
   });
 });

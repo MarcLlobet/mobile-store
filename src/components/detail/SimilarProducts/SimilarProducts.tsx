@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { memo, useEffect, useId, useRef, useState } from "react";
 import { ProductTile } from "@/components/shared/ProductTile";
 import { keyFor } from "@/lib/api/transform";
 import type { ProductListItem } from "@/lib/api/types";
@@ -24,7 +24,12 @@ export interface SimilarProductsProps {
   products: ProductListItem[];
 }
 
-export function SimilarProducts({ products }: SimilarProductsProps) {
+/**
+ * Memoized for the same reason as SpecsList: `products` is a stable slice of
+ * the Detail view's `product`, so hovering a color swatch upstream never
+ * re-renders these tiles (or re-runs the scroll-thumb effect keyed on them).
+ */
+export const SimilarProducts = memo(function SimilarProducts({ products }: SimilarProductsProps) {
   const headingId = useId();
   const listRef = useRef<HTMLUListElement>(null);
   const [thumb, setThumb] = useState({ widthPercent: 100, leftPercent: 0 });
@@ -79,4 +84,4 @@ export function SimilarProducts({ products }: SimilarProductsProps) {
       </div>
     </section>
   );
-}
+});

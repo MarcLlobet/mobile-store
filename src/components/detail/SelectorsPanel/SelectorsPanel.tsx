@@ -30,8 +30,6 @@ export function SelectorsPanel({
 }: SelectorsPanelProps) {
   return (
     <div className={styles.panel}>
-      {/* CONFIRMED order — real Figma "Selectors" frame is Storage then
-          Colors, at both the mobile and desktop breakpoints. */}
       <StorageSelector
         options={storageOptions}
         selected={selectedStorage}

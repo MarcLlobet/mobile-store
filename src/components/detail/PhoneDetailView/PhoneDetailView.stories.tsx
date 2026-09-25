@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import PhoneDetailLayout from "@/app/phones/[id]/layout";
 import { CartProvider } from "@/context/CartContext";
 import type { ProductDetail } from "@/lib/api/types";
 import { PhoneDetailView } from "./PhoneDetailView";
@@ -8,7 +9,6 @@ const product: ProductDetail = {
   name: "iPhone 15 Pro Max",
   brand: "Apple",
   basePrice: 1319,
-  imageUrl: "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/apl-ip15pm-black.png",
   description: "The latest iPhone, with a titanium design and the A17 Pro chip.",
   rating: 4.8,
   specs: {
@@ -62,11 +62,15 @@ const meta: Meta<typeof PhoneDetailView> = {
   component: PhoneDetailView,
   args: { product },
   // PhoneDetailView renders AddToCartButton, which calls useCart()
-  // internally — every story must supply a CartProvider explicitly.
+  // internally — every story must supply a CartProvider explicitly. The
+  // real route layout supplies the <main> box and the BackButton that the
+  // component no longer renders itself, so stories mount it too.
   decorators: [
     (Story) => (
       <CartProvider>
-        <Story />
+        <PhoneDetailLayout>
+          <Story />
+        </PhoneDetailLayout>
       </CartProvider>
     ),
   ],

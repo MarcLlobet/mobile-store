@@ -1,12 +1,19 @@
-import type { FetchProductsParams, ProductDetail, ProductListItem } from "./types";
+import type { ApiErrorBody, FetchProductsParams, ProductDetail, ProductListItem } from "./types";
 
 /**
- * Direct-to-external-API client. There is no backend of our own (this is a
+ * Direct-to-external-API transport. There is no backend of our own (this is a
  * static export deployed to GitHub Pages — see next.config.ts and the
  * README "Architecture" section), so both Server Components (at build time)
- * and Client Components (at runtime, e.g. live search) call this module,
+ * and Client Components (at runtime, e.g. live search) reach this module,
  * which talks straight to the external API with the `x-api-key` header
  * required by the brief.
+ *
+ * Callers don't use these functions directly: they go through the React Query
+ * options in ./queries.ts, which own caching, deduplication and the shared
+ * query keys. This module stays a thin, cache-free transport so the same code
+ * serves the build-time prefetch and the in-browser refetch. Under test it is
+ * exercised for real against the MSW handlers in `mocks/` — nothing here is
+ * stubbed out.
  *
  * NEXT_PUBLIC_* env vars are inlined into the client bundle at build time by
  * Next.js — this is the intended mechanism here, not an accidental leak; see
@@ -30,6 +37,53 @@ const FETCH_TIMEOUT_MS = 30_000;
 // backoff resolves that without masking real, persistent failures.
 const RETRY_ATTEMPTS = 2;
 const RETRY_DELAY_MS = 750;
+
+/**
+ * Thrown for every non-OK response the caller isn't expected to handle
+ * structurally. `status` and `code` come from the response itself — the API
+ * returns `{ error, message }` (see ApiErrorBody), so a 401 surfaces as
+ * `code: "UNAUTHORIZED"`, `message: "Invalid API key"` rather than an opaque
+ * "request failed".
+ */
+export class ApiError extends Error {
+  readonly status: number;
+  /** The API's own `error` field, e.g. "UNAUTHORIZED" / "NOT-FOUND". */
+  readonly code?: string;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
+/** Non-OK responses carry `{ error, message }`, but never assume they do. */
+async function readErrorBody(response: Response): Promise<ApiErrorBody | null> {
+  try {
+    const body: unknown = await response.json();
+    if (
+      typeof body === "object" &&
+      body !== null &&
+      typeof (body as ApiErrorBody).error === "string" &&
+      typeof (body as ApiErrorBody).message === "string"
+    ) {
+      return body as ApiErrorBody;
+    }
+  } catch {
+    // Empty or non-JSON body (e.g. a bare 502 from the platform, not the API).
+  }
+  return null;
+}
+
+async function apiError(response: Response, context: string): Promise<ApiError> {
+  const body = await readErrorBody(response);
+  return new ApiError(
+    body ? `${context}: ${body.message}` : `${context} failed with status ${response.status}`,
+    response.status,
+    body?.error,
+  );
+}
 
 function buildHeaders(): HeadersInit {
   return {
@@ -99,7 +153,7 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<P
   });
 
   if (!response.ok) {
-    throw new Error(`fetchProducts failed with status ${response.status}`);
+    throw await apiError(response, "fetchProducts");
   }
 
   return (await response.json()) as ProductListItem[];
@@ -108,7 +162,8 @@ export async function fetchProducts(params: FetchProductsParams = {}): Promise<P
 /**
  * GET /products/{id}
  * Returns null (rather than throwing) on a 404 so callers can render a
- * not-found state; any other non-OK status still throws.
+ * not-found state; any other non-OK status still throws. `null` — not
+ * `undefined` — because React Query rejects `undefined` as a query result.
  */
 export async function fetchProductById(id: string): Promise<ProductDetail | null> {
   const response = await apiFetch(`/products/${encodeURIComponent(id)}`);
@@ -118,7 +173,7 @@ export async function fetchProductById(id: string): Promise<ProductDetail | null
   }
 
   if (!response.ok) {
-    throw new Error(`fetchProductById(${id}) failed with status ${response.status}`);
+    throw await apiError(response, `fetchProductById(${id})`);
   }
 
   return (await response.json()) as ProductDetail;

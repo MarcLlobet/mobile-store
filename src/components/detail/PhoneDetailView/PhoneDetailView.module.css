@@ -1,36 +1,24 @@
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-2);
-  max-width: 1200px;
-  /* .page is itself a flex item of <body> (globals.css). Flex items default
-     to min-width:auto (don't shrink below content size), so without this
-     .page refused to shrink below its own descendants' content width
-     (here, the Similar products rail) instead of stretching to the
-     viewport — the same bug fixed one level down in
-     SimilarProducts.module.css's .list, just one level higher up. */
-  min-width: 0;
-  width: 100%;
-  margin: 0 auto;
-}
+/* `.page` moved to app/phones/[id]/layout.module.css — the route layout
+   now owns the <main> box that used to be rendered here. */
 
 .layout {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media (min-width: 834px) {
+  .layout {
+    height: 416px;
+  }
 }
 
 @media (min-width: 1024px) {
   .layout {
-    /* CONFIRMED — EL-b127533e "Product info + Img": a row with
-       justify-content:space-between, NOT two equal-width columns. The
-       hero image is a fixed 510px (see PhoneHero.module.css) and the
-       info column caps at 380px (below); space-between distributes the
-       rest of the 1200px content width as the gap between them. */
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
+    height: 630px;
   }
 }
 
@@ -78,5 +66,51 @@
 
   .price {
     font-size: var(--font-size-lg); /* CONFIRMED desktop — style_60414b43, 20px */
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Colour hover preview — CSS only, no React state.
+
+   PhoneHero already renders every colour variant, fetched and decoded, in one
+   stacked grid cell with only the selected one opaque. Previewing another
+   colour is therefore just a question of which node is opaque, and that needs
+   no JavaScript: `:has()` reads the hovered swatch, and the matching image
+   fades in. Nothing re-renders, no handler fires, and hover can never leak
+   into what gets added to the cart.
+
+   `.layout` is the nearest ancestor of both the swatches and the hero, which
+   is why these rules live here rather than in PhoneHero's or ColorSelector's
+   stylesheet. They match on data attributes, not class names, because CSS
+   Module class names are hashed per file and would not resolve across them.
+   The pairing is positional: swatch `data-color-index="n"` previews hero
+   image `data-variant-index="n"`, which holds because PhoneDetailView builds
+   both lists from `product.colorOptions` in order, without deduping.
+
+   Behind `(hover: hover) and (pointer: fine)` so a tap on a touch screen
+   cannot leave a swatch stuck in a phantom :hover after selecting it.
+
+   One rule per index, up to MAX below. A product with more colours than that
+   still selects fine; the extra swatches simply don't preview. Raise the
+   block if the catalog ever grows past it (the recorded maximum is 4).
+   --------------------------------------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  /* Any swatch hovered: drop the selected variant first, so the rule below
+     is the only thing making a variant visible. Higher specificity than
+     PhoneHero's own `.image.active`, and ordered before the per-index rules
+     which match it exactly. */
+  .layout:has([data-color-index]:hover) [data-variant-index] {
+    opacity: 0;
+  }
+
+  .layout:has([data-color-index="0"]:hover) [data-variant-index="0"],
+  .layout:has([data-color-index="1"]:hover) [data-variant-index="1"],
+  .layout:has([data-color-index="2"]:hover) [data-variant-index="2"],
+  .layout:has([data-color-index="3"]:hover) [data-variant-index="3"],
+  .layout:has([data-color-index="4"]:hover) [data-variant-index="4"],
+  .layout:has([data-color-index="5"]:hover) [data-variant-index="5"],
+  .layout:has([data-color-index="6"]:hover) [data-variant-index="6"],
+  .layout:has([data-color-index="7"]:hover) [data-variant-index="7"] {
+    opacity: 1;
   }
 }

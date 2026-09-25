@@ -48,13 +48,8 @@ export function AddToCartButton({
   return (
     <div className={styles.wrapper}>
       <Button variant="primary" disabled={!canAddToCart} onClick={handleClick}>
-        Add to cart
+        Añadir
       </Button>
-      {!canAddToCart && (
-        <p className={styles.hint} role="status">
-          Select a color and a storage option to add this phone to your cart.
-        </p>
-      )}
     </div>
   );
 }

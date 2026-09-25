@@ -1,12 +1,4 @@
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-2);
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
+/* The page box lives in layout.module.css — the layout owns the `<main>`. */
 .layout {
   display: grid;
   grid-template-columns: 1fr;

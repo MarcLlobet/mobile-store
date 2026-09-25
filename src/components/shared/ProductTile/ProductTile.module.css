@@ -17,13 +17,39 @@
   border-color: var(--color-black);
 }
 
+/* The card box is pinned by whoever lays these out (PhoneGrid's and
+   SimilarProducts' `.item`), so the image area is the remainder: padding 16
+   + THIS + gap 24 + the 31px text block + padding 16. Measured against the
+   Figma frames, that remainder is 257px on mobile and desktop and 290px on
+   tablet, which is what the flex-basis below records — but as a basis, not a
+   fixed height, so it can never fight the card box it sits inside.
+
+   It was `aspect-ratio: 312 / 257`, which only held at desktop: the ratio ties
+   the height to the width, and the card is a different width at every
+   breakpoint (344 desktop / 377 tablet / 361 mobile-listing), so the card grew
+   taller than Figma's everywhere except desktop. */
 .imageWrapper {
   position: relative;
-  aspect-ratio: 1 / 1;
+  flex: 1 1 257px; /* CONFIRMED — mobile + desktop image height */
+  min-height: 0;
   width: 100%;
   overflow: hidden;
-  /* Figma renders every product photo on plain white, not a grey tile. */
   background-color: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 834px) {
+  .imageWrapper {
+    flex-basis: 290px; /* CONFIRMED — tablet card is 377 tall, not 344 */
+  }
+}
+
+@media (min-width: 1024px) {
+  .imageWrapper {
+    flex-basis: 257px; /* CONFIRMED — back to the desktop card height */
+  }
 }
 
 .image {
@@ -47,6 +73,7 @@
 }
 
 .brand {
+  line-height: 12px;
   font-size: 10px; /* CONFIRMED — style_2969e998; no token matches this exactly */
   font-weight: var(--font-weight-light); /* CONFIRMED */
   color: var(--color-text-secondary);
@@ -54,6 +81,7 @@
 }
 
 .name {
+  line-height: 15px;
   font-size: var(--font-size-xs); /* CONFIRMED — style_13cb6e9a, 12px (not 14px) */
   font-weight: var(--font-weight-light); /* CONFIRMED — not regular */
   text-transform: uppercase;
@@ -64,6 +92,7 @@
 }
 
 .price {
+  line-height: 15px;
   font-size: var(--font-size-xs); /* CONFIRMED — style_6817ba4d, 12px */
   font-weight: var(--font-weight-light);
   white-space: nowrap;

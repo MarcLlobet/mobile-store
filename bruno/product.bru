@@ -1,0 +1,25 @@
+meta {
+  name: product
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{NEXT_PUBLIC_API_BASE_URL}}/products/:id
+  body: none
+  auth: apikey
+}
+
+params:path {
+  id: SMG-S24U
+}
+
+auth:apikey {
+  key: x-api-key
+  value: {{NEXT_PUBLIC_API_KEY}}
+  placement: header
+}
+
+settings {
+  encodeUrl: true
+}

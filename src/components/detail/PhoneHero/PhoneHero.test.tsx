@@ -1,35 +1,121 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { PhoneHero } from "./PhoneHero";
 
+const BLACK = "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/black.png";
+const BLUE = "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/blue.png";
+
+const variants = [
+  { key: "Black", imageUrl: BLACK },
+  { key: "Blue", imageUrl: BLUE },
+];
+
 describe("PhoneHero", () => {
-  it("renders the image with the phone name as alt text", () => {
-    render(
-      <PhoneHero
-        imageUrl="https://prueba-tecnica-api-tienda-moviles.onrender.com/images/black.png"
-        name="iPhone 15 Pro Max"
-      />,
-    );
+  it("names only the active variant with the phone name", () => {
+    render(<PhoneHero variants={variants} activeKey="Black" name="iPhone 15 Pro Max" />);
     const img = screen.getByRole("img", { name: "iPhone 15 Pro Max" });
-    expect(img).toHaveAttribute(
-      "src",
-      "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/black.png",
-    );
+    expect(img).toHaveAttribute("src", BLACK);
   });
 
-  it("swaps the image src when the imageUrl prop changes", () => {
-    const { rerender } = render(
-      <PhoneHero imageUrl="https://example.com/black.png" name="Phone" />,
+  it("renders every variant up front, eagerly, so none is fetched on selection", () => {
+    const { container } = render(<PhoneHero variants={variants} activeKey="Black" name="Phone" />);
+    const imgs = Array.from(container.querySelectorAll("img"));
+    expect(imgs.map((img) => img.getAttribute("src"))).toEqual([BLACK, BLUE]);
+    for (const img of imgs) {
+      expect(img).toHaveAttribute("loading", "eager");
+    }
+    // The visible one is fetched first; the cache-warming copies must not
+    // compete with it.
+    expect(imgs[0]).toHaveAttribute("fetchpriority", "high");
+    expect(imgs[1]).toHaveAttribute("fetchpriority", "low");
+  });
+
+  it("hides the inactive variants from assistive tech", () => {
+    const { container } = render(<PhoneHero variants={variants} activeKey="Black" name="Phone" />);
+    expect(screen.getAllByRole("img")).toHaveLength(1);
+    expect(container.querySelectorAll('img[aria-hidden="true"]')).toHaveLength(1);
+  });
+
+  it("reveals the already-rendered variant when the active key changes", () => {
+    const { container, rerender } = render(
+      <PhoneHero variants={variants} activeKey="Black" name="Phone" />,
     );
-    expect(screen.getByRole("img", { name: "Phone" })).toHaveAttribute(
-      "src",
-      "https://example.com/black.png",
+    const before = Array.from(container.querySelectorAll("img"));
+
+    rerender(<PhoneHero variants={variants} activeKey="Blue" name="Phone" />);
+
+    expect(screen.getByRole("img", { name: "Phone" })).toHaveAttribute("src", BLUE);
+    // Same DOM nodes as before — the swap is a visibility flip, not a remount
+    // that would drop the decoded image and re-request it.
+    expect(Array.from(container.querySelectorAll("img"))).toEqual(before);
+  });
+
+  it("keeps two colors that share one photo as two addressable variants", () => {
+    // The API serves the same image for differently-named colors. Deduping by
+    // url would collapse these, so activating the second would show the first.
+    const shared = [
+      { key: "Graphite", imageUrl: BLACK },
+      { key: "Space Black", imageUrl: BLACK },
+    ];
+    const { container } = render(
+      <PhoneHero variants={shared} activeKey="Space Black" name="Phone" />,
     );
 
-    rerender(<PhoneHero imageUrl="https://example.com/blue.png" name="Phone" />);
-    expect(screen.getByRole("img", { name: "Phone" })).toHaveAttribute(
-      "src",
-      "https://example.com/blue.png",
-    );
+    const imgs = Array.from(container.querySelectorAll("img"));
+    expect(imgs).toHaveLength(2);
+    // The *second* node is the named/visible one, not the first.
+    expect(imgs[1]).toHaveAttribute("alt", "Phone");
+    expect(imgs[0]).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("falls back to the first variant when the active key is unknown", () => {
+    render(<PhoneHero variants={variants} activeKey="Nonexistent" name="Phone" />);
+    expect(screen.getByRole("img", { name: "Phone" })).toHaveAttribute("src", BLACK);
+  });
+
+  describe("pre-decoding", () => {
+    // jsdom has no HTMLImageElement.decode(), so it is installed per test.
+    afterEach(() => {
+      delete (HTMLImageElement.prototype as { decode?: unknown }).decode;
+    });
+
+    function stubDecode() {
+      const decode = vi.fn(() => Promise.resolve());
+      (HTMLImageElement.prototype as { decode?: unknown }).decode = decode;
+      return decode;
+    }
+
+    it("pre-decodes every variant, not just the visible one", () => {
+      const decode = stubDecode();
+      render(<PhoneHero variants={variants} activeKey="Black" name="Phone" />);
+      // Once decoded, revealing a variant on hover is a pure composite.
+      expect(decode).toHaveBeenCalledTimes(variants.length);
+    });
+
+    it("does not re-decode when only the active variant changes", () => {
+      const decode = stubDecode();
+      const { rerender } = render(<PhoneHero variants={variants} activeKey="Black" name="Phone" />);
+      decode.mockClear();
+
+      // This is what every hover does — it must not restart decode work.
+      rerender(<PhoneHero variants={variants} activeKey="Blue" name="Phone" />);
+
+      expect(decode).not.toHaveBeenCalled();
+    });
+
+    it("survives a browser without decode(), and a rejected decode", async () => {
+      const decode = vi.fn(() => Promise.reject(new Error("EncodingError")));
+      (HTMLImageElement.prototype as { decode?: unknown }).decode = decode;
+
+      render(<PhoneHero variants={variants} activeKey="Black" name="Phone" />);
+      await Promise.resolve();
+
+      expect(screen.getByRole("img", { name: "Phone" })).toHaveAttribute("src", BLACK);
+    });
+  });
+
+  it("renders nothing when there are no variants", () => {
+    const { container } = render(<PhoneHero variants={[]} activeKey="" name="Phone" />);
+    expect(container).toBeEmptyDOMElement();
   });
 });

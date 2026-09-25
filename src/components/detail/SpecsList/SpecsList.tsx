@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { memo, useId } from "react";
 import type { ProductSpecs } from "@/lib/api/types";
 import styles from "./SpecsList.module.css";
 
@@ -28,7 +28,18 @@ export interface SpecsListProps {
   description: string;
 }
 
-export function SpecsList({ brand, name, specs, description }: SpecsListProps) {
+/**
+ * Memoized: it sits below the Detail view's color/storage state, and every
+ * hover over a color swatch re-renders that parent. Its props are stable
+ * slices of one `product` object, so memo lets these 11 rows drop out of a
+ * preview entirely.
+ */
+export const SpecsList = memo(function SpecsList({
+  brand,
+  name,
+  specs,
+  description,
+}: SpecsListProps) {
   const headingId = useId();
 
   return (
@@ -58,4 +69,4 @@ export function SpecsList({ brand, name, specs, description }: SpecsListProps) {
       </dl>
     </section>
   );
-}
+});

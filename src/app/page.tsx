@@ -1,21 +1,30 @@
-import { fetchProducts } from "@/lib/api/api";
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { listingQuery } from "@/lib/api/queries";
+import { makeQueryClient } from "@/lib/query";
 import { PhoneListing } from "@/components/listing/PhoneListing";
 
-const LISTING_LIMIT = 20;
-
 /**
- * Listing view ("/"). Server Component - under `output:'export'` this runs
+ * Listing view ("/"). Server Component — under `output:'export'` this runs
  * once at build time (SSG, not per-request SSR; see next.config.ts and the
- * plan's "no backend + GitHub Pages" section), fetching the first 20
- * products so the page never ships an empty first paint. Live, real-time
- * search from here on is handled client-side by `PhoneListing`.
+ * README "Architecture" section), so the first 20 products are baked into the
+ * HTML and the page never ships an empty first paint.
+ *
+ * Rather than passing them down as a prop, the fetch goes through React Query
+ * and the resulting cache is serialized into `<HydrationBoundary>`. The
+ * browser cache therefore starts out already holding the `search=""` query
+ * that `PhoneListing` reads, so mount does not re-request what the build
+ * already fetched — and from then on React Query owns every real-time search
+ * request, deduplicating and caching them.
  */
 export default async function HomePage() {
-  const initialProducts = await fetchProducts({ limit: LISTING_LIMIT, offset: 0 });
+  const queryClient = makeQueryClient();
+  await queryClient.prefetchQuery(listingQuery());
 
   return (
     <main>
-      <PhoneListing initialProducts={initialProducts} />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <PhoneListing />
+      </HydrationBoundary>
     </main>
   );
 }

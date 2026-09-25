@@ -3,7 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { SelectorsPanel } from "./SelectorsPanel";
 
-const colors = [{ name: "Black", hexCode: "#000000", imageUrl: "https://example.com/black.png" }];
+const colors = [
+  { name: "Black", hexCode: "#000000", imageUrl: "https://example.com/black.png" },
+  { name: "Blue", hexCode: "#0000ff", imageUrl: "https://example.com/blue.png" },
+];
 const storageOptions = [{ capacity: "256GB", price: 1319 }];
 
 describe("SelectorsPanel", () => {

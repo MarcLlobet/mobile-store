@@ -14,11 +14,22 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     css: true,
+    // The API client reads these at module load, and so do the MSW handlers
+    // in mocks/handlers.ts — both sides must agree on the base URL and the
+    // key, or every intercepted request would come back 401. The base URL is
+    // the real one so the handlers assert we call the documented host; the
+    // key is a test value that never leaves this process.
+    env: {
+      NEXT_PUBLIC_API_BASE_URL: "https://prueba-tecnica-api-tienda-moviles.onrender.com",
+      NEXT_PUBLIC_API_KEY: "test-api-key",
+    },
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],
       exclude: [
         "node_modules/**",
+        "mocks/**",
+        "src/test/**",
         ".storybook/**",
         "storybook-static/**",
         "src/**/*.stories.tsx",
@@ -32,6 +43,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(rootDir, "./src"),
+      "@mocks": path.resolve(rootDir, "./mocks"),
     },
   },
 });

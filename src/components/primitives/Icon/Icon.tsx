@@ -99,7 +99,7 @@ export function Icon({ name, size = 24, ariaHidden = true, title, className, ...
       role={ariaHidden ? undefined : "img"}
       {...rest}
     >
-      {!ariaHidden && title ? <title>{title}</title> : null}
+      {!ariaHidden && title ? <desc>{title}</desc> : null}
       {strokePaths[name]}
     </svg>
   );

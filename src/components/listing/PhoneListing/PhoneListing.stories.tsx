@@ -1,8 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import type { Decorator } from "@storybook/nextjs-vite";
+import { QueryClientProvider } from "@tanstack/react-query";
 import type { ProductListItem } from "@/lib/api/types";
+import { LISTING_LIMIT, listingQuery } from "@/lib/api/queries";
+import { makeQueryClient } from "@/lib/query";
 import { PhoneListing } from "./PhoneListing";
 
-const initialProducts: ProductListItem[] = [
+const products: ProductListItem[] = [
   {
     id: "APL-IP15PM",
     brand: "Apple",
@@ -26,20 +30,32 @@ const initialProducts: ProductListItem[] = [
   },
 ];
 
+/**
+ * PhoneListing takes no props — it reads the catalog from React Query. In the
+ * app that cache arrives hydrated from the build-time prefetch (app/page.tsx);
+ * here each story seeds the same query key directly, which is why the story
+ * renders without ever reaching the network. Typing in the search box *would*
+ * fire a real request, so these stories are static by design.
+ */
+function withSeededListing(seed: ProductListItem[]): Decorator {
+  return function SeededListing(Story) {
+    const queryClient = makeQueryClient();
+    queryClient.setQueryData(listingQuery().queryKey, seed);
+    return (
+      <QueryClientProvider client={queryClient}>
+        <Story />
+      </QueryClientProvider>
+    );
+  };
+}
+
 const meta: Meta<typeof PhoneListing> = {
   title: "Listing/PhoneListing",
   component: PhoneListing,
-  args: {
-    initialProducts,
-  },
   parameters: {
-    // This story never types into the search box, so the component never
-    // calls fetchProducts - it only ever renders the initial, SSG-shaped
-    // props. Documents the "no fetch on mount" contract visually.
     docs: {
       description: {
-        component:
-          "Client orchestrator for the listing view. Renders the server-provided initial products as-is; typing in the search box triggers a debounced, API-based re-fetch (not exercised in this static story).",
+        component: `Client orchestrator for the listing view. Renders the ${LISTING_LIMIT}-item page React Query holds for \`search=""\`; typing in the search box swaps to a new query key, which triggers a debounced, API-side search (not exercised in these static stories).`,
       },
     },
   },
@@ -48,8 +64,10 @@ const meta: Meta<typeof PhoneListing> = {
 export default meta;
 type Story = StoryObj<typeof PhoneListing>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  decorators: [withSeededListing(products)],
+};
 
 export const Empty: Story = {
-  args: { initialProducts: [] },
+  decorators: [withSeededListing([])],
 };

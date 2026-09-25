@@ -1,0 +1,38 @@
+/* Moved here from PhoneDetailView.module.css when the `<main>` wrapper was
+   lifted into the route layout — the page-level box is now the layout's
+   responsibility, and PhoneDetailView contributes only its own sections. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-2);
+  /* CONFIRMED — Figma's desktop detail frame is 1200px of *content* (the specs
+     table spans 360 -> 1560 at 1920). `max-width: 1200px` measured the padding
+     box, so the content came out 1168. Adding the gutters back makes the
+     content exactly 1200 while still leaving a gutter on narrower screens. */
+  max-width: calc(1200px + 2 * var(--space-2));
+  /* .page is itself a flex item of <body> (globals.css). Flex items default
+     to min-width:auto (don't shrink below content size), so without this
+     .page refused to shrink below its own descendants' content width
+     (here, the Similar products rail) instead of stretching to the
+     viewport — the same bug fixed one level down in
+     SimilarProducts.module.css's .list, just one level higher up. */
+  min-width: 0;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* CONFIRMED — 40px side margin on the tablet frame, same as the listing. */
+@media (min-width: 834px) {
+  .page {
+    padding: var(--space-3) var(--space-5);
+  }
+}
+
+/* Back to the 16px gutter at desktop: there the margin comes from max-width
+   centring the 1200px content box, not from padding. */
+@media (min-width: 1024px) {
+  .page {
+    padding: var(--space-3) var(--space-2);
+  }
+}

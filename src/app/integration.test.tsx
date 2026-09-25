@@ -1,82 +1,40 @@
 import { useState } from "react";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { productDetail } from "@mocks/fixtures";
 import { CartProvider } from "@/context/CartContext";
-import type { ProductDetail, ProductListItem } from "@/lib/api/types";
-import { fetchProductById, fetchProducts } from "@/lib/api/api";
+import { createTestQueryClient, renderWithQuery } from "@/test/query";
+import { trackRequests } from "@/test/requests";
 import { PhoneListing } from "@/components/listing/PhoneListing";
-import { PhoneDetailView } from "@/components/detail/PhoneDetailView";
+import { PhoneDetail } from "@/components/detail/PhoneDetail";
 import CartPage from "./cart/page";
 
 /**
- * End-to-end walk across the three views that Phase 1's three independent
- * agents built in isolation (plan §4 Phase 2, item 4). Unit tests already
- * cover each view standalone; this test instead exercises the *seams*: the
- * same `CartProvider` instance carrying state from a Detail "Add to cart"
- * click through to what the Cart view renders, and the Listing→Detail
- * click-through producing the exact product the user searched for.
+ * End-to-end walk across the three views, over MSW serving the recorded API
+ * responses in `mocks/` — so the data crossing each seam is the data the real
+ * API returns, and every request the app makes really goes out (and is really
+ * cached) instead of being stubbed per call site.
+ *
+ * Unit tests already cover each view standalone; this test exercises the
+ * *seams*: the same `QueryClientProvider` carrying the catalog from the
+ * listing's search into the Detail route's fetch, and the same `CartProvider`
+ * carrying a Detail "Add to cart" click through to what the Cart view renders.
  *
  * Real `next/link` navigation cannot be followed inside jsdom (there is no
  * mounted App Router), so `TestApp` below stands in for the router: it
- * intercepts the anchor click the same way a browser would (reads its
- * `href`), fetches the product exactly like `app/phones/[id]/page.tsx` does
- * at build time, and swaps to the Detail view. The "view cart" trigger below
- * stands in for clicking the Header's cart link (Header's own navigation is
- * already covered by its own test suite).
+ * intercepts the anchor click the same way a browser would (reads its `href`)
+ * and swaps to the Detail view. Note it does *not* fetch anything itself —
+ * `PhoneDetail` pulls the product through React Query, exactly as it does in
+ * the app. The "view cart" trigger stands in for the Header's cart link
+ * (Header's own navigation is covered by its own suite).
  */
 
-vi.mock("@/lib/api/api", () => ({
-  fetchProducts: vi.fn(),
-  fetchProductById: vi.fn(),
-}));
+const product = productDetail;
+const [, secondColor] = product.colorOptions;
+const topStorage = product.storageOptions[product.storageOptions.length - 1];
 
-const galaxyS24: ProductListItem = {
-  id: "SAM-GS24",
-  brand: "Samsung",
-  name: "Galaxy S24",
-  basePrice: 899,
-  imageUrl: "https://example.com/galaxy-s24.png",
-};
-
-const iPhoneListItem: ProductListItem = {
-  id: "APL-IP15PM",
-  brand: "Apple",
-  name: "iPhone 15 Pro Max",
-  basePrice: 1319,
-  imageUrl: "https://example.com/iphone-list.png",
-};
-
-const initialProducts: ProductListItem[] = [iPhoneListItem, galaxyS24];
-
-const iPhoneDetail: ProductDetail = {
-  ...iPhoneListItem,
-  description: "The latest iPhone.",
-  rating: 4.8,
-  specs: {
-    screen: "6.7 inch OLED",
-    resolution: "2796 x 1290",
-    processor: "A17 Pro",
-    mainCamera: "48MP",
-    selfieCamera: "12MP",
-    battery: "4441 mAh",
-    os: "iOS 17",
-    screenRefreshRate: "120Hz",
-  },
-  colorOptions: [
-    { name: "Black Titanium", hexCode: "#3b3b3b", imageUrl: "https://example.com/black.png" },
-    { name: "Blue Titanium", hexCode: "#3b5f8a", imageUrl: "https://example.com/blue.png" },
-  ],
-  storageOptions: [
-    { capacity: "256GB", price: 1319 },
-    { capacity: "512GB", price: 1449 },
-  ],
-  // Kept empty so the Detail view's own "Similar products" ProductTiles
-  // don't add extra "Apple"/text matches this test would otherwise have to
-  // disambiguate — SimilarProducts' rendering is already covered by its own
-  // and PhoneDetailView's unit tests.
-  similarProducts: [],
-};
+const requests = trackRequests();
 
 function eur(value: number): string {
   return `${Math.round(value)} EUR`;
@@ -84,99 +42,116 @@ function eur(value: number): string {
 
 type Screen = "listing" | "detail" | "cart";
 
-/**
- * Minimal stand-in for the app's real router, sharing one `CartProvider`
- * instance across all three "pages" exactly like `app/layout.tsx` does.
- */
 function TestApp() {
   const [screen, setScreen] = useState<Screen>("listing");
-  const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [productId, setProductId] = useState<string | null>(null);
 
   function handleClickCapture(event: React.MouseEvent) {
     const anchor = (event.target as HTMLElement).closest("a");
     if (!anchor) return;
-    const href = anchor.getAttribute("href") ?? "";
-    const match = /^\/phones\/(.+)$/.exec(href);
+    const match = /^\/phones\/(.+)$/.exec(anchor.getAttribute("href") ?? "");
     if (!match) return;
     event.preventDefault();
-    void fetchProductById(match[1]).then((result) => {
-      setProduct(result);
-      setScreen("detail");
-    });
+    setProductId(match[1]);
+    setScreen("detail");
   }
 
   return (
-    <CartProvider>
-      <div onClickCapture={handleClickCapture}>
-        {screen === "listing" && <PhoneListing initialProducts={initialProducts} />}
-        {screen === "detail" && product && <PhoneDetailView product={product} />}
-        {screen === "cart" && <CartPage />}
-      </div>
+    <div onClickCapture={handleClickCapture}>
+      {screen === "listing" && <PhoneListing />}
+      {screen === "detail" && productId && <PhoneDetail id={productId} />}
+      {screen === "cart" && <CartPage />}
       {screen !== "cart" && (
         <button type="button" onClick={() => setScreen("cart")}>
           View cart (test stand-in for Header&apos;s cart link)
         </button>
       )}
-    </CartProvider>
+      {screen === "cart" && (
+        <button type="button" onClick={() => setScreen("listing")}>
+          Back to listing (test stand-in)
+        </button>
+      )}
+    </div>
   );
 }
 
-describe("Listing -> Detail -> Cart integration", () => {
-  beforeEach(() => {
-    window.localStorage.clear();
-    vi.mocked(fetchProducts).mockReset();
-    vi.mocked(fetchProductById).mockReset();
+function renderApp() {
+  return renderWithQuery(<TestApp />, {
+    queryClient: createTestQueryClient(),
+    wrap: (children) => <CartProvider>{children}</CartProvider>,
   });
+}
 
+beforeEach(() => {
+  window.localStorage.clear();
+});
+
+describe("Listing -> Detail -> Cart integration", () => {
   it("walks search -> select a card -> add to cart -> cart shows it -> remove -> empty state", async () => {
-    vi.mocked(fetchProducts).mockResolvedValue([iPhoneListItem]);
-    vi.mocked(fetchProductById).mockResolvedValue(iPhoneDetail);
+    renderApp();
 
-    render(<TestApp />);
+    // 1. Listing: real-time search narrows the grid via the API's own filter.
+    await screen.findByText(product.name);
+    await userEvent.type(screen.getByRole("searchbox"), product.name);
+    await waitFor(() => expect(screen.getByText("1 result")).toBeInTheDocument());
+    expect(screen.queryByText("Pixel 8a")).not.toBeInTheDocument();
+    // URLSearchParams form-encodes the spaces.
+    expect(requests.urls().at(-1)).toContain("search=Galaxy+S24+Ultra");
 
-    // 1. Listing: real-time search narrows the grid to the searched phone.
-    await userEvent.type(screen.getByRole("searchbox"), "iphone");
-    await waitFor(() => {
-      expect(fetchProducts).toHaveBeenCalledWith({ search: "iphone", limit: 20, offset: 0 });
-    });
-    await waitFor(() => {
-      expect(screen.queryByText("Galaxy S24")).not.toBeInTheDocument();
-    });
-    expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
-
-    // 2. Click the card -> Detail view loads the exact product the card
-    // linked to (`/phones/APL-IP15PM`), mirroring generateStaticParams'
-    // per-id fetch.
-    await userEvent.click(screen.getByRole("link", { name: /iPhone 15 Pro Max/ }));
-    await waitFor(() => {
-      expect(fetchProductById).toHaveBeenCalledWith("APL-IP15PM");
-    });
+    // 2. Click the card -> the Detail view fetches the id the card linked to
+    // through React Query, and renders the recorded detail response.
+    await userEvent.click(screen.getByRole("link", { name: new RegExp(product.name) }));
     expect(
-      await screen.findByRole("heading", { level: 1, name: "iPhone 15 Pro Max" }),
+      await screen.findByRole("heading", { level: 1, name: product.name }),
     ).toBeInTheDocument();
+    expect(requests.urls().at(-1)).toContain(`/products/${product.id}`);
+    // The detail response has no top-level imageUrl — the hero comes from the
+    // first colorOption, https-normalized from the http:// the API serves.
+    expect(screen.getByRole("img", { name: product.name })).toHaveAttribute(
+      "src",
+      product.colorOptions[0].imageUrl.replace(/^http:/, "https:"),
+    );
 
     // 3. Add to cart stays gated until both color and storage are picked.
-    const addToCart = screen.getByRole("button", { name: "Add to cart" });
+    const addToCart = screen.getByRole("button", { name: "Añadir" });
     expect(addToCart).toBeDisabled();
-    await userEvent.click(screen.getByRole("radio", { name: "Blue Titanium" }));
-    await userEvent.click(screen.getByRole("radio", { name: /512GB/ }));
+    await userEvent.click(screen.getByRole("radio", { name: secondColor.name }));
+    await userEvent.click(screen.getByRole("radio", { name: topStorage.capacity }));
     expect(addToCart).toBeEnabled();
     await userEvent.click(addToCart);
 
-    // 4. Navigate to the Cart view (same CartProvider instance) and verify
-    // the line item carries the exact color/storage/price that were
-    // selected on Detail, not defaults.
+    // 4. The Cart view (same CartProvider) carries the exact color/storage/
+    // price that were selected on Detail, not defaults.
     await userEvent.click(screen.getByRole("button", { name: /view cart/i }));
-    expect(await screen.findByText("iPhone 15 Pro Max")).toBeInTheDocument();
-    expect(screen.getByText("Color: Blue Titanium · Storage: 512GB")).toBeInTheDocument();
+    expect(await screen.findByText(product.name)).toBeInTheDocument();
+    expect(
+      screen.getByText(`Color: ${secondColor.name} · Storage: ${topStorage.capacity}`),
+    ).toBeInTheDocument();
     const totalRow = screen.getByText("Total").closest("div");
     expect(totalRow).not.toBeNull();
-    expect(within(totalRow!).getByText(eur(1449))).toBeInTheDocument();
+    expect(within(totalRow!).getByText(eur(topStorage.price))).toBeInTheDocument();
 
     // 5. Remove the only line -> the Cart view falls back to its empty state.
-    await userEvent.click(
-      screen.getByRole("button", { name: "Remove iPhone 15 Pro Max from cart" }),
-    );
+    await userEvent.click(screen.getByRole("button", { name: `Remove ${product.name} from cart` }));
     expect(screen.getByText("Your cart is empty.")).toBeInTheDocument();
+  });
+
+  it("reuses the shared React Query cache when navigating back to the listing", async () => {
+    renderApp();
+
+    await screen.findByText(product.name);
+    await userEvent.click(screen.getByRole("link", { name: new RegExp(product.name) }));
+    await screen.findByRole("heading", { level: 1, name: product.name });
+
+    await userEvent.click(screen.getByRole("button", { name: /view cart/i }));
+    await screen.findByText("Your cart is empty.");
+
+    const beforeReturning = requests.urls().length;
+    await userEvent.click(screen.getByRole("button", { name: /back to listing/i }));
+
+    // The catalog is still fresh in the cache the provider holds, so the
+    // listing renders straight from it rather than re-requesting.
+    expect(await screen.findByText(product.name)).toBeInTheDocument();
+    await waitFor(() => expect(requests.urls()).toHaveLength(beforeReturning));
   });
 });
