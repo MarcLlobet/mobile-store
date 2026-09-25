@@ -16,12 +16,22 @@ import styles from "./layout.module.css";
  * `page.tsx`, `loading.tsx` and `not-found.tsx` must each render a fragment
  * or a plain element — never another `<main>` (nested landmarks are invalid
  * HTML and duplicate the landmark for screen readers).
+ *
+ * The back link and the page content sit in two separate boxes because they
+ * align to different things: the link to the page gutter (so it lines up with
+ * the header logo, as the Figma frames show), the content to the centred
+ * 1200px column.
  */
 export default function PhoneDetailLayout({ children }: { children: ReactNode }) {
   return (
-    <main className={styles.page}>
-      <BackButton />
-      {children}
+    <main>
+      {/* Outside `.page` on purpose: the back link belongs to the page gutter,
+          directly under the logo, not to the centred 1200px content column
+          (which at desktop starts 260px further right). */}
+      <div className={styles.backRow}>
+        <BackButton />
+      </div>
+      <div className={styles.page}>{children}</div>
     </main>
   );
 }

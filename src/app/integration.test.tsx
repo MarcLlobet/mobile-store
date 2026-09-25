@@ -87,7 +87,7 @@ beforeEach(() => {
 });
 
 describe("Listing -> Detail -> Cart integration", () => {
-  it("walks search -> select a card -> add to cart -> cart shows it -> remove -> empty state", async () => {
+  it("walks search -> select a card -> add to cart -> cart shows it -> remove -> zero state", async () => {
     renderApp();
 
     // 1. Listing: real-time search narrows the grid via the API's own filter.
@@ -124,16 +124,17 @@ describe("Listing -> Detail -> Cart integration", () => {
     // price that were selected on Detail, not defaults.
     await userEvent.click(screen.getByRole("button", { name: /view cart/i }));
     expect(await screen.findByText(product.name)).toBeInTheDocument();
-    expect(
-      screen.getByText(`Color: ${secondColor.name} · Storage: ${topStorage.capacity}`),
-    ).toBeInTheDocument();
+    // The row reads "<storage> | <colour>", as the Figma cart frames show.
+    expect(screen.getByText(`${topStorage.capacity} | ${secondColor.name}`)).toBeInTheDocument();
     const totalRow = screen.getByText("Total").closest("div");
     expect(totalRow).not.toBeNull();
     expect(within(totalRow!).getByText(eur(topStorage.price))).toBeInTheDocument();
 
-    // 5. Remove the only line -> the Cart view falls back to its empty state.
+    // 5. Remove the only line -> the Cart view falls back to its zero state:
+    // same screen, no rows, heading back to (0).
     await userEvent.click(screen.getByRole("button", { name: `Remove ${product.name} from cart` }));
-    expect(screen.getByText("Your cart is empty.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Cart (0)" })).toBeInTheDocument();
+    expect(screen.queryByRole("listitem")).not.toBeInTheDocument();
   });
 
   it("reuses the shared React Query cache when navigating back to the listing", async () => {
@@ -144,7 +145,7 @@ describe("Listing -> Detail -> Cart integration", () => {
     await screen.findByRole("heading", { level: 1, name: product.name });
 
     await userEvent.click(screen.getByRole("button", { name: /view cart/i }));
-    await screen.findByText("Your cart is empty.");
+    await screen.findByRole("heading", { level: 1, name: "Cart (0)" });
 
     const beforeReturning = requests.urls().length;
     await userEvent.click(screen.getByRole("button", { name: /back to listing/i }));

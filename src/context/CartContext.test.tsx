@@ -31,7 +31,7 @@ describe("CartContext", () => {
     expect(result.current.totalPrice).toBe(0);
   });
 
-  it("addItem builds cartItemId as `${productId}-${color}-${storage}` and appends", async () => {
+  it("addItem appends a line carrying the item plus a generated cartItemId", async () => {
     const { result } = renderCart();
     await waitFor(() => expect(result.current.items).toEqual([]));
 
@@ -40,7 +40,10 @@ describe("CartContext", () => {
     });
 
     expect(result.current.items).toHaveLength(1);
-    expect(result.current.items[0]?.cartItemId).toBe("APL-IP15PM-Black-256GB");
+    expect(result.current.items[0]).toMatchObject(baseItem);
+    // The id is generated, not derived from the variant — see below for why.
+    expect(result.current.items[0]?.cartItemId).toEqual(expect.any(String));
+    expect(result.current.items[0]?.cartItemId).not.toBe("");
     expect(result.current.itemCount).toBe(1);
     expect(result.current.totalPrice).toBe(1319);
   });
@@ -68,13 +71,119 @@ describe("CartContext", () => {
       result.current.addItem({ ...baseItem, color: "Blue" });
     });
     expect(result.current.items).toHaveLength(2);
+    const blackLineId = result.current.items[0]!.cartItemId;
 
     act(() => {
-      result.current.removeItem("APL-IP15PM-Black-256GB");
+      result.current.removeItem(blackLineId);
     });
 
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0]?.color).toBe("Blue");
+  });
+
+  /**
+   * Regression: `cartItemId` used to be `${productId}-${color}-${storage}`, so
+   * every copy of one variant shared a single id. Removing any of them matched
+   * all of them in `removeItem`'s filter and emptied the whole group at once
+   * (and React rendered the list with duplicate keys). Adding the same variant
+   * repeatedly is explicitly supported — there is no merge/quantity concept —
+   * so these lines have to stay individually addressable.
+   */
+  describe("repeated adds of one identical variant", () => {
+    it("gives every line its own id", async () => {
+      const { result } = renderCart();
+      await waitFor(() => expect(result.current.items).toEqual([]));
+
+      act(() => {
+        for (let i = 0; i < 5; i++) result.current.addItem(baseItem);
+      });
+
+      expect(result.current.items).toHaveLength(5);
+      const ids = result.current.items.map((item) => item.cartItemId);
+      expect(new Set(ids).size).toBe(5);
+    });
+
+    it("removes exactly the one line asked for, leaving the rest", async () => {
+      const { result } = renderCart();
+      await waitFor(() => expect(result.current.items).toEqual([]));
+
+      act(() => {
+        for (let i = 0; i < 5; i++) result.current.addItem(baseItem);
+      });
+      const [, secondLine] = result.current.items;
+
+      act(() => {
+        result.current.removeItem(secondLine!.cartItemId);
+      });
+
+      expect(result.current.items).toHaveLength(4);
+      expect(result.current.itemCount).toBe(4);
+      expect(result.current.totalPrice).toBe(1319 * 4);
+      // The removed line is gone and no other line went with it.
+      expect(result.current.items.map((i) => i.cartItemId)).not.toContain(secondLine!.cartItemId);
+      expect(result.current.items.every((i) => i.color === baseItem.color)).toBe(true);
+    });
+
+    it("can be emptied one line at a time", async () => {
+      const { result } = renderCart();
+      await waitFor(() => expect(result.current.items).toEqual([]));
+
+      act(() => {
+        for (let i = 0; i < 3; i++) result.current.addItem(baseItem);
+      });
+
+      for (const expected of [2, 1, 0]) {
+        act(() => {
+          result.current.removeItem(result.current.items[0]!.cartItemId);
+        });
+        expect(result.current.items).toHaveLength(expected);
+      }
+    });
+
+    it("keeps the lines distinguishable across a reload", async () => {
+      const { result, unmount } = renderCart();
+      await waitFor(() => expect(result.current.items).toEqual([]));
+
+      act(() => {
+        for (let i = 0; i < 3; i++) result.current.addItem(baseItem);
+      });
+      await waitFor(() =>
+        expect(JSON.parse(window.localStorage.getItem(CART_STORAGE_KEY) ?? "[]")).toHaveLength(3),
+      );
+      unmount();
+
+      const { result: reloaded } = renderCart();
+      await waitFor(() => expect(reloaded.current.items).toHaveLength(3));
+
+      act(() => {
+        reloaded.current.removeItem(reloaded.current.items[1]!.cartItemId);
+      });
+      expect(reloaded.current.items).toHaveLength(2);
+    });
+
+    it("repairs a cart persisted before ids were unique", async () => {
+      // Exactly what the old scheme wrote: three lines, one shared id.
+      const legacyId = "APL-IP15PM-Black-256GB";
+      window.localStorage.setItem(
+        CART_STORAGE_KEY,
+        JSON.stringify([
+          { ...baseItem, cartItemId: legacyId },
+          { ...baseItem, cartItemId: legacyId },
+          { ...baseItem, cartItemId: legacyId },
+        ]),
+      );
+
+      const { result } = renderCart();
+      await waitFor(() => expect(result.current.items).toHaveLength(3));
+
+      const ids = result.current.items.map((item) => item.cartItemId);
+      expect(new Set(ids).size).toBe(3);
+
+      act(() => {
+        result.current.removeItem(ids[0]!);
+      });
+      expect(result.current.items).toHaveLength(2);
+    });
   });
 
   it("itemCount and totalPrice derive from the current items array", async () => {
@@ -97,6 +206,7 @@ describe("CartContext", () => {
     act(() => {
       result.current.addItem(baseItem);
     });
+    const storedId = result.current.items[0]!.cartItemId;
 
     await waitFor(() => {
       const raw = window.localStorage.getItem(CART_STORAGE_KEY);
@@ -110,7 +220,8 @@ describe("CartContext", () => {
     await waitFor(() => {
       expect(result2.current.items).toHaveLength(1);
     });
-    expect(result2.current.items[0]?.cartItemId).toBe("APL-IP15PM-Black-256GB");
+    // The generated id is what persists, so it is stable across the remount.
+    expect(result2.current.items[0]?.cartItemId).toBe(storedId);
   });
 
   it("does not throw on corrupt localStorage JSON, falling back to an empty cart", async () => {

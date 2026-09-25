@@ -24,25 +24,17 @@
 }
 
 .grid > li {
-  height: 344px; /* CONFIRMED — same Figma card box as PhoneGrid's .item */
+  aspect-ratio: 1 / 1; /* same square card box as PhoneGrid's .item */
 }
 
 @media (min-width: 834px) {
   .listing {
     padding: var(--space-3) var(--space-5);
   }
-
-  .grid > li {
-    height: 377px;
-  }
 }
 
 @media (min-width: 1024px) {
   .listing {
     padding: var(--space-3) var(--space-header-x);
-  }
-
-  .grid > li {
-    height: 344px;
   }
 }

@@ -17,12 +17,12 @@
 
 .item {
   min-width: 0;
-  /* CONFIRMED — Figma card box, stroke included: 344 tall at mobile and
-     desktop, 377 at tablet (measured off the listing frames in
-     design/figma-reference/). The width comes from the grid track, which
-     `minmax(320px, 1fr)` already resolves to Figma's 1/2/5 columns once the
-     page padding matches (see PhoneListing.module.css). */
-  height: 344px;
+  /* The Figma card is square, so the height is the track width rather than a
+     per-breakpoint number: `minmax(320px, 1fr)` already resolves to Figma's
+     1/2/5 columns once the page padding matches (see PhoneListing.module.css),
+     which makes this 344 at desktop and 377 at tablet — the measured Figma
+     boxes — without three hard-coded heights to keep in sync. */
+  aspect-ratio: 1 / 1;
   /* Each ProductTile draws its own full hairline border. At gap:0, two
      adjacent 0.5px borders sit side by side rather than merging — most
      browsers round hairline borders up to a full device pixel each,
@@ -31,16 +31,4 @@
      top/left border directly onto the previous item's bottom/right
      border, so only one line ever paints, regardless of rounding. */
   margin: calc(-1 * var(--border-width-hairline)) 0 0 calc(-1 * var(--border-width-hairline));
-}
-
-@media (min-width: 834px) {
-  .item {
-    height: 377px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .item {
-    height: 344px;
-  }
 }

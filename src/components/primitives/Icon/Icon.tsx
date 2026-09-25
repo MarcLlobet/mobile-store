@@ -22,6 +22,7 @@ export type IconName =
   | "search"
   | "bag-empty"
   | "bag-filled"
+  | "close"
   | "logo";
 
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "width" | "height" | "name"> {
@@ -64,6 +65,7 @@ const assetIcons: Partial<Record<IconName, { src: string; width: number; height:
   back: { src: "/icons/figma/chevron-left.png", width: 80, height: 80 },
   "bag-empty": { src: "/icons/figma/bag-empty.svg", width: 24, height: 24 },
   "bag-filled": { src: "/icons/figma/bag-filled.svg", width: 24, height: 24 },
+  close: { src: "/icons/figma/close.svg", width: 80, height: 80 },
   logo: { src: "/icons/figma/logo.svg", width: 77, height: 29 },
 };
 

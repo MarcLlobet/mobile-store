@@ -77,6 +77,12 @@
   --color-surface: var(--color-white);
   --color-surface-alt: var(--color-grey-100);
   --color-border: var(--color-black); /* CONFIRMED — Smartphone card stroke is #000000 */
+
+  /* CONFIRMED — the cart row's "Eliminar" link. Sampled from the cart frame
+     exports rather than read from the Figma API (that call is rate-limited on
+     this seat): #e32020 is the darkest, least anti-aliased pixel of the label
+     on all three frames. */
+  --color-danger: #e32020;
   --color-border-subtle: var(--color-grey-300); /* CONFIRMED, see --color-grey-300 above */
 
   /* Button states — SDS Button component set (20605:5253) was located but

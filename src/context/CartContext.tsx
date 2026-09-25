@@ -27,12 +27,51 @@ export interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+/**
+ * A cart line's identity is the *line*, not the variant it holds.
+ *
+ * This used to be `${productId}-${color}-${storage}`, which collides the
+ * moment the same variant is added twice: every copy shared one id, so
+ * `removeItem` deleted all of them at once (and React saw duplicate keys in
+ * the list). Since there is no quantity/merge concept — each click is its own
+ * line by design — the id has to be unique per click.
+ *
+ * `crypto.randomUUID` needs a secure context, so the fallback keeps this
+ * working over plain http and in older runtimes.
+ */
+function createCartItemId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+/**
+ * Repairs carts persisted before ids were unique (and any hand-edited
+ * storage): anything missing an id, or repeating one already seen, is given a
+ * fresh one. Without this, a cart saved earlier would still delete every copy
+ * of a variant at once even though the bug itself is fixed.
+ */
+function withUniqueIds(items: CartItem[]): CartItem[] {
+  const seen = new Set<string>();
+  return items.map((item) => {
+    const id = item?.cartItemId;
+    if (typeof id !== "string" || id === "" || seen.has(id)) {
+      const replacement = createCartItemId();
+      seen.add(replacement);
+      return { ...item, cartItemId: replacement };
+    }
+    seen.add(id);
+    return item;
+  });
+}
+
 function readStoredCart(): CartItem[] {
   try {
     const raw = window.localStorage.getItem(CART_STORAGE_KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as CartItem[]) : [];
+    return Array.isArray(parsed) ? withUniqueIds(parsed as CartItem[]) : [];
   } catch {
     // Corrupt/missing JSON, or localStorage unavailable — fall back to an
     // empty cart rather than throwing.
@@ -75,8 +114,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items, isHydrated]);
 
   const addItem = useCallback((item: NewCartItem) => {
-    const cartItemId = `${item.productId}-${item.color}-${item.storage}`;
-    setItems((prev) => [...prev, { ...item, cartItemId }]);
+    setItems((prev) => [...prev, { ...item, cartItemId: createCartItemId() }]);
   }, []);
 
   const removeItem = useCallback((cartItemId: string) => {

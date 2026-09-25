@@ -16,16 +16,29 @@ const item: CartItemModel = {
 };
 
 describe("CartItem", () => {
-  it("renders name, brand, specs and price", () => {
+  it("renders the name, the storage|colour line and the price", () => {
     render(
       <ul>
         <CartItem item={item} onRemove={vi.fn()} />
       </ul>,
     );
     expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
-    expect(screen.getByText("Apple")).toBeInTheDocument();
-    expect(screen.getByText("Color: Space Black · Storage: 256GB")).toBeInTheDocument();
+    // CONFIRMED — the frames show "<storage> | <colour>", and no brand line.
+    expect(screen.getByText("256GB | Space Black")).toBeInTheDocument();
+    expect(screen.queryByText("Apple")).not.toBeInTheDocument();
     expect(screen.getByText("1319 EUR")).toBeInTheDocument();
+  });
+
+  it("labels the remove control 'Eliminar' while keeping a distinguishing accessible name", () => {
+    render(
+      <ul>
+        <CartItem item={item} onRemove={vi.fn()} />
+      </ul>,
+    );
+    const remove = screen.getByRole("button", { name: "Remove iPhone 15 Pro Max from cart" });
+    // Several rows can be on screen at once, so "Eliminar" alone would be
+    // ambiguous in a screen reader's list of controls.
+    expect(remove).toHaveTextContent("Eliminar");
   });
 
   it("normalizes http image urls to https", () => {

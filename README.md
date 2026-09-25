@@ -215,7 +215,7 @@ src/
 │  ├─ layout/Header/          # global nav bar, reads useCart() itself
 │  ├─ listing/                # SearchBar, ResultsCount, PhoneGrid, EmptyState
 │  ├─ detail/                 # PhoneDetail (React Query boundary), PhoneHero, Color/StorageSelector, SpecsList, AddToCartButton, SimilarProducts
-│  └─ cart/                   # CartList, CartItem, CartSummary, EmptyCart
+│  └─ cart/                   # CartList, CartItem, CartSummary
 ├─ context/CartContext.tsx    # the only piece of app state; localStorage-persisted
 ├─ lib/
 │  ├─ api/{types,api,transform}.ts  # direct-to-external-API transport + documented quirk workarounds
@@ -345,16 +345,16 @@ What's covered:
   boundary, additionally covers a cold cache, a since-deleted product (404)
   and a failed request.
 - **Cart**: every item field renders, remove calls `removeItem` and the row
-  disappears, the total recalculates, the empty state appears at 0 items,
-  "Continue shopping" navigates to `/` from both the populated and the empty
-  state.
+  disappears, the total recalculates, and the zero state is the same screen —
+  heading back to "Cart (0)", no rows, and the action bar still in place with a
+  0 total rather than being swapped for a bespoke empty page.
 - **`src/app/integration.test.tsx`**: the one true end-to-end walk across all
   three views sharing a single `CartProvider` **and** a single
   `QueryClientProvider` — search the listing,
   click a card, land on the exact product's Detail page, select color +
   storage, add to cart, switch to the Cart view and verify the line item has
   the _selected_ color/storage/price (not defaults), remove it, and see the
-  empty state. A second case walks back to the listing and asserts the catalog
+  zero state. A second case walks back to the listing and asserts the catalog
   came from the shared query cache rather than a fresh request. This is the
   seam three independently-built view "workstreams" can't verify on their own.
 - **Storybook** is the manual/visual agnosticism check, not a Vitest

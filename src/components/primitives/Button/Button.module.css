@@ -32,6 +32,15 @@
   }
 }
 
+/* reset.css's global `outline: 2px solid currentColor` is invisible on the
+   primary variant: its text — and so its currentColor — is white, drawn on a
+   white page. Pinning the ring to black makes it show on both variants, and
+   the offset keeps it clear of the primary's own black fill. */
+.button:focus-visible {
+  outline: 2px solid var(--color-black);
+  outline-offset: 2px;
+}
+
 .primary {
   background-color: var(--color-button-primary-bg);
   color: var(--color-button-primary-text);

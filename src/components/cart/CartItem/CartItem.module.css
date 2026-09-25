@@ -1,15 +1,19 @@
+/* CONFIRMED sizing, measured off the Figma cart frames: the photo is a 146px
+   square on mobile and 240px on tablet/desktop, the text column starts 185px
+   (mobile) / 303px (tablet+desktop) in from the page gutter, and the whole row
+   is exactly as tall as the photo. */
 .row {
   display: flex;
   align-items: center;
-  gap: var(--space-5);
-  padding: var(--space-2);
+  gap: var(--space-2);
+  padding: 0;
 }
 
 .imageWrapper {
   position: relative;
-  flex-shrink: 0;
-  width: 96px;
-  height: 96px;
+  flex: none;
+  width: 146px;
+  height: 146px;
   overflow: hidden;
 }
 
@@ -19,31 +23,76 @@
   object-fit: contain;
 }
 
+/* A column, not a stack of rows: the top three lines sit together and the
+   remove control is pushed to the bottom edge, level with the photo. */
 .info {
   display: flex;
   flex: 1;
   min-width: 0;
   flex-direction: column;
+  align-items: flex-start;
   gap: 4px;
+  /* 40px all round, except on mobile where the horizontal padding drops to
+     24px so the narrow column keeps room for the text. */
+  padding: var(--space-5) var(--space-3);
 }
 
-.brand {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+.name,
+.specs,
+.price {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm); /* CONFIRMED — every line in the row is 14px */
+  font-weight: var(--font-weight-light); /* CONFIRMED — no bold anywhere in this design */
   text-transform: uppercase;
 }
 
-.name {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-regular);
-}
-
+.name,
 .specs {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
+/* CONFIRMED — the frames leave a blank line's worth of space above the price. */
 .price {
+  margin-top: var(--space-2);
+}
+
+.remove {
+  /* Pushes it to the bottom of the column — the "at the bottom" alignment the
+     frames show, level with the bottom of the photo. */
+  margin-top: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-family-base);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-light);
+  color: var(--color-danger); /* CONFIRMED — the remove link is red */
+  text-align: left;
+}
+
+.remove:hover {
+  text-decoration: none;
+}
+
+.remove:focus-visible {
+  outline: var(--border-width-thin) solid var(--color-danger);
+  outline-offset: 4px;
+}
+
+@media (min-width: 834px) {
+  .row {
+    gap: var(--space-3);
+  }
+
+  .info {
+    padding: var(--space-5);
+  }
+
+  .imageWrapper {
+    width: 240px;
+    height: 240px;
+  }
 }

@@ -1,24 +1,61 @@
+/* Mobile: the total gets its own full-width line above the two buttons, which
+   then split the row evenly. `order`/`flex-basis` do the rearranging so the
+   markup — and therefore the tab order — is the same at every width. */
 .summary {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-2);
-  border-top: var(--border-width-thin) solid var(--color-border-subtle);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.summary > button {
+  flex: 1 0 174px;
+  padding-inline: var(--space-3);
 }
 
 .totalRow {
+  order: -1;
+  flex: 1 0 100%;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
 }
 
-.totalLabel {
-  font-size: var(--font-size-md);
+.totalLabel,
+.totalValue {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
 }
 
-.totalValue {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
+/* `Price` sets its own `font-weight: light`, which beat the weight inherited
+   from .totalValue and left the amount noticeably thinner than its label.
+   Price renders exactly one span, and this selector outranks the module's own
+   single-class rule, so the total reads as one piece of text. */
+.totalValue > span {
+  font-weight: inherit;
+}
+
+/* Tablet and desktop: one row — continue on the left, total and pay together
+   on the right, exactly as the Figma cart frames lay it out. */
+@media (min-width: 834px) {
+  .summary {
+    flex-wrap: nowrap;
+    gap: var(--space-5);
+  }
+
+  .totalRow {
+    order: 0;
+    /* Pushes the total and pay to the right edge, leaving continue at the
+       left — no spacer element needed. */
+    flex: 0 0 auto;
+    margin-left: auto;
+    gap: var(--space-2);
+    justify-content: flex-end;
+  }
+
+  .summary > button {
+    flex: 0 0 260px;
+  }
 }

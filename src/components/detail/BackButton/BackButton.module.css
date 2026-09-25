@@ -8,6 +8,10 @@
   font-family: var(--font-family-base);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-regular);
+  /* CONFIRMED — the Figma frames render this as "BACK". Uppercasing in CSS
+     rather than in the markup keeps the DOM text (and the accessible name)
+     as normal-cased prose. */
+  text-transform: uppercase;
 }
 
 .link:hover {

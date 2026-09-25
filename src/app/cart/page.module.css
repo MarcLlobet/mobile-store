@@ -1,14 +1,40 @@
+/* The cart is a full-screen view: the item area grows to take whatever space
+   is left so the action bar always sits on the bottom edge of the viewport,
+   rather than floating directly under the last row. `dvh` (not `vh`) because
+   mobile browsers' collapsing address bar makes `vh` overshoot, which would
+   push the bar below the fold — the one place it must never be. */
 .main {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  max-width: 720px;
-  margin: 0 auto;
-  padding: var(--space-3) var(--space-2);
+  min-height: calc(100dvh - var(--header-height));
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-2) var(--space-3);
 }
 
 .heading {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-light); /* CONFIRMED — no bold anywhere in this design */
   text-transform: uppercase;
+  margin: 0;
+}
+
+/* The flexible middle: this is what pins the action bar to the bottom. */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+@media (min-width: 834px) {
+  .main {
+    padding: var(--space-5) var(--space-5) var(--space-5);
+  }
+}
+
+@media (min-width: 1024px) {
+  .main {
+    padding: var(--space-6) var(--space-header-x) var(--space-6);
+  }
 }

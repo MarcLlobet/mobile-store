@@ -1,23 +1,36 @@
 /* `.page` moved to app/phones/[id]/layout.module.css — the route layout
    now owns the <main> box that used to be rendered here. */
 
+/* CONFIRMED — the mobile frame stacks the hero above the product info, and
+   the tablet and desktop frames put them side by side. This block previously
+   declared `column` and then `row` right after it, so the later value won and
+   every width rendered as a row, squeezing the two columns together on a
+   phone. Row-only properties (the centring and the fixed height) now live in
+   the tablet query with it. */
 .layout {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
 }
 
+/* Tablet keeps the two columns close together with slack on the right — the
+   frame puts the info column at x=432..692 inside a 40..794 content box, so it
+   is NOT pushed flush to the right edge the way desktop is. */
 @media (min-width: 834px) {
   .layout {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-5);
     height: 416px;
   }
 }
 
 @media (min-width: 1024px) {
   .layout {
+    /* Desktop does run edge to edge: the frame's info column ends at 1559,
+       which is the content box's right edge. */
+    justify-content: space-between;
     height: 630px;
   }
 }
@@ -27,6 +40,15 @@
   flex-direction: column;
   gap: var(--space-7); /* CONFIRMED — EL-2c3e7564 "Product info" gap, 64px */
   width: 100%;
+}
+
+/* CONFIRMED widths, measured from the solid "Añadir" button on each frame
+   (it spans the info column exactly): 260 at tablet, 380 at desktop, and the
+   full content width on mobile where the layout is a column. */
+@media (min-width: 834px) {
+  .info {
+    max-width: 362px;
+  }
 }
 
 @media (min-width: 1024px) {

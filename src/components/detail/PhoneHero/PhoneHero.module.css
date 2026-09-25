@@ -5,6 +5,22 @@
   padding: var(--space-4);
 }
 
+/* Tablet's hero is narrower than desktop's. Without this cap the hero is a
+   flex item that grows to fill whatever the 260px info column leaves, which
+   pushed the info flush to the right gutter; the frame instead ends the hero
+   at x=392 so the info sits at 432 with slack after it. */
+@media (min-width: 834px) {
+  .wrapper {
+    max-width: 352px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .wrapper {
+    max-width: 510px;
+  }
+}
+
 /* All color variants share a single grid cell, so the box is as tall as the
    tallest photo and selecting a color never reflows the page. `start` keeps
    the top-aligned hero (grid's default `stretch` would squash a photo whose
