@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+
 import { ColorSelector } from "./ColorSelector";
 
 const colors = [
@@ -19,15 +20,15 @@ describe("ColorSelector", () => {
 
   it("marks nothing as checked when selected is null", () => {
     render(<ColorSelector colors={colors} selected={null} onSelect={vi.fn()} />);
-    for (const radio of screen.getAllByRole("radio")) {
+    screen.getAllByRole("radio").forEach((radio) => {
       expect(radio).toHaveAttribute("aria-checked", "false");
-    }
+    });
   });
 
   it("marks the matching swatch as checked", () => {
     render(<ColorSelector colors={colors} selected={colors[1] ?? null} onSelect={vi.fn()} />);
-    expect(screen.getByRole("radio", { name: "Blue" })).toHaveAttribute("aria-checked", "true");
-    expect(screen.getByRole("radio", { name: "Black" })).toHaveAttribute("aria-checked", "false");
+    expect(screen.getByRole("radio", { name: "Blue" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "Black" })).not.toBeChecked();
   });
 
   it("calls onSelect with the clicked color", async () => {
@@ -48,11 +49,6 @@ describe("ColorSelector", () => {
       <ColorSelector colors={colors} selected={null} onSelect={vi.fn()} />,
     );
 
-    // The label always renders a name — the first color's, as a stand-in — so
-    // the box has a real line height from the first paint. It is CSS
-    // (`visibility: hidden` while no swatch is aria-checked) that keeps it out
-    // of sight and out of the accessibility tree; jsdom applies no stylesheet,
-    // hence the structural assertion rather than a visibility one.
     const label = container.querySelector("p");
     expect(label).not.toBeNull();
     expect(label).toHaveTextContent("Black");
@@ -63,26 +59,21 @@ describe("ColorSelector", () => {
 
   it("swaps the label to the selected color once there is one", () => {
     const { container } = render(
-      <ColorSelector colors={colors} selected={colors[1]} onSelect={vi.fn()} />,
+      <ColorSelector colors={colors} selected={colors[1]!} onSelect={vi.fn()} />,
     );
     expect(container.querySelector("p")).toHaveTextContent("Blue");
   });
 
   describe("CSS hover-preview contract", () => {
-    // The preview itself is a `:has()` rule in PhoneDetailView.module.css, so
-    // jsdom cannot exercise it. What IS testable — and what would actually
-    // break it — is the positional hook those rules match on.
     it("indexes each swatch positionally so the hero image can be paired with it", () => {
-      render(<ColorSelector colors={colors} selected={colors[0]} onSelect={vi.fn()} />);
+      render(<ColorSelector colors={colors} selected={colors[0]!} onSelect={vi.fn()} />);
 
-      const indexes = screen
-        .getAllByRole("radio")
-        .map((radio) => radio.getAttribute("data-color-index"));
+      const indexes = screen.getAllByRole("radio").map((radio) => radio.dataset.colorIndex);
       expect(indexes).toEqual(["0", "1"]);
     });
 
     it("names every swatch on hover via title, without any hover handler", () => {
-      render(<ColorSelector colors={colors} selected={colors[0]} onSelect={vi.fn()} />);
+      render(<ColorSelector colors={colors} selected={colors[0]!} onSelect={vi.fn()} />);
       expect(screen.getByRole("radio", { name: "Blue" })).toHaveAttribute("title", "Blue");
     });
   });

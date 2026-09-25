@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+
 import { Icon, type IconName } from "./Icon";
 
 const svgNames: IconName[] = ["home", "trash", "chevron-left", "chevron-right", "search"];

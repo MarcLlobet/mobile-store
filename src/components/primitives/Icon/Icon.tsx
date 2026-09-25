@@ -1,18 +1,5 @@
 import type { JSX, SVGProps } from "react";
 
-/**
- * Two icon sources:
- * - `strokePaths`: hand-drawn outline glyphs (Feather-style) for names the
- *   real Figma file's icon library never reached before the Figma REST API
- *   rate-limited this session out — kept as a reasonable, accessible stand-in.
- * - `assetIcons`: real Figma exports (design/figma-assets/, mirrored into
- *   public/icons/figma/), downloaded via mcp__figma__download_figma_images
- *   (a separate quota from the rate-limited get_figma_data, confirmed still
- *   working) — node IDs cited in the plan/tokens.css. Rendered as `<img>`
- *   since two of them are only available as a flattened PNG export, and the
- *   two real SVGs are already flat black fills with no need for
- *   currentColor theming in this monochrome design.
- */
 export type IconName =
   | "home"
   | "back"
@@ -25,12 +12,18 @@ export type IconName =
   | "close"
   | "logo";
 
+/*
+ * These props are spread onto an <svg>, so they inherit React's own `SVGProps`,
+ * which is mutable and not ours to change. Every prop declared here is readonly;
+ * the exemption covers only what React contributes.
+ */
+// eslint-disable-next-line functional/type-declaration-immutability
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "width" | "height" | "name"> {
-  name: IconName;
-  size?: number;
-  ariaHidden?: boolean;
-  title?: string;
-  className?: string;
+  readonly name: IconName;
+  readonly size?: number;
+  readonly ariaHidden?: boolean;
+  readonly title?: string;
+  readonly className?: string;
 }
 
 const strokePaths: Partial<Record<IconName, JSX.Element>> = {
@@ -59,9 +52,15 @@ const strokePaths: Partial<Record<IconName, JSX.Element>> = {
   ),
 };
 
-// Native pixel dimensions of each exported asset, used to preserve aspect
-// ratio when `size` scales the rendered width.
-const assetIcons: Partial<Record<IconName, { src: string; width: number; height: number }>> = {
+const DEFAULT_ICON_SIZE = 24;
+
+interface AssetIcon {
+  readonly src: string;
+  readonly width: number;
+  readonly height: number;
+}
+
+const assetIcons: Partial<Record<IconName, AssetIcon>> = {
   back: { src: "/icons/figma/chevron-left.png", width: 80, height: 80 },
   "bag-empty": { src: "/icons/figma/bag-empty.svg", width: 24, height: 24 },
   "bag-filled": { src: "/icons/figma/bag-filled.svg", width: 24, height: 24 },
@@ -69,40 +68,82 @@ const assetIcons: Partial<Record<IconName, { src: string; width: number; height:
   logo: { src: "/icons/figma/logo.svg", width: 77, height: 29 },
 };
 
-export function Icon({ name, size = 24, ariaHidden = true, title, className, ...rest }: IconProps) {
-  const asset = assetIcons[name];
-  if (asset) {
-    const height = Math.round((asset.height / asset.width) * size);
-    return (
-      // eslint-disable-next-line @next/next/no-img-element -- tiny decorative/static icon assets, not content images; no next/image benefit
-      <img
-        src={asset.src}
-        alt={ariaHidden ? "" : (title ?? name)}
-        aria-hidden={ariaHidden ? "true" : undefined}
-        width={size}
-        height={height}
-        className={className}
-      />
-    );
-  }
-
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden={ariaHidden ? "true" : undefined}
-      role={ariaHidden ? undefined : "img"}
-      {...rest}
-    >
-      {!ariaHidden && title ? <desc>{title}</desc> : null}
-      {strokePaths[name]}
-    </svg>
-  );
+/**
+ * Both renderers take a resolved `accessibleName`: `undefined` means the icon is
+ * decorative and should be hidden, a string means it is announced.
+ */
+interface AssetIconProps {
+  readonly asset: AssetIcon;
+  readonly size: number;
+  readonly accessibleName?: string;
+  readonly className?: string;
 }
+
+const AssetBackedIcon = ({ asset, size, accessibleName, className }: AssetIconProps) => (
+  // eslint-disable-next-line @next/next/no-img-element -- tiny decorative/static icon assets, not content images; no next/image benefit
+  <img
+    src={asset.src}
+    alt={accessibleName ?? ""}
+    aria-hidden={accessibleName === undefined ? "true" : undefined}
+    width={size}
+    height={Math.round((asset.height / asset.width) * size)}
+    className={className}
+  />
+);
+
+// eslint-disable-next-line functional/type-declaration-immutability -- inherits React's mutable SVGProps
+interface StrokeIconProps extends Omit<SVGProps<SVGSVGElement>, "width" | "height" | "name"> {
+  readonly name: IconName;
+  readonly size: number;
+  readonly accessibleName?: string;
+}
+
+const StrokeIcon = ({ name, size, accessibleName, className, ...rest }: StrokeIconProps) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.75}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    aria-hidden={accessibleName === undefined ? "true" : undefined}
+    role={accessibleName === undefined ? undefined : "img"}
+    {...rest}
+  >
+    {/* `<title>` is what names an `<svg role="img">`; `<desc>` only describes it. */}
+    {accessibleName === undefined ? null : <title>{accessibleName}</title>}
+    {strokePaths[name]}
+  </svg>
+);
+
+export const Icon = ({
+  name,
+  size = DEFAULT_ICON_SIZE,
+  ariaHidden = true,
+  title,
+  className,
+  ...rest
+}: IconProps) => {
+  const asset = assetIcons[name];
+  const accessibleName = ariaHidden ? undefined : (title ?? name);
+
+  return asset ? (
+    <AssetBackedIcon
+      asset={asset}
+      size={size}
+      accessibleName={accessibleName}
+      className={className}
+    />
+  ) : (
+    <StrokeIcon
+      name={name}
+      size={size}
+      accessibleName={accessibleName}
+      className={className}
+      {...rest}
+    />
+  );
+};

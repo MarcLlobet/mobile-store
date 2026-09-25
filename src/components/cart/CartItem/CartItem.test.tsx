@@ -1,15 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { CartItem } from "./CartItem";
+
 import type { CartItem as CartItemModel } from "@/types/cart";
+
+import { CartItem } from "./CartItem";
 
 const item: CartItemModel = {
   cartItemId: "APL-IP15PM-Space Black-256GB",
   productId: "APL-IP15PM",
   name: "iPhone 15 Pro Max",
   brand: "Apple",
-  imageUrl: "http://prueba-tecnica-api-tienda-moviles.onrender.com/images/apl-ip15pm.png",
+  imageUrl: "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/apl-ip15pm.png",
   color: "Space Black",
   storage: "256GB",
   unitPrice: 1319,
@@ -23,7 +25,6 @@ describe("CartItem", () => {
       </ul>,
     );
     expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
-    // CONFIRMED — the frames show "<storage> | <colour>", and no brand line.
     expect(screen.getByText("256GB | Space Black")).toBeInTheDocument();
     expect(screen.queryByText("Apple")).not.toBeInTheDocument();
     expect(screen.getByText("1319 EUR")).toBeInTheDocument();
@@ -36,20 +37,19 @@ describe("CartItem", () => {
       </ul>,
     );
     const remove = screen.getByRole("button", { name: "Remove iPhone 15 Pro Max from cart" });
-    // Several rows can be on screen at once, so "Eliminar" alone would be
-    // ambiguous in a screen reader's list of controls.
     expect(remove).toHaveTextContent("Eliminar");
   });
 
-  it("normalizes http image urls to https", () => {
+  it("renders the image url it is given", () => {
     render(
       <ul>
         <CartItem item={item} onRemove={vi.fn()} />
       </ul>,
     );
     const img = screen.getByRole("img");
-    expect(img.getAttribute("src")).toContain(
-      "https://prueba-tecnica-api-tienda-moviles.onrender.com",
+    expect(img).toHaveAttribute(
+      "src",
+      expect.stringContaining("https://prueba-tecnica-api-tienda-moviles.onrender.com"),
     );
     expect(img).toHaveAttribute("alt", "iPhone 15 Pro Max");
   });

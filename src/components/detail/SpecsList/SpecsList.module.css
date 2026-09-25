@@ -1,13 +1,13 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5); /* CONFIRMED — EL-4f9e6233 "Specs" gap, 40px */
+  gap: var(--space-5);
 }
 
 .heading {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-lg); /* CONFIRMED — style_60414b43, 20px */
-  font-weight: var(--font-weight-light); /* CONFIRMED — style_60414b43 is weight 300, not bold */
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-light);
   color: var(--color-text-primary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -23,50 +23,43 @@
 .row {
   display: flex;
   align-items: baseline;
-  /* CONFIRMED real Figma row layout: a FIXED label column + a 12px/48px
-     gap (mobile/desktop, see .term below), not space-between. */
   gap: 12px;
-  padding: var(--space-2) 0; /* CONFIRMED — 16px 0, same at both breakpoints */
-  /* CONFIRMED — EL-1c753fd9/EL-87bc8593 strokes are fill_34dc0314 (BLACK),
-     not the grey border-subtle token. */
+  padding: var(--space-2) 0;
   border-bottom: var(--border-width-hairline) solid var(--color-black);
 }
 
 .row:first-child {
-  /* CONFIRMED — the first "Specification row" (Brand) has a top stroke
-     too ("0.5px 0px" = top+bottom), closing the table visually at the
-     top; every other row only has the bottom stroke. */
   border-top: var(--border-width-hairline) solid var(--color-black);
 }
 
 @media (min-width: 1024px) {
   .row {
-    gap: 48px; /* CONFIRMED — Desktop / Detail / Filled row gap */
+    gap: 48px;
   }
 }
 
 .term {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-xs); /* CONFIRMED — style_13cb6e9a, 12px (not 14px) */
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin: 0;
   flex-shrink: 0;
-  width: 150px; /* CONFIRMED — Mobile / Detail / Filled label column width */
+  width: 150px;
 }
 
 @media (min-width: 1024px) {
   .term {
-    width: 300px; /* CONFIRMED — Desktop / Detail / Filled label column width */
+    width: 300px;
   }
 }
 
 .value {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-xs); /* CONFIRMED — style_4d0f87d8, 12px (not 14px) */
-  font-weight: var(--font-weight-light); /* CONFIRMED — style_4d0f87d8 is weight 300, not regular */
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-light);
   color: var(--color-text-primary);
-  text-align: left; /* CONFIRMED — style_4d0f87d8 textAlignHorizontal: LEFT, not right */
+  text-align: left;
   margin: 0;
 }

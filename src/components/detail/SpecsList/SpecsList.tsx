@@ -1,8 +1,10 @@
 import { memo, useId } from "react";
+
 import type { ProductSpecs } from "@/lib/api/types";
+
 import styles from "./SpecsList.module.css";
 
-const SPEC_FIELDS: { key: keyof ProductSpecs; label: string }[] = [
+const SPEC_FIELDS: readonly { readonly key: keyof ProductSpecs; readonly label: string }[] = [
   { key: "screen", label: "Screen" },
   { key: "resolution", label: "Resolution" },
   { key: "processor", label: "Processor" },
@@ -13,33 +15,14 @@ const SPEC_FIELDS: { key: keyof ProductSpecs; label: string }[] = [
   { key: "screenRefreshRate", label: "Screen refresh rate" },
 ];
 
-/**
- * Renders brand, name, description and all 8 ProductSpecs fields as a
- * labelled list, in the exact row order confirmed on the real Figma
- * "Specification row" instances (node 20758:10425, Desktop / Detail /
- * Filled, and its mobile equivalent 20758:18953): Brand, Name,
- * Description, then the 8 technical fields. There is no "base price" row
- * in the real spec table — price is only shown once, near the title.
- */
 export interface SpecsListProps {
-  brand: string;
-  name: string;
-  specs: ProductSpecs;
-  description: string;
+  readonly brand: string;
+  readonly name: string;
+  readonly specs: ProductSpecs;
+  readonly description: string;
 }
 
-/**
- * Memoized: it sits below the Detail view's color/storage state, and every
- * hover over a color swatch re-renders that parent. Its props are stable
- * slices of one `product` object, so memo lets these 11 rows drop out of a
- * preview entirely.
- */
-export const SpecsList = memo(function SpecsList({
-  brand,
-  name,
-  specs,
-  description,
-}: SpecsListProps) {
+const SpecsTable = ({ brand, name, specs, description }: SpecsListProps) => {
   const headingId = useId();
 
   return (
@@ -69,4 +52,6 @@ export const SpecsList = memo(function SpecsList({
       </dl>
     </section>
   );
-});
+};
+
+export const SpecsList = memo(SpecsTable);

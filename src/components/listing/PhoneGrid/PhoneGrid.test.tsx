@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+
 import type { ProductListItem } from "@/lib/api/types";
+
 import { PhoneGrid } from "./PhoneGrid";
 
-// Mirrors the confirmed live-data quirk (plan §"Load-bearing quirks" #3):
-// `XMI-RN13P5G` appears twice in the first 20 listing items.
 const products: ProductListItem[] = [
   {
     id: "XMI-RN13P5G",
@@ -45,7 +45,7 @@ describe("PhoneGrid", () => {
   });
 
   it("never logs a React duplicate-key warning, even with duplicate product ids", () => {
-    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(vi.fn());
     render(<PhoneGrid products={products} />);
     const hasDuplicateKeyWarning = errorSpy.mock.calls.some((call) =>
       call.some((arg) => typeof arg === "string" && arg.includes("same key")),

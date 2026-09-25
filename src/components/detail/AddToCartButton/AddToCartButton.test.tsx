@@ -1,16 +1,18 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, beforeEach } from "vitest";
+
 import { CartProvider, useCart } from "@/context/CartContext";
+
 import { AddToCartButton } from "./AddToCartButton";
 
-const color = { name: "Black", hexCode: "#000000", imageUrl: "http://example.com/black.png" };
+const color = { name: "Black", hexCode: "#000000", imageUrl: "https://example.com/black.png" };
 const storage = { capacity: "256GB", price: 1319 };
 
-function Harness({
+const Harness = ({
   selectedColor = null as typeof color | null,
   selectedStorage = null as typeof storage | null,
-}) {
+}) => {
   const { items } = useCart();
   return (
     <>
@@ -25,15 +27,14 @@ function Harness({
       <p data-testid="cart-items">{JSON.stringify(items)}</p>
     </>
   );
-}
+};
 
-function renderWithCart(props: Parameters<typeof Harness>[0]) {
-  return render(
+const renderWithCart = (props: Parameters<typeof Harness>[0]) =>
+  render(
     <CartProvider>
       <Harness {...props} />
     </CartProvider>,
   );
-}
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -60,15 +61,15 @@ describe("AddToCartButton", () => {
     expect(screen.getByRole("button", { name: "Añadir" })).toBeEnabled();
   });
 
-  it("calls addItem once with the exact expected payload, normalizing the image url", async () => {
+  it("calls addItem once with the exact expected payload", async () => {
     renderWithCart({ selectedColor: color, selectedStorage: storage });
 
     await userEvent.click(screen.getByRole("button", { name: "Añadir" }));
 
     expect(screen.getByTestId("cart-count")).toHaveTextContent("1");
-    const items = JSON.parse(screen.getByTestId("cart-items").textContent ?? "[]");
+    const items: unknown = JSON.parse(screen.getByTestId("cart-items").textContent);
     expect(items).toHaveLength(1);
-    expect(items[0]).toMatchObject({
+    expect((items as readonly unknown[])[0]).toMatchObject({
       productId: "APL-IP15PM",
       name: "iPhone 15 Pro Max",
       brand: "Apple",

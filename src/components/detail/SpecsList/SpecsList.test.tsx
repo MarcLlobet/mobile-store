@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+
 import { SpecsList } from "./SpecsList";
 
 const specs = {
@@ -26,9 +27,9 @@ describe("SpecsList", () => {
     expect(screen.getByText("Name")).toBeInTheDocument();
     expect(screen.getByText("iPhone 15 Pro")).toBeInTheDocument();
 
-    for (const value of Object.values(specs)) {
+    Object.values(specs).forEach((value) => {
       expect(screen.getByText(value)).toBeInTheDocument();
-    }
+    });
   });
 
   it("does not render a base-price row — price is shown elsewhere, not in this table", () => {

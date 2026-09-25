@@ -1,24 +1,21 @@
 import { screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
-import { server } from "@mocks/server";
-import { scenarios } from "@mocks/handlers";
-import { PRODUCT_WITH_DETAIL_ID, productDetail } from "@mocks/fixtures";
+
 import { CartProvider } from "@/context/CartContext";
 import { productQuery } from "@/lib/api/queries";
 import { createTestQueryClient, renderWithQuery } from "@/test/query";
 import { trackRequests } from "@/test/requests";
-import { PhoneDetail } from "./PhoneDetail";
+import { PRODUCT_WITH_DETAIL_ID, productDetail } from "@mocks/fixtures";
+import { scenarios } from "@mocks/handlers";
+import { server } from "@mocks/server";
 
-/**
- * The data boundary for the Detail route, driven by the recorded
- * `/products/{id}` response through MSW.
- */
+import { PhoneDetail } from "./PhoneDetail";
 
 const requests = trackRequests();
 
 let queryClient = createTestQueryClient();
 
-function renderDetail(id = PRODUCT_WITH_DETAIL_ID, { seed = true }: { seed?: boolean } = {}) {
+const renderDetail = (id = PRODUCT_WITH_DETAIL_ID, { seed = true }: { seed?: boolean } = {}) => {
   if (seed) {
     queryClient.setQueryData(productQuery(id).queryKey, productDetail);
   }
@@ -26,7 +23,7 @@ function renderDetail(id = PRODUCT_WITH_DETAIL_ID, { seed = true }: { seed?: boo
     queryClient,
     wrap: (children) => <CartProvider>{children}</CartProvider>,
   });
-}
+};
 
 beforeEach(() => {
   window.localStorage.clear();

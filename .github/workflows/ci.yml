@@ -8,86 +8,90 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
-
-env:
-  NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
-  NEXT_PUBLIC_API_KEY: ${{ secrets.NEXT_PUBLIC_API_KEY }}
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build-and-test:
-    name: Lint, typecheck, test, build
+  verify:
+    name: ${{ matrix.check.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          - name: Prettier
+            run: pnpm format:check
+          - name: ESLint
+            run: pnpm lint --max-warnings=0
+          - name: Types
+            run: pnpm typecheck
+          - name: Tests
+            run: pnpm exec vitest run --coverage
+          - name: Build
+            run: pnpm build
+            artifact: static-export
+            path: out
+          - name: Storybook
+            run: pnpm build-storybook
+            artifact: storybook
+            path: storybook-static
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+
+      - name: ${{ matrix.check.name }}
+        run: ${{ matrix.check.run }}
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
+          NEXT_PUBLIC_API_KEY: ${{ secrets.NEXT_PUBLIC_API_KEY }}
+
+      - name: Keep the output for the Pages bundle
+        if: matrix.check.artifact != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.check.artifact }}
+          path: ${{ matrix.check.path }}
+          retention-days: 1
+          if-no-files-found: error
+
+  bundle:
+    name: Bundle the Pages artifact
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Download the static export
+        uses: actions/download-artifact@v4
         with:
-          node-version: 22
-          cache: pnpm
+          name: static-export
+          path: out
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Nest Storybook under /storybook
+        uses: actions/download-artifact@v4
+        with:
+          name: storybook
+          path: out/storybook
 
-      - name: Lint
-        # NOT `pnpm lint -- --max-warnings=0` - pnpm forwards trailing args to
-        # the underlying script verbatim, so the explicit `--` becomes a
-        # literal argument to eslint itself (`eslint . -- --max-warnings=0`),
-        # which eslint's CLI then parses as a file glob and fails with
-        # "No files matching the pattern '--max-warnings=0'". Passing the
-        # flag directly (no extra `--`) forwards it correctly.
-        run: pnpm lint --max-warnings=0
-
-      - name: Format check
-        run: pnpm format:check
-
-      - name: Typecheck
-        run: pnpm typecheck
-
-      - name: Unit tests (with coverage)
-        # NOT `pnpm test run --coverage` - the `test` script is already
-        # `vitest run`, so that would expand to `vitest run run --coverage`,
-        # where the second "run" is parsed as a test-name filter matching no
-        # files (`No test files found, exiting with code 1`) - silently
-        # turning this required, blocking gate into an always-red step.
-        # `pnpm exec` calls the vitest CLI directly, sidestepping the
-        # double-`run` collision.
-        run: pnpm exec vitest run --coverage
-
-      - name: Build Storybook
-        run: pnpm build-storybook
-
-      - name: Build app (static export)
-        run: pnpm build
-
-      - name: Merge Storybook into the app's static export
-        run: cp -r storybook-static out/storybook
-
-      - name: Upload Pages artifact
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: out
 
   deploy:
     name: Deploy to GitHub Pages
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: build-and-test
+    needs: bundle
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
+      - id: deployment
         uses: actions/deploy-pages@v4

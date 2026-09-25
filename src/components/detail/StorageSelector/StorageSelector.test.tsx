@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
+
 import { StorageSelector } from "./StorageSelector";
 
 const options = [
@@ -28,8 +29,8 @@ describe("StorageSelector", () => {
 
   it("marks the matching option as checked", () => {
     render(<StorageSelector options={options} selected={options[1] ?? null} onSelect={vi.fn()} />);
-    expect(screen.getAllByRole("radio")[1]).toHaveAttribute("aria-checked", "true");
-    expect(screen.getAllByRole("radio")[0]).toHaveAttribute("aria-checked", "false");
+    expect(screen.getAllByRole("radio")[1]).toBeChecked();
+    expect(screen.getAllByRole("radio")[0]).not.toBeChecked();
   });
 
   it("calls onSelect with the clicked option", async () => {

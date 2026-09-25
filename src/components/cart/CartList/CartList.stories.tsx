@@ -1,10 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { CartList } from "./CartList";
 
-/**
- * Prop-driven — no `useCart()` call inside it, so no `CartProvider`
- * decorator is needed here.
- */
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+
 const meta: Meta<typeof CartList> = {
   title: "Cart/CartList",
   component: CartList,

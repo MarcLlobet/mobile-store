@@ -1,26 +1,17 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { productQuery } from "@/lib/api/queries";
+
 import { PhoneDetailView } from "@/components/detail/PhoneDetailView";
+import { productQuery } from "@/lib/api/queries";
+
 import styles from "./PhoneDetail.module.css";
 
 export interface PhoneDetailProps {
-  id: string;
+  readonly id: string;
 }
 
-/**
- * Data boundary for the Detail route: reads the product from React Query so
- * the view below it stays purely presentational (and Storybook-mountable).
- *
- * The route's Server Component prefetched this exact key and hydrated it (see
- * app/phones/[id]/page.tsx), so in practice `data` is already there on the
- * first render — the branches below only come up when the browser later
- * refetches a stale entry and the API has since changed its answer. The
- * route's `loading.tsx` covers the real wait, hence `null` rather than a
- * second skeleton here.
- */
-export function PhoneDetail({ id }: PhoneDetailProps) {
+export const PhoneDetail = ({ id }: PhoneDetailProps) => {
   const { data: product, isPending, isError } = useQuery(productQuery(id));
 
   if (isPending) {
@@ -35,8 +26,6 @@ export function PhoneDetail({ id }: PhoneDetailProps) {
     );
   }
 
-  // `fetchProductById` resolves to null on a 404, so this is the product
-  // having been removed since the page was built — not a failed request.
   if (!product) {
     return (
       <p role="alert" className={styles.message}>
@@ -46,4 +35,4 @@ export function PhoneDetail({ id }: PhoneDetailProps) {
   }
 
   return <PhoneDetailView product={product} />;
-}
+};

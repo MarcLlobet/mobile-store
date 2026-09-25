@@ -1,9 +1,7 @@
 .list {
   display: flex;
   flex-direction: column;
-  /* Not monotonic — tablet is the roomiest of the three — so each breakpoint
-     is stated rather than derived. */
-  gap: var(--space-3); /* 24px, mobile */
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -11,12 +9,12 @@
 
 @media (min-width: 834px) {
   .list {
-    gap: var(--space-6); /* 48px, tablet */
+    gap: var(--space-6);
   }
 }
 
 @media (min-width: 1024px) {
   .list {
-    gap: var(--space-5); /* 40px, desktop */
+    gap: var(--space-5);
   }
 }

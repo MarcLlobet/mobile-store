@@ -1,34 +1,14 @@
 .grid {
-  /* auto-fill instead of hardcoded per-breakpoint column counts: at the
-     three CONFIRMED Figma frame widths (393/834/1920, tokens.css), once the
-     page's own padding (--space-2/--space-header-x) and this gap are
-     subtracted, a 320px track produces the same 1/2/5 columns the design
-     uses, without pinning to those exact widths — it scales cleanly for
-     anything in between too. (340px only fits 4 columns at 1920px.) */
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 0;
   list-style: none;
   margin: 0;
-  /* Compensates .item's matching negative margin below, so the grid's
-     outer edge stays put — see .item comment. */
   padding: var(--border-width-hairline) 0 0 var(--border-width-hairline);
 }
 
 .item {
   min-width: 0;
-  /* The Figma card is square, so the height is the track width rather than a
-     per-breakpoint number: `minmax(320px, 1fr)` already resolves to Figma's
-     1/2/5 columns once the page padding matches (see PhoneListing.module.css),
-     which makes this 344 at desktop and 377 at tablet — the measured Figma
-     boxes — without three hard-coded heights to keep in sync. */
   aspect-ratio: 1 / 1;
-  /* Each ProductTile draws its own full hairline border. At gap:0, two
-     adjacent 0.5px borders sit side by side rather than merging — most
-     browsers round hairline borders up to a full device pixel each,
-     so the pair renders as a visible 2px double line instead of one.
-     Shifting every item by exactly -1 border-width overlaps its
-     top/left border directly onto the previous item's bottom/right
-     border, so only one line ever paints, regardless of rounding. */
   margin: calc(-1 * var(--border-width-hairline)) 0 0 calc(-1 * var(--border-width-hairline));
 }

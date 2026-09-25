@@ -1,34 +1,26 @@
 "use client";
 
-import { useCart } from "@/context/CartContext";
-import { normalizeImageUrl } from "@/lib/api/transform";
-import type { ColorOption, StorageOption } from "@/lib/api/types";
 import { Button } from "@/components/primitives/Button";
+import { useCart } from "@/context/CartContext";
+import type { ColorOption, StorageOption } from "@/lib/api/types";
+
 import styles from "./AddToCartButton.module.css";
 
-/**
- * Gated "Add to cart" control — disabled until both a color and a storage
- * capacity are selected. On click, calls the frozen `useCart().addItem`
- * contract with `unitPrice: selectedStorage.price` (the absolute price for
- * that tier, per the confirmed API quirk) and the normalized image of the
- * currently selected color (so the cart line shows exactly what the user
- * saw on the hero image).
- */
 export interface AddToCartButtonProps {
-  productId: string;
-  name: string;
-  brand: string;
-  selectedColor: ColorOption | null;
-  selectedStorage: StorageOption | null;
+  readonly productId: string;
+  readonly name: string;
+  readonly brand: string;
+  readonly selectedColor: ColorOption | null;
+  readonly selectedStorage: StorageOption | null;
 }
 
-export function AddToCartButton({
+export const AddToCartButton = ({
   productId,
   name,
   brand,
   selectedColor,
   selectedStorage,
-}: AddToCartButtonProps) {
+}: AddToCartButtonProps) => {
   const { addItem } = useCart();
   const canAddToCart = selectedColor !== null && selectedStorage !== null;
 
@@ -38,7 +30,7 @@ export function AddToCartButton({
       productId,
       name,
       brand,
-      imageUrl: normalizeImageUrl(selectedColor.imageUrl),
+      imageUrl: selectedColor.imageUrl,
       color: selectedColor.name,
       storage: selectedStorage.capacity,
       unitPrice: selectedStorage.price,
@@ -52,4 +44,4 @@ export function AddToCartButton({
       </Button>
     </div>
   );
-}
+};

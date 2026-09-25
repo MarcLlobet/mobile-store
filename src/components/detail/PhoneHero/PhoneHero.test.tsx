@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
 import { PhoneHero } from "./PhoneHero";
 
 const BLACK = "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/black.png";
@@ -10,6 +11,13 @@ const variants = [
   { key: "Blue", imageUrl: BLUE },
 ];
 
+/** Installs a stub `HTMLImageElement.decode`, which jsdom does not implement. */
+const stubDecode = () => {
+  const decode = vi.fn(() => Promise.resolve());
+  (HTMLImageElement.prototype as { decode?: unknown }).decode = decode;
+  return decode;
+};
+
 describe("PhoneHero", () => {
   it("names only the active variant with the phone name", () => {
     render(<PhoneHero variants={variants} activeKey="Black" name="iPhone 15 Pro Max" />);
@@ -19,13 +27,11 @@ describe("PhoneHero", () => {
 
   it("renders every variant up front, eagerly, so none is fetched on selection", () => {
     const { container } = render(<PhoneHero variants={variants} activeKey="Black" name="Phone" />);
-    const imgs = Array.from(container.querySelectorAll("img"));
+    const imgs = [...container.querySelectorAll("img")];
     expect(imgs.map((img) => img.getAttribute("src"))).toEqual([BLACK, BLUE]);
-    for (const img of imgs) {
+    imgs.forEach((img) => {
       expect(img).toHaveAttribute("loading", "eager");
-    }
-    // The visible one is fetched first; the cache-warming copies must not
-    // compete with it.
+    });
     expect(imgs[0]).toHaveAttribute("fetchpriority", "high");
     expect(imgs[1]).toHaveAttribute("fetchpriority", "low");
   });
@@ -40,19 +46,15 @@ describe("PhoneHero", () => {
     const { container, rerender } = render(
       <PhoneHero variants={variants} activeKey="Black" name="Phone" />,
     );
-    const before = Array.from(container.querySelectorAll("img"));
+    const before = [...container.querySelectorAll("img")];
 
     rerender(<PhoneHero variants={variants} activeKey="Blue" name="Phone" />);
 
     expect(screen.getByRole("img", { name: "Phone" })).toHaveAttribute("src", BLUE);
-    // Same DOM nodes as before — the swap is a visibility flip, not a remount
-    // that would drop the decoded image and re-request it.
-    expect(Array.from(container.querySelectorAll("img"))).toEqual(before);
+    expect([...container.querySelectorAll("img")]).toEqual(before);
   });
 
   it("keeps two colors that share one photo as two addressable variants", () => {
-    // The API serves the same image for differently-named colors. Deduping by
-    // url would collapse these, so activating the second would show the first.
     const shared = [
       { key: "Graphite", imageUrl: BLACK },
       { key: "Space Black", imageUrl: BLACK },
@@ -61,9 +63,8 @@ describe("PhoneHero", () => {
       <PhoneHero variants={shared} activeKey="Space Black" name="Phone" />,
     );
 
-    const imgs = Array.from(container.querySelectorAll("img"));
+    const imgs = [...container.querySelectorAll("img")];
     expect(imgs).toHaveLength(2);
-    // The *second* node is the named/visible one, not the first.
     expect(imgs[1]).toHaveAttribute("alt", "Phone");
     expect(imgs[0]).toHaveAttribute("aria-hidden", "true");
   });
@@ -74,21 +75,13 @@ describe("PhoneHero", () => {
   });
 
   describe("pre-decoding", () => {
-    // jsdom has no HTMLImageElement.decode(), so it is installed per test.
     afterEach(() => {
       delete (HTMLImageElement.prototype as { decode?: unknown }).decode;
     });
 
-    function stubDecode() {
-      const decode = vi.fn(() => Promise.resolve());
-      (HTMLImageElement.prototype as { decode?: unknown }).decode = decode;
-      return decode;
-    }
-
     it("pre-decodes every variant, not just the visible one", () => {
       const decode = stubDecode();
       render(<PhoneHero variants={variants} activeKey="Black" name="Phone" />);
-      // Once decoded, revealing a variant on hover is a pure composite.
       expect(decode).toHaveBeenCalledTimes(variants.length);
     });
 
@@ -97,7 +90,6 @@ describe("PhoneHero", () => {
       const { rerender } = render(<PhoneHero variants={variants} activeKey="Black" name="Phone" />);
       decode.mockClear();
 
-      // This is what every hover does — it must not restart decode work.
       rerender(<PhoneHero variants={variants} activeKey="Blue" name="Phone" />);
 
       expect(decode).not.toHaveBeenCalled();

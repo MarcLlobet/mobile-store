@@ -1,11 +1,7 @@
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { CartItem } from "./CartItem";
 
-/**
- * `CartItem` is purely prop-driven (no `useCart()` call inside it), so it
- * renders standalone here with no `CartProvider` decorator — proof that the
- * component is agnostic to where its data comes from.
- */
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+
 const meta: Meta<typeof CartItem> = {
   title: "Cart/CartItem",
   component: CartItem,

@@ -383,30 +383,46 @@ uploading it as one Pages artifact.
 
 ## CI / Deploy
 
-`.github/workflows/ci.yml` runs on every push/PR to `main`, all steps
-required and blocking (a failing unit test fails the whole job, per the
-brief's explicit requirement that this not be "just a local nice-to-have"):
+`.github/workflows/ci.yml` runs on every push/PR to `main`, in three phases.
 
-1. `pnpm install --frozen-lockfile`
-2. `pnpm lint --max-warnings=0`
-3. `pnpm format:check`
-4. `pnpm typecheck`
-5. `pnpm exec vitest run --coverage` — unit + integration tests
-6. `pnpm build-storybook` — fails the job if any story throws
-7. `pnpm build` — the static export (`NEXT_PUBLIC_API_BASE_URL`/
-   `NEXT_PUBLIC_API_KEY` come from **GitHub Actions secrets** of the same
-   name, matching `.env.example`, injected as build-time env vars)
-8. `cp -r storybook-static out/storybook` — merges the design system into the
-   app's own output as a `/storybook` sub-path
-9. On `push` to `main` only: `actions/upload-pages-artifact` on the merged
-   `out/`, then a separate `deploy` job runs `actions/deploy-pages`.
+**1. `verify` — a fan-out matrix, every entry blocking.** Each runs on its own
+runner off a shared `./.github/actions/setup` composite (pnpm + Node 22 +
+`pnpm install --frozen-lockfile`, with the pnpm store cached):
+
+| Entry     | Command                           |
+| --------- | --------------------------------- |
+| Prettier  | `pnpm format:check`               |
+| ESLint    | `pnpm lint --max-warnings=0`      |
+| Types     | `pnpm typecheck`                  |
+| Tests     | `pnpm exec vitest run --coverage` |
+| Build     | `pnpm build`                      |
+| Storybook | `pnpm build-storybook`            |
+
+`fail-fast: false`, so one red entry doesn't hide the others — a run tells you
+everything that's broken, not just whichever failed first. The build is in the
+matrix deliberately: a broken export or a throwing story surfaces alongside the
+lint errors rather than after them, and it fails PRs, not just `main`.
+
+The two output-producing entries upload what they built (`out/` and
+`storybook-static/`) as one-day workflow artifacts, so nothing is compiled
+twice. `NEXT_PUBLIC_API_BASE_URL` / `NEXT_PUBLIC_API_KEY` come from **GitHub
+Actions secrets** of the same name, matching `.env.example`.
+
+**2. `bundle` — assembly only**, on pushes to `main`. It needs no checkout and
+no Node: it downloads the two artifacts, placing Storybook directly at
+`out/storybook`, and hands the merged tree to `actions/upload-pages-artifact`.
+
+**3. `deploy`** runs `actions/deploy-pages` under the `github-pages`
+environment, with `pages: write`/`id-token: write` scoped to that job alone and
+a `pages` concurrency group so a deploy is never cancelled mid-flight. The
+workflow-level concurrency group cancels superseded **PR** runs only.
 
 Result: one deploy publishes both the app
 (`https://<user>.github.io/mobile-ecommerce/`) and the live Storybook design
 system (`https://<user>.github.io/mobile-ecommerce/storybook/`) — no second
-Pages site needed. Deploying is **not done from this workspace**: this repo
-has no git remote configured yet, and going public / wiring up the two repo
-secrets is a decision for whoever owns the GitHub repo to make explicitly.
+Pages site needed. Deploying is **not done from this workspace**: this repo has
+no git remote configured yet, and going public / wiring up the two repo secrets
+is a decision for whoever owns the GitHub repo to make explicitly.
 
 ## API quirks
 

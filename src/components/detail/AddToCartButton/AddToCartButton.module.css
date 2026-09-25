@@ -6,13 +6,13 @@
 }
 
 @media (min-width: 834px) {
-  .wrapper{
+  .wrapper {
     width: 260px;
   }
 }
 
 @media (min-width: 1024px) {
-  .wrapper{
+  .wrapper {
     width: 380px;
   }
 }

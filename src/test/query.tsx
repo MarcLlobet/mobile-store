@@ -1,19 +1,10 @@
 import type { ReactElement, ReactNode } from "react";
-import { render, type RenderOptions, type RenderResult } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-/**
- * Test-time React Query setup.
- *
- * A fresh client per test, so one test's cache can never leak into the next.
- * `retry: false` matches the app's own default (src/lib/query/queryClient.ts —
- * retries belong to the transport), which also keeps a failing-request test
- * from waiting out a backoff. `staleTime` matches the app so seeded data
- * behaves exactly as hydrated data does in production: read from cache, no
- * refetch on mount.
- */
-export function createTestQueryClient(): QueryClient {
-  return new QueryClient({
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, type RenderOptions, type RenderResult } from "@testing-library/react";
+
+export const createTestQueryClient = (): QueryClient =>
+  new QueryClient({
     defaultOptions: {
       queries: {
         retry: false,
@@ -22,25 +13,27 @@ export function createTestQueryClient(): QueryClient {
       },
     },
   });
-}
 
+/* Both extend Testing Library types, which are mutable and not ours to change.
+   Every field declared here is readonly; the exemptions cover only what RTL adds. */
+// eslint-disable-next-line functional/type-declaration-immutability
 export interface RenderWithQueryOptions extends Omit<RenderOptions, "wrapper"> {
-  queryClient?: QueryClient;
-  /** Extra providers to nest inside the QueryClientProvider (e.g. CartProvider). */
-  wrap?: (children: ReactNode) => ReactElement;
+  readonly queryClient?: QueryClient;
+  readonly wrap?: (children: ReactNode) => ReactElement;
 }
 
+// eslint-disable-next-line functional/type-declaration-immutability
 export interface RenderWithQueryResult extends RenderResult {
-  queryClient: QueryClient;
+  readonly queryClient: QueryClient;
 }
 
-export function renderWithQuery(
+export const renderWithQuery = (
   ui: ReactElement,
   { queryClient = createTestQueryClient(), wrap, ...options }: RenderWithQueryOptions = {},
-): RenderWithQueryResult {
-  const result = render(
+): RenderWithQueryResult => {
+  const view = render(
     <QueryClientProvider client={queryClient}>{wrap ? wrap(ui) : ui}</QueryClientProvider>,
     options,
   );
-  return { ...result, queryClient };
-}
+  return { ...view, queryClient };
+};

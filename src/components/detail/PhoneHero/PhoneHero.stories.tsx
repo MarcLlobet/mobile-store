@@ -1,5 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { PhoneHero } from "./PhoneHero";
+
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 const BLACK = "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/apl-ip15pm-black.png";
 const BLUE = "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/apl-ip15pm-blue.png";
@@ -26,12 +27,6 @@ type Story = StoryObj<typeof PhoneHero>;
 
 export const Default: Story = {};
 
-/**
- * Both variants are in the DOM and already fetched and decoded; only
- * `activeKey` decides which one is opaque. Flipping the control swaps the
- * image with no network activity — this is what makes the Detail view's
- * hover preview instant.
- */
 export const MultipleColorVariants: Story = {
   args: {
     variants: [
@@ -42,10 +37,6 @@ export const MultipleColorVariants: Story = {
   },
 };
 
-/**
- * Two differently-named colors sharing one photo — a real shape from this
- * API. Both stay individually addressable by `activeKey`.
- */
 export const SharedPhotoAcrossColors: Story = {
   args: {
     variants: [

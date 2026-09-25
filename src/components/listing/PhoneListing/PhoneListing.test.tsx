@@ -1,36 +1,27 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
-import { server } from "@mocks/server";
-import { scenarios } from "@mocks/handlers";
-import { products } from "@mocks/fixtures";
+
 import { LISTING_LIMIT, listingQuery } from "@/lib/api/queries";
 import { createTestQueryClient, renderWithQuery } from "@/test/query";
 import { trackRequests } from "@/test/requests";
-import { PhoneListing } from "./PhoneListing";
+import { products } from "@mocks/fixtures";
+import { scenarios } from "@mocks/handlers";
+import { server } from "@mocks/server";
 
-/**
- * PhoneListing is exercised against the recorded catalog served by MSW, so
- * "what a search returns" is decided by the same server-side filtering the
- * real API does — not by a resolved-value stub. Nothing in the app is mocked;
- * the component runs its real React Query hook over the real transport.
- */
+import { PhoneListing } from "./PhoneListing";
 
 const firstPage = products.slice(0, LISTING_LIMIT);
 const requests = trackRequests();
 
 let queryClient = createTestQueryClient();
 
-/**
- * Seeds the query the build-time prefetch would have hydrated (see
- * app/page.tsx), which is how this component always starts in production.
- */
-function renderListing({ seed = true }: { seed?: boolean } = {}) {
+const renderListing = ({ seed = true }: { seed?: boolean } = {}) => {
   if (seed) {
     queryClient.setQueryData(listingQuery().queryKey, firstPage);
   }
   return renderWithQuery(<PhoneListing />, { queryClient });
-}
+};
 
 beforeEach(() => {
   queryClient = createTestQueryClient();
@@ -44,7 +35,6 @@ describe("PhoneListing", () => {
     expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
     expect(screen.getByText(`${LISTING_LIMIT} results`)).toBeInTheDocument();
 
-    // The whole point of the build-time prefetch: no duplicate request.
     await waitFor(() => expect(requests.urls()).toEqual([]));
   });
 
@@ -61,9 +51,6 @@ describe("PhoneListing", () => {
 
     await userEvent.type(screen.getByRole("searchbox"), "iphone");
 
-    // Only the two iPhones in the recorded catalog survive the API's filter.
-    // Waiting on the count, not on a phone name: "iPhone 13" is also in the
-    // unfiltered first page, so it would match before the search resolved.
     expect(await screen.findByText("2 results")).toBeInTheDocument();
     expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
     expect(screen.getByText("iPhone 13")).toBeInTheDocument();
@@ -79,7 +66,7 @@ describe("PhoneListing", () => {
 
     await userEvent.type(screen.getByRole("searchbox"), "oppo");
 
-    await waitFor(() => expect(screen.getByText("4 results")).toBeInTheDocument());
+    expect(await screen.findByText("4 results")).toBeInTheDocument();
     expect(screen.getByText("Reno 11 F")).toBeInTheDocument();
   });
 
@@ -88,8 +75,6 @@ describe("PhoneListing", () => {
 
     await userEvent.type(screen.getByRole("searchbox"), "iphone");
 
-    // Between the keystroke settling and the response arriving, the grid still
-    // shows the previous page rather than blanking out.
     expect(screen.getByText("Galaxy S24 Ultra")).toBeInTheDocument();
     await screen.findByText("2 results");
   });
@@ -104,11 +89,10 @@ describe("PhoneListing", () => {
     expect(afterFirstSearch).toBe(1);
 
     await userEvent.clear(searchbox);
-    await waitFor(() => expect(screen.getByText("Galaxy S24 Ultra")).toBeInTheDocument());
+    expect(await screen.findByText("Galaxy S24 Ultra")).toBeInTheDocument();
     await userEvent.type(searchbox, "iphone");
-    await waitFor(() => expect(screen.getByText("2 results")).toBeInTheDocument());
+    expect(await screen.findByText("2 results")).toBeInTheDocument();
 
-    // Both the cleared query and the repeated one are still-fresh cache hits.
     expect(requests.urls()).toHaveLength(afterFirstSearch);
   });
 
@@ -121,9 +105,6 @@ describe("PhoneListing", () => {
     expect(screen.getByText("No results")).toBeInTheDocument();
   });
 
-  // The transport retries a dropped request twice with a backoff (see
-  // api.ts), so the UI is legitimately allowed several seconds before it gives
-  // up — this test waits that out rather than pretending failure is instant.
   it("shows an error message once the retries are exhausted", async () => {
     renderListing();
     server.use(...scenarios.networkError());
@@ -132,7 +113,6 @@ describe("PhoneListing", () => {
 
     expect(await screen.findByRole("alert", undefined, { timeout: 10_000 })).toBeInTheDocument();
     expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
-    // The previous results are gone, not silently left standing as if fresh.
     expect(screen.queryByText("Galaxy S24 Ultra")).not.toBeInTheDocument();
   }, 15_000);
 

@@ -1,6 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import type { ProductListItem } from "@/lib/api/types";
+
 import { PhoneGrid } from "./PhoneGrid";
+
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 const products: ProductListItem[] = [
   {

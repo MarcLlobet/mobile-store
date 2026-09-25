@@ -1,4 +1,3 @@
-/* The page box lives in layout.module.css — the layout owns the `<main>`. */
 .layout {
   display: grid;
   grid-template-columns: 1fr;

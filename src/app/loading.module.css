@@ -9,11 +9,6 @@
   max-width: 360px;
 }
 
-/* Mirrors PhoneGrid.module.css track-for-track (same minmax, same zero gap)
-   and .item's Figma card height, so the real grid replaces this skeleton
-   without the page jumping. It previously used 2/3/4 fixed columns at
-   768/1024 with a 24px gap and 220px tiles — none of which the real grid
-   has — so every load visibly reflowed. */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -24,7 +19,7 @@
 }
 
 .grid > li {
-  aspect-ratio: 1 / 1; /* same square card box as PhoneGrid's .item */
+  aspect-ratio: 1 / 1;
 }
 
 @media (min-width: 834px) {

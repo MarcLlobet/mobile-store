@@ -1,28 +1,35 @@
-/**
- * Small, pure helpers for working around confirmed live-data quirks of the
- * external API (see types.ts doc comment and the plan's Context section).
- */
+import type { ColorOption, ProductDetail, ProductListItem } from "./types";
+
+const HTTP_PREFIX = "http://";
 
 /**
- * The API sometimes serves `imageUrl` as `http://...onrender.com/...` even
- * though the API itself is `https://`. The same path also works fine over
- * https. Browsers will otherwise flag/block this as mixed content on an
- * https-served page, so always normalize before rendering.
+ * Detail as it arrives off the wire. Nothing validates the response at runtime,
+ * so the collections are optional here even though `ProductDetail` guarantees
+ * them to the rest of the app — normalising is what closes that gap.
  */
-export function normalizeImageUrl(url: string): string {
-  if (url.startsWith("http://")) {
-    return `https://${url.slice("http://".length)}`;
-  }
-  return url;
-}
+export type RawProductDetail = Omit<ProductDetail, "colorOptions" | "similarProducts"> & {
+  readonly colorOptions?: readonly ColorOption[];
+  readonly similarProducts?: readonly ProductListItem[];
+};
 
-/**
- * The live `/products` listing can contain duplicate `id`s (confirmed:
- * `XMI-RN13P5G` appears twice in the first 20 items). React list rendering
- * must never key directly off `product.id` — use this instead, which stays
- * stable for a given render of a given array (list index) while still being
- * unique even when ids collide.
- */
-export function keyFor(product: { id: string }, index: number): string {
-  return `${product.id}-${index}`;
-}
+export const normalizeImageUrl = (url: string): string =>
+  url.startsWith(HTTP_PREFIX) ? `https://${url.slice(HTTP_PREFIX.length)}` : url;
+
+export const normalizeListItem = (product: ProductListItem): ProductListItem => ({
+  ...product,
+  imageUrl: normalizeImageUrl(product.imageUrl),
+});
+
+const normalizeColorOption = (color: ColorOption): ColorOption => ({
+  ...color,
+  imageUrl: normalizeImageUrl(color.imageUrl),
+});
+
+export const normalizeProductDetail = (product: RawProductDetail): ProductDetail => ({
+  ...product,
+  colorOptions: (product.colorOptions ?? []).map((color) => normalizeColorOption(color)),
+  similarProducts: (product.similarProducts ?? []).map((item) => normalizeListItem(item)),
+});
+
+export const keyFor = (product: { readonly id: string }, index: number): string =>
+  `${product.id}-${index}`;

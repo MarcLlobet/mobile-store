@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { useDebouncedValue } from "./useDebouncedValue";
 
 describe("useDebouncedValue", () => {
@@ -53,7 +54,6 @@ describe("useDebouncedValue", () => {
     act(() => {
       vi.advanceTimersByTime(200);
     });
-    // Only 200ms have elapsed since "c" landed - "b" never had a chance to commit.
     expect(result.current).toBe("a");
 
     act(() => {

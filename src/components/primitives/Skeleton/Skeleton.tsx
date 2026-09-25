@@ -1,28 +1,25 @@
 import styles from "./Skeleton.module.css";
 
 export interface SkeletonProps {
-  width?: number | string;
-  height?: number | string;
-  radius?: number | string;
-  className?: string;
-  /** Accessible label announced while content is loading; purely decorative if omitted. */
-  ariaLabel?: string;
+  readonly width?: number | string;
+  readonly height?: number | string;
+  readonly radius?: number | string;
+  readonly className?: string;
+  readonly ariaLabel?: string;
 }
 
-export function Skeleton({
+export const Skeleton = ({
   width = "100%",
   height = 16,
   radius,
   className,
   ariaLabel,
-}: SkeletonProps) {
-  return (
-    <span
-      className={[styles.skeleton, className].filter(Boolean).join(" ")}
-      style={{ width, height, borderRadius: radius }}
-      role={ariaLabel ? "status" : undefined}
-      aria-label={ariaLabel}
-      aria-hidden={ariaLabel ? undefined : "true"}
-    />
-  );
-}
+}: SkeletonProps) => (
+  <span
+    className={[styles.skeleton, className].filter(Boolean).join(" ")}
+    style={{ width, height, borderRadius: radius }}
+    role={ariaLabel ? "status" : undefined}
+    aria-label={ariaLabel}
+    aria-hidden={ariaLabel ? undefined : "true"}
+  />
+);

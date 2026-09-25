@@ -1,7 +1,3 @@
-/* CONFIRMED sizing, measured off the Figma cart frames: the photo is a 146px
-   square on mobile and 240px on tablet/desktop, the text column starts 185px
-   (mobile) / 303px (tablet+desktop) in from the page gutter, and the whole row
-   is exactly as tall as the photo. */
 .row {
   display: flex;
   align-items: center;
@@ -23,8 +19,6 @@
   object-fit: contain;
 }
 
-/* A column, not a stack of rows: the top three lines sit together and the
-   remove control is pushed to the bottom edge, level with the photo. */
 .info {
   display: flex;
   flex: 1;
@@ -32,8 +26,6 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 4px;
-  /* 40px all round, except on mobile where the horizontal padding drops to
-     24px so the narrow column keeps room for the text. */
   padding: var(--space-5) var(--space-3);
 }
 
@@ -41,8 +33,8 @@
 .specs,
 .price {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-sm); /* CONFIRMED — every line in the row is 14px */
-  font-weight: var(--font-weight-light); /* CONFIRMED — no bold anywhere in this design */
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-light);
   text-transform: uppercase;
 }
 
@@ -53,14 +45,11 @@
   max-width: 100%;
 }
 
-/* CONFIRMED — the frames leave a blank line's worth of space above the price. */
 .price {
   margin-top: var(--space-2);
 }
 
 .remove {
-  /* Pushes it to the bottom of the column — the "at the bottom" alignment the
-     frames show, level with the bottom of the photo. */
   margin-top: auto;
   padding: 0;
   border: 0;
@@ -69,7 +58,7 @@
   font-family: var(--font-family-base);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-light);
-  color: var(--color-danger); /* CONFIRMED — the remove link is red */
+  color: var(--color-danger);
   text-align: left;
 }
 

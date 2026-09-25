@@ -1,8 +1,3 @@
-/**
- * Minimal modern CSS reset. Kept intentionally small — component modules
- * own their own spacing/typography via tokens.css custom properties.
- */
-
 *,
 *::before,
 *::after {

@@ -32,15 +32,11 @@
   color: var(--color-placeholder);
 }
 
-/* No ring — the field's own underline is the focus indicator instead. An
-   inset shadow thickens it from the 0.5px hairline to a solid 2px rather than
-   growing the border, which would shift the text by 1.5px on every focus. */
 .input:focus-visible {
   outline: none;
   box-shadow: inset 0 -1px 0 0 var(--color-black);
 }
 
-/* The browser's own clear affordance is replaced by the Figma cross below. */
 .input::-webkit-search-cancel-button {
   -webkit-appearance: none;
   appearance: none;
@@ -65,7 +61,6 @@
   outline-offset: 2px;
 }
 
-/* Keeps the typed text from running under the clear control. */
 .input:not(:placeholder-shown) {
   padding-right: var(--space-3);
 }

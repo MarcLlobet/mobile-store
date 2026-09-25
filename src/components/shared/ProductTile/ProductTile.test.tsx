@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+
 import { ProductTile } from "./ProductTile";
 
 const product = {
@@ -7,7 +8,7 @@ const product = {
   name: "iPhone 15 Pro Max",
   brand: "Apple",
   basePrice: 1319,
-  imageUrl: "http://prueba-tecnica-api-tienda-moviles.onrender.com/images/apl-ip15pm.png",
+  imageUrl: "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/apl-ip15pm.png",
 };
 
 describe("ProductTile", () => {
@@ -19,11 +20,12 @@ describe("ProductTile", () => {
     expect(img).toHaveAttribute("alt", "Apple iPhone 15 Pro Max");
   });
 
-  it("normalizes http image urls to https", () => {
+  it("renders the image url it is given", () => {
     render(<ProductTile {...product} />);
     const img = screen.getByRole("img");
-    expect(img.getAttribute("src")).toContain(
-      "https://prueba-tecnica-api-tienda-moviles.onrender.com",
+    expect(img).toHaveAttribute(
+      "src",
+      expect.stringContaining("https://prueba-tecnica-api-tienda-moviles.onrender.com"),
     );
   });
 

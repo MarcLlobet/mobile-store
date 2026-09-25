@@ -1,7 +1,10 @@
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+
 import type { ColorOption } from "@/lib/api/types";
+
 import { ColorSelector } from "./ColorSelector";
+
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 const colors: ColorOption[] = [
   { name: "Black", hexCode: "#1c1c1e", imageUrl: "" },
@@ -26,21 +29,12 @@ export const OneSelected: Story = {
   args: { selected: colors[1] },
 };
 
-// Demonstrates the component being driven by real state, exactly as the
-// Detail page's client component (PhoneDetailView) drives it. Start here to
-// see the no-shift behaviour: nothing is selected, and the name label below
-// the swatches is already occupying its line (hidden with `visibility`), so
-// picking a color reveals the text without moving anything.
-//
-// Hovering has no effect in this story by design — the preview is a `:has()`
-// rule that needs the hero image, so it only exists on the assembled Detail
-// view.
 export const Interactive: Story = {
   render: (args) => {
-    function Wrapper() {
+    const Wrapper = () => {
       const [selected, setSelected] = useState<ColorOption | null>(null);
       return <ColorSelector {...args} selected={selected} onSelect={setSelected} />;
-    }
+    };
     return <Wrapper />;
   },
 };

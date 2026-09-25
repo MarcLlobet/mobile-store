@@ -1,7 +1,10 @@
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+
 import type { StorageOption } from "@/lib/api/types";
+
 import { StorageSelector } from "./StorageSelector";
+
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 const options: StorageOption[] = [
   { capacity: "256GB", price: 1319 },
@@ -28,10 +31,10 @@ export const OneSelected: Story = {
 
 export const Interactive: Story = {
   render: (args) => {
-    function Wrapper() {
+    const Wrapper = () => {
       const [selected, setSelected] = useState<StorageOption | null>(null);
       return <StorageSelector {...args} selected={selected} onSelect={setSelected} />;
-    }
+    };
     return <Wrapper />;
   },
 };

@@ -1,21 +1,9 @@
-/* `.page` moved to app/phones/[id]/layout.module.css — the route layout
-   now owns the <main> box that used to be rendered here. */
-
-/* CONFIRMED — the mobile frame stacks the hero above the product info, and
-   the tablet and desktop frames put them side by side. This block previously
-   declared `column` and then `row` right after it, so the later value won and
-   every width rendered as a row, squeezing the two columns together on a
-   phone. Row-only properties (the centring and the fixed height) now live in
-   the tablet query with it. */
 .layout {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
 }
 
-/* Tablet keeps the two columns close together with slack on the right — the
-   frame puts the info column at x=432..692 inside a 40..794 content box, so it
-   is NOT pushed flush to the right edge the way desktop is. */
 @media (min-width: 834px) {
   .layout {
     flex-direction: row;
@@ -28,8 +16,6 @@
 
 @media (min-width: 1024px) {
   .layout {
-    /* Desktop does run edge to edge: the frame's info column ends at 1559,
-       which is the content box's right edge. */
     justify-content: space-between;
     height: 630px;
   }
@@ -38,13 +24,10 @@
 .info {
   display: flex;
   flex-direction: column;
-  gap: var(--space-7); /* CONFIRMED — EL-2c3e7564 "Product info" gap, 64px */
+  gap: var(--space-7);
   width: 100%;
 }
 
-/* CONFIRMED widths, measured from the solid "Añadir" button on each frame
-   (it spans the info column exactly): 260 at tablet, 380 at desktop, and the
-   full content width on mobile where the layout is a column. */
 @media (min-width: 834px) {
   .info {
     max-width: 362px;
@@ -53,74 +36,43 @@
 
 @media (min-width: 1024px) {
   .info {
-    max-width: 380px; /* CONFIRMED — EL-2c3e7564 fixed width */
+    max-width: 380px;
   }
 }
 
 .titlePrice {
   display: flex;
   flex-direction: column;
-  gap: 11px; /* CONFIRMED — EL-830fc452 "Title + price" gap */
+  gap: 11px;
 }
 
 .name {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-lg); /* CONFIRMED mobile/tablet — style_1649381d, 20px */
-  font-weight: var(
-    --font-weight-light
-  ); /* CONFIRMED — every sampled Figma text style is weight 300; there is no bold anywhere in this design */
-  text-transform: uppercase; /* CONFIRMED — textCase: UPPER */
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-light);
+  text-transform: uppercase;
   color: var(--color-text-primary);
   margin: 0;
 }
 
 .price {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-sm); /* CONFIRMED mobile — style_a68ff54b, 14px */
-  font-weight: var(--font-weight-light); /* CONFIRMED */
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-light);
   margin: 0;
 }
 
 @media (min-width: 1024px) {
   .name {
-    font-size: var(--font-size-xl); /* CONFIRMED desktop — style_aaa3e1b5, 24px */
+    font-size: var(--font-size-xl);
   }
 
   .price {
-    font-size: var(--font-size-lg); /* CONFIRMED desktop — style_60414b43, 20px */
+    font-size: var(--font-size-lg);
   }
 }
 
-/* ---------------------------------------------------------------------------
-   Colour hover preview — CSS only, no React state.
-
-   PhoneHero already renders every colour variant, fetched and decoded, in one
-   stacked grid cell with only the selected one opaque. Previewing another
-   colour is therefore just a question of which node is opaque, and that needs
-   no JavaScript: `:has()` reads the hovered swatch, and the matching image
-   fades in. Nothing re-renders, no handler fires, and hover can never leak
-   into what gets added to the cart.
-
-   `.layout` is the nearest ancestor of both the swatches and the hero, which
-   is why these rules live here rather than in PhoneHero's or ColorSelector's
-   stylesheet. They match on data attributes, not class names, because CSS
-   Module class names are hashed per file and would not resolve across them.
-   The pairing is positional: swatch `data-color-index="n"` previews hero
-   image `data-variant-index="n"`, which holds because PhoneDetailView builds
-   both lists from `product.colorOptions` in order, without deduping.
-
-   Behind `(hover: hover) and (pointer: fine)` so a tap on a touch screen
-   cannot leave a swatch stuck in a phantom :hover after selecting it.
-
-   One rule per index, up to MAX below. A product with more colours than that
-   still selects fine; the extra swatches simply don't preview. Raise the
-   block if the catalog ever grows past it (the recorded maximum is 4).
-   --------------------------------------------------------------------------- */
 @media (hover: hover) and (pointer: fine) {
-  /* Any swatch hovered: drop the selected variant first, so the rule below
-     is the only thing making a variant visible. Higher specificity than
-     PhoneHero's own `.image.active`, and ordered before the per-index rules
-     which match it exactly. */
   .layout:has([data-color-index]:hover) [data-variant-index] {
     opacity: 0;
   }

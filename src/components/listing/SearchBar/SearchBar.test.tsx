@@ -1,7 +1,14 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
 import { SearchBar } from "./SearchBar";
 
+/*
+ * This suite drives the debounce on fake timers, so it uses `fireEvent.change` on
+ * purpose: `userEvent` types one character at a time, which restarts the debounce
+ * on each keystroke and would measure something other than the delay under test.
+ */
+/* eslint-disable testing-library/prefer-user-event */
 describe("SearchBar", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -30,9 +37,7 @@ describe("SearchBar", () => {
     render(<SearchBar onSearch={onSearch} debounceMs={300} />);
 
     const input = screen.getByRole("searchbox");
-    act(() => {
-      fireEvent.change(input, { target: { value: "  iPhone  " } });
-    });
+    fireEvent.change(input, { target: { value: "  iPhone  " } });
 
     act(() => {
       vi.advanceTimersByTime(299);
@@ -54,13 +59,9 @@ describe("SearchBar", () => {
 
     it("appears once there is text, carrying the Figma cross rather than the browser's", () => {
       render(<SearchBar onSearch={vi.fn()} />);
-      act(() => {
-        fireEvent.change(screen.getByRole("searchbox"), { target: { value: "iphone" } });
-      });
+      fireEvent.change(screen.getByRole("searchbox"), { target: { value: "iphone" } });
 
       const clear = screen.getByRole("button", { name: "Clear search" });
-      // The native type="search" cancel button is a UA-drawn glyph with no
-      // element of its own; this is a real button rendering the exported icon.
       expect(clear.querySelector("img")).toHaveAttribute("src", "/icons/figma/close.svg");
     });
 
@@ -68,17 +69,13 @@ describe("SearchBar", () => {
       const onSearch = vi.fn();
       render(<SearchBar onSearch={onSearch} debounceMs={300} />);
       const input = screen.getByRole("searchbox");
+      fireEvent.change(input, { target: { value: "iphone" } });
       act(() => {
-        fireEvent.change(input, { target: { value: "iphone" } });
         vi.advanceTimersByTime(300);
       });
       onSearch.mockClear();
 
-      // Two passes: the click has to re-render with the emptied value before
-      // the debounce timer for it exists to be advanced.
-      act(() => {
-        fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
-      });
+      fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
       act(() => {
         vi.advanceTimersByTime(300);
       });
@@ -91,13 +88,9 @@ describe("SearchBar", () => {
     it("leaves the caret in the field so the next query can be typed straight away", () => {
       render(<SearchBar onSearch={vi.fn()} />);
       const input = screen.getByRole("searchbox");
-      act(() => {
-        fireEvent.change(input, { target: { value: "iphone" } });
-      });
+      fireEvent.change(input, { target: { value: "iphone" } });
 
-      act(() => {
-        fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
-      });
+      fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
 
       expect(input).toHaveFocus();
     });
@@ -108,17 +101,15 @@ describe("SearchBar", () => {
     render(<SearchBar onSearch={onSearch} debounceMs={300} />);
 
     const input = screen.getByRole("searchbox");
-    act(() => {
-      fireEvent.change(input, { target: { value: "a" } });
-    });
+    fireEvent.change(input, { target: { value: "a" } });
     act(() => {
       vi.advanceTimersByTime(100);
-      fireEvent.change(input, { target: { value: "ap" } });
     });
+    fireEvent.change(input, { target: { value: "ap" } });
     act(() => {
       vi.advanceTimersByTime(100);
-      fireEvent.change(input, { target: { value: "app" } });
     });
+    fireEvent.change(input, { target: { value: "app" } });
     act(() => {
       vi.advanceTimersByTime(300);
     });

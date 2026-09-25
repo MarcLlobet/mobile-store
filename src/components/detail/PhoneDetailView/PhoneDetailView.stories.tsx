@@ -1,8 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import PhoneDetailLayout from "@/app/phones/[id]/layout";
 import { CartProvider } from "@/context/CartContext";
 import type { ProductDetail } from "@/lib/api/types";
+
 import { PhoneDetailView } from "./PhoneDetailView";
+
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 const product: ProductDetail = {
   id: "APL-IP15PM",
@@ -61,10 +63,6 @@ const meta: Meta<typeof PhoneDetailView> = {
   title: "Detail/PhoneDetailView",
   component: PhoneDetailView,
   args: { product },
-  // PhoneDetailView renders AddToCartButton, which calls useCart()
-  // internally — every story must supply a CartProvider explicitly. The
-  // real route layout supplies the <main> box and the BackButton that the
-  // component no longer renders itself, so stories mount it too.
   decorators: [
     (Story) => (
       <CartProvider>

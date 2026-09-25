@@ -1,5 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { SimilarProducts } from "./SimilarProducts";
+
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 const products = [
   {

@@ -7,7 +7,7 @@
 .label {
   font-family: var(--font-family-base);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-light); /* CONFIRMED — no bold anywhere in this design */
+  font-weight: var(--font-weight-light);
   color: var(--color-text-primary);
 }
 
@@ -19,11 +19,8 @@
 
 .swatchWrapper {
   display: inline-flex;
-  /* Gap between the wrapper's own border and the swatch's fill, so the
-     wrapper border reads as a distinct outer ring rather than sitting
-     flush against the color. */
   padding: 2px;
-  border: var(--border-width-thin) solid var(--color-border-subtle); /* grey, unselected */
+  border: var(--border-width-thin) solid var(--color-border-subtle);
   cursor: pointer;
 }
 
@@ -37,14 +34,13 @@
 }
 
 .swatchWrapper.selected {
-  border-color: var(--color-black); /* black, selected */
+  border-color: var(--color-black);
 }
 
 .swatch {
   display: block;
-  width: 24px; /* CONFIRMED — Color component (20617:355), 24x24 both states */
+  width: 24px;
   height: 24px;
-  /* CONFIRMED — no borderRadius on either Color component state: square corners. */
   border: var(--border-width-thin) solid transparent;
 }
 
@@ -55,15 +51,6 @@
   margin: 0;
 }
 
-/* Before anything is selected the label still renders a name (the first
-   color's, as a stand-in) purely so its line box exists. `visibility` rather
-   than `display` is the point: the box keeps its height, so picking a color
-   reveals the text without nudging anything below it. `visibility: hidden`
-   also removes it from the accessibility tree, so no color is announced as
-   chosen before one is.
-
-   Driven off the `aria-checked` the swatches already publish, so this needs
-   no extra prop, state or modifier class. */
 .wrapper:not(:has([aria-checked="true"])) .selectedName {
   visibility: hidden;
 }

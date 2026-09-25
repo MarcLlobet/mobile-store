@@ -3,21 +3,13 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  /* CONFIRMED — the real "Add to cart" SDS Button instance is a fixed
-     56px tall at the mobile/tablet breakpoint variant (componentId
-     20821:4909, "Breakpoint=XS-M") and 48px at desktop
-     (20821:4893, "Breakpoint=L-XL"). */
   min-height: 56px;
   padding: var(--space-1) var(--space-3);
-  border: var(--border-width-thin) solid transparent; /* CONFIRMED — square corners, no radius */
+  border: var(--border-width-thin) solid transparent;
   font-family: var(--font-family-base);
-  font-size: var(--font-size-xs); /* CONFIRMED — style_c80d5008, 12px (not 14px) */
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-base);
-  /* Figma's SDS Button is always rendered uppercase with tracked letter-
-     spacing ("AÑADIR" / "PAY" / "CONTINUE SHOPPING") — one shared change
-     here covers every Button consumer (AddToCartButton, CartSummary, ...).
-     CONFIRMED letter-spacing — style_c80d5008 is 0.08em (not 0.04em). */
   text-transform: uppercase;
   letter-spacing: 0.08em;
   transition:
@@ -32,10 +24,6 @@
   }
 }
 
-/* reset.css's global `outline: 2px solid currentColor` is invisible on the
-   primary variant: its text — and so its currentColor — is white, drawn on a
-   white page. Pinning the ring to black makes it show on both variants, and
-   the offset keeps it clear of the primary's own black fill. */
 .button:focus-visible {
   outline: 2px solid var(--color-black);
   outline-offset: 2px;

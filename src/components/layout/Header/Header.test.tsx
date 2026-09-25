@@ -1,14 +1,12 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+
 import { CartProvider, useCart } from "@/context/CartContext";
+
 import { Header } from "./Header";
 
-// Adds a line to the cart on a user click (not on mount) so this exercises
-// the same real-world sequencing as a genuine "Add to cart" click: it can
-// only ever happen after CartProvider's post-mount localStorage hydration
-// has already settled, never racing it.
-function HeaderWithAddButton() {
+const HeaderWithAddButton = () => {
   const { addItem } = useCart();
   return (
     <>
@@ -31,7 +29,7 @@ function HeaderWithAddButton() {
       <Header />
     </>
   );
-}
+};
 
 describe("Header", () => {
   it("renders a home link and a cart link", () => {
@@ -54,6 +52,6 @@ describe("Header", () => {
   });
 
   it("takes no props", () => {
-    expect(Header.length).toBe(0);
+    expect(Header).toHaveLength(0);
   });
 });

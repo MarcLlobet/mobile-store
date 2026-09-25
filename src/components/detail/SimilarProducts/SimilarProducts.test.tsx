@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+
 import { SimilarProducts } from "./SimilarProducts";
 
 const products = [
@@ -8,14 +9,14 @@ const products = [
     name: "Redmi Note 13 Pro 5G",
     brand: "Xiaomi",
     basePrice: 399,
-    imageUrl: "http://example.com/a.png",
+    imageUrl: "https://example.com/a.png",
   },
   {
     id: "XMI-RN13P5G",
     name: "Redmi Note 13 Pro 5G (dup id)",
     brand: "Xiaomi",
     basePrice: 399,
-    imageUrl: "http://example.com/b.png",
+    imageUrl: "https://example.com/b.png",
   },
 ];
 

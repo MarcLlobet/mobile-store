@@ -13,8 +13,6 @@
   width: 100%;
 }
 
-/* CONFIRMED — the logo's left edge sits on the page gutter at every frame:
-   16 mobile, 40 tablet, 100 desktop. */
 @media (min-width: 834px) {
   .header {
     padding: var(--space-3) var(--space-5);
@@ -30,21 +28,19 @@
 .homeLink {
   display: flex;
   align-items: center;
-  /* The wordmark is a fixed-size asset (see Header.tsx) — never let the flex
-     row shrink it. */
   flex: none;
 }
 
 .cartLink {
   display: flex;
   align-items: center;
-  gap: 6px; /* CONFIRMED — Bag component (20605:4459) icon-to-count gap */
-  padding: 4px 0; /* CONFIRMED — Bag component padding */
+  gap: 6px;
+  padding: 4px 0;
   color: var(--color-text-primary);
   position: relative;
 }
 
 .cartCount {
-  font-size: var(--font-size-md); /* CONFIRMED — style_0658ea89 */
+  font-size: var(--font-size-md);
   line-height: var(--line-height-tight);
 }

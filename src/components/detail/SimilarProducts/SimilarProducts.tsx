@@ -1,45 +1,29 @@
 "use client";
 
 import { memo, useEffect, useId, useRef, useState } from "react";
+
 import { ProductTile } from "@/components/shared/ProductTile";
 import { keyFor } from "@/lib/api/transform";
 import type { ProductListItem } from "@/lib/api/types";
+
 import styles from "./SimilarProducts.module.css";
 
-/**
- * "Similar products" section — the API embeds `similarProducts` directly in
- * the `/products/{id}` response (no separate endpoint), so this component is
- * purely presentational, reusing the shared ProductTile card. Rendered as a
- * horizontally-scrollable row (Figma "Similar items"/"Carousel") without a
- * JS carousel library, per the plan.
- *
- * The native scrollbar is hidden and replaced with a custom track+thumb bar
- * below the list, matching the real Figma "Bar"/"Scroll" elements (a 1px
- * full-width grey track with a 1px black thumb). Figma's static mock draws
- * the thumb at a fixed 100px, but that number only made sense for its own
- * fixed mock content — here the thumb width/position is computed from the
- * real visible/total scroll ratio so it stays meaningful for any card count.
- */
 export interface SimilarProductsProps {
-  products: ProductListItem[];
+  readonly products: readonly ProductListItem[];
 }
 
-/**
- * Memoized for the same reason as SpecsList: `products` is a stable slice of
- * the Detail view's `product`, so hovering a color swatch upstream never
- * re-renders these tiles (or re-runs the scroll-thumb effect keyed on them).
- */
-export const SimilarProducts = memo(function SimilarProducts({ products }: SimilarProductsProps) {
+const SimilarProductsList = ({ products }: SimilarProductsProps) => {
   const headingId = useId();
   const listRef = useRef<HTMLUListElement>(null);
   const [thumb, setThumb] = useState({ widthPercent: 100, leftPercent: 0 });
 
   useEffect(() => {
     const list = listRef.current;
-    if (!list) return;
+    if (!list) {
+      return;
+    }
 
-    function updateThumb() {
-      if (!list) return;
+    const updateThumb = () => {
       const { scrollWidth, clientWidth, scrollLeft } = list;
       if (scrollWidth <= clientWidth) {
         setThumb({ widthPercent: 100, leftPercent: 0 });
@@ -49,7 +33,7 @@ export const SimilarProducts = memo(function SimilarProducts({ products }: Simil
       const maxScrollLeft = scrollWidth - clientWidth;
       const leftPercent = (scrollLeft / maxScrollLeft) * (100 - widthPercent);
       setThumb({ widthPercent, leftPercent });
-    }
+    };
 
     updateThumb();
     list.addEventListener("scroll", updateThumb);
@@ -84,4 +68,6 @@ export const SimilarProducts = memo(function SimilarProducts({ products }: Simil
       </div>
     </section>
   );
-});
+};
+
+export const SimilarProducts = memo(SimilarProductsList);

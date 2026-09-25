@@ -1,7 +1,9 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CART_STORAGE_KEY, CartProvider, useCart } from "./CartContext";
+
 import type { NewCartItem } from "@/types/cart";
+
+import { CART_STORAGE_KEY, CartProvider, useCart } from "./CartContext";
 
 const baseItem: NewCartItem = {
   productId: "APL-IP15PM",
@@ -13,9 +15,14 @@ const baseItem: NewCartItem = {
   unitPrice: 1319,
 };
 
-function renderCart() {
-  return renderHook(() => useCart(), { wrapper: CartProvider });
-}
+const renderCart = () => renderHook(() => useCart(), { wrapper: CartProvider });
+
+/** Adds the same line `times` over, so each call has to mint its own id. */
+const addRepeatedly = (addItem: (item: NewCartItem) => void, times: number) => {
+  Array.from({ length: times }).forEach(() => {
+    addItem(baseItem);
+  });
+};
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -41,7 +48,6 @@ describe("CartContext", () => {
 
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0]).toMatchObject(baseItem);
-    // The id is generated, not derived from the variant — see below for why.
     expect(result.current.items[0]?.cartItemId).toEqual(expect.any(String));
     expect(result.current.items[0]?.cartItemId).not.toBe("");
     expect(result.current.itemCount).toBe(1);
@@ -81,21 +87,13 @@ describe("CartContext", () => {
     expect(result.current.items[0]?.color).toBe("Blue");
   });
 
-  /**
-   * Regression: `cartItemId` used to be `${productId}-${color}-${storage}`, so
-   * every copy of one variant shared a single id. Removing any of them matched
-   * all of them in `removeItem`'s filter and emptied the whole group at once
-   * (and React rendered the list with duplicate keys). Adding the same variant
-   * repeatedly is explicitly supported — there is no merge/quantity concept —
-   * so these lines have to stay individually addressable.
-   */
   describe("repeated adds of one identical variant", () => {
     it("gives every line its own id", async () => {
       const { result } = renderCart();
       await waitFor(() => expect(result.current.items).toEqual([]));
 
       act(() => {
-        for (let i = 0; i < 5; i++) result.current.addItem(baseItem);
+        addRepeatedly(result.current.addItem, 5);
       });
 
       expect(result.current.items).toHaveLength(5);
@@ -108,19 +106,18 @@ describe("CartContext", () => {
       await waitFor(() => expect(result.current.items).toEqual([]));
 
       act(() => {
-        for (let i = 0; i < 5; i++) result.current.addItem(baseItem);
+        addRepeatedly(result.current.addItem, 5);
       });
-      const [, secondLine] = result.current.items;
+      const secondLine = result.current.items[1]!;
 
       act(() => {
-        result.current.removeItem(secondLine!.cartItemId);
+        result.current.removeItem(secondLine.cartItemId);
       });
 
       expect(result.current.items).toHaveLength(4);
       expect(result.current.itemCount).toBe(4);
       expect(result.current.totalPrice).toBe(1319 * 4);
-      // The removed line is gone and no other line went with it.
-      expect(result.current.items.map((i) => i.cartItemId)).not.toContain(secondLine!.cartItemId);
+      expect(result.current.items.map((i) => i.cartItemId)).not.toContain(secondLine.cartItemId);
       expect(result.current.items.every((i) => i.color === baseItem.color)).toBe(true);
     });
 
@@ -129,15 +126,15 @@ describe("CartContext", () => {
       await waitFor(() => expect(result.current.items).toEqual([]));
 
       act(() => {
-        for (let i = 0; i < 3; i++) result.current.addItem(baseItem);
+        addRepeatedly(result.current.addItem, 3);
       });
 
-      for (const expected of [2, 1, 0]) {
+      [2, 1, 0].forEach((expected) => {
         act(() => {
           result.current.removeItem(result.current.items[0]!.cartItemId);
         });
         expect(result.current.items).toHaveLength(expected);
-      }
+      });
     });
 
     it("keeps the lines distinguishable across a reload", async () => {
@@ -145,7 +142,7 @@ describe("CartContext", () => {
       await waitFor(() => expect(result.current.items).toEqual([]));
 
       act(() => {
-        for (let i = 0; i < 3; i++) result.current.addItem(baseItem);
+        addRepeatedly(result.current.addItem, 3);
       });
       await waitFor(() =>
         expect(JSON.parse(window.localStorage.getItem(CART_STORAGE_KEY) ?? "[]")).toHaveLength(3),
@@ -162,7 +159,6 @@ describe("CartContext", () => {
     });
 
     it("repairs a cart persisted before ids were unique", async () => {
-      // Exactly what the old scheme wrote: three lines, one shared id.
       const legacyId = "APL-IP15PM-Black-256GB";
       window.localStorage.setItem(
         CART_STORAGE_KEY,
@@ -220,7 +216,6 @@ describe("CartContext", () => {
     await waitFor(() => {
       expect(result2.current.items).toHaveLength(1);
     });
-    // The generated id is what persists, so it is stable across the remount.
     expect(result2.current.items[0]?.cartItemId).toBe(storedId);
   });
 
@@ -243,7 +238,7 @@ describe("CartContext", () => {
   });
 
   it("throws a clear error when useCart is used outside CartProvider", () => {
-    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const spy = vi.spyOn(console, "error").mockImplementation(vi.fn());
     expect(() => renderHook(() => useCart())).toThrow(/useCart must be used within a CartProvider/);
     spy.mockRestore();
   });

@@ -1,8 +1,28 @@
 {
   "semi": true,
   "singleQuote": false,
+  "jsxSingleQuote": false,
+  "quoteProps": "as-needed",
   "trailingComma": "all",
   "printWidth": 100,
   "tabWidth": 2,
-  "endOfLine": "lf"
+  "useTabs": false,
+  "bracketSpacing": true,
+  "bracketSameLine": false,
+  "arrowParens": "always",
+  "endOfLine": "lf",
+  "embeddedLanguageFormatting": "auto",
+  "htmlWhitespaceSensitivity": "css",
+  "experimentalOperatorPosition": "start",
+  "objectWrap": "preserve",
+  "overrides": [
+    {
+      "files": ["*.json", "*.jsonc", "*.md", "*.yml", "*.yaml"],
+      "options": { "printWidth": 80, "trailingComma": "none" }
+    },
+    {
+      "files": ["*.css"],
+      "options": { "singleQuote": false }
+    }
+  ]
 }

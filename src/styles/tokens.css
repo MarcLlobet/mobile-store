@@ -1,134 +1,59 @@
-/**
- * Design tokens.
- *
- * Values marked CONFIRMED were read directly from the Figma file
- * (fileKey Nuic7ePgOfUQ0hcBrUUQrb) via mcp__figma__get_figma_data before the
- * Figma REST API rate-limited this session out (429, "Retry after ~400000s"
- * — the account's viewer-seat quota was already close to exhausted from an
- * earlier exploration pass before Phase 0 started). Nodes actually read:
- * Header instance (20620:3075), Smartphone card instance (20742:6946),
- * Cart item component set (20620:3184), SDS Button component set
- * (20605:5253, metadata only — variant fills/colors could not be reached
- * before the limit hit), and a depth-1 pass over the Desktop/Tablet/Mobile
- * canvas sections (20620:9054 / 20669:2483 / 20669:2484 — only returned
- * section wrapper sizes, not individual per-breakpoint screen-frame widths).
- *
- * Values marked PLACEHOLDER are reasonable, internally-consistent stand-ins
- * (kept on an 8px base grid matching the confirmed 16/24/40px figures, and a
- * neutral grey ramp) used only where the real Figma value could not be
- * fetched. They are isolated to CSS variables in this single file
- * specifically so Phase 2 (or a follow-up Figma pull once the rate limit
- * resets) can true them up without touching component code.
- */
-
 :root {
-  /* Typography. Figma's own text styles (style_0658ea89, style_2df23738,
-     style_13cb6e9a, ...) confirm every text node in the design is set in
-     "Helvetica Neue", weight 300. Helvetica Neue is a commercial Monotype
-     font with no legal free package (Fontsource only hosts open-licensed
-     fonts) — so this is a font STACK, not a single download: real
-     "Helvetica Neue" first (used automatically wherever the OS actually
-     ships it, i.e. every Mac/iOS device — matches Figma exactly there),
-     then Helvetica/Arial (the brief's own literal mandate, and Windows'
-     built-in equivalent), then @fontsource/arimo (installed; imported in
-     app/layout.tsx and .storybook/preview.tsx) as the guaranteed final
-     fallback — Arimo is Google's free, open, metrically-Arial/Helvetica-
-     compatible font, so anywhere without Arial (Linux/Android/etc.) still
-     renders visually near-identical instead of a generic sans-serif. */
   --font-family-base: "Helvetica Neue", Helvetica, Arial, "Arimo", sans-serif;
 
-  /* Font sizes. 12px/16px CONFIRMED (Smartphone card price = 12px,
-     Header bag count = 16px). Rest of the scale is PLACEHOLDER, built as a
-     conventional type ramp around those two confirmed points. */
-  --font-size-xs: 12px; /* CONFIRMED — product card price */
-  --font-size-sm: 14px; /* PLACEHOLDER */
-  --font-size-md: 16px; /* CONFIRMED — header bag count */
-  --font-size-lg: 20px; /* PLACEHOLDER */
-  --font-size-xl: 24px; /* PLACEHOLDER */
-  --font-size-2xl: 32px; /* PLACEHOLDER */
-
-  --font-weight-light: 300; /* CONFIRMED — Figma text uses weight 300 throughout observed nodes */
-  --font-weight-regular: 400; /* PLACEHOLDER */
-  --font-weight-bold: 700; /* PLACEHOLDER */
-
-  --line-height-tight: 16px; /* CONFIRMED — header bag count lineHeight */
-  --line-height-base: 1.4; /* PLACEHOLDER */
-
-  /* Color palette. Black/white CONFIRMED (Header background #FFFFFF,
-     icon/text fill #000000 on Header + Smartphone card + Cart item).
-     Grey ramp and any accent are PLACEHOLDER — no accent color was reached
-     before the rate limit; the app currently has no confirmed non-neutral
-     brand color, so none is invented here. */
-  --color-black: #000000; /* CONFIRMED */
-  --color-white: #ffffff; /* CONFIRMED */
-
-  --color-grey-100: #f5f5f5; /* PLACEHOLDER — skeleton/surface background */
-  --color-grey-200: #ebebeb; /* PLACEHOLDER — seen only as a Figma canvas/section backdrop, not a UI surface; kept as the lightest grey step */
-  --color-grey-300: #cccccc; /* CONFIRMED (fill_06d3d4fc) — storage-option / color-swatch list-item border */
-  --color-grey-500: #9e9e9e; /* PLACEHOLDER — disabled state */
-  --color-grey-700: #79736d; /* CONFIRMED (fill_13646f2e) — warm grey, product-card brand label */
-  --color-grey-900: #212121; /* PLACEHOLDER — near-black text alt */
-  --color-placeholder: #aaaaaa; /* CONFIRMED — search input placeholder text fill */
-
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 32px;
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-bold: 700;
+  --line-height-tight: 16px;
+  --line-height-base: 1.4;
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-grey-100: #f5f5f5;
+  --color-grey-200: #ebebeb;
+  --color-grey-300: #cccccc;
+  --color-grey-500: #9e9e9e;
+  --color-grey-700: #79736d;
+  --color-grey-900: #212121;
+  --color-placeholder: #aaaaaa;
   --color-text-primary: var(--color-black);
   --color-text-secondary: var(--color-grey-700);
   --color-text-disabled: var(--color-grey-500);
   --color-background: var(--color-white);
   --color-surface: var(--color-white);
   --color-surface-alt: var(--color-grey-100);
-  --color-border: var(--color-black); /* CONFIRMED — Smartphone card stroke is #000000 */
-
-  /* CONFIRMED — the cart row's "Eliminar" link. Sampled from the cart frame
-     exports rather than read from the Figma API (that call is rate-limited on
-     this seat): #e32020 is the darkest, least anti-aliased pixel of the label
-     on all three frames. */
+  --color-border: var(--color-black);
   --color-danger: #e32020;
-  --color-border-subtle: var(--color-grey-300); /* CONFIRMED, see --color-grey-300 above */
-
-  /* Button states — SDS Button component set (20605:5253) was located but
-     its per-variant fills (Primary/Standard × Default/Hover/Active/Disabled)
-     could not be read before the rate limit. Using the confirmed black/white
-     pair for primary and a bordered-black-on-white pattern for standard,
-     consistent with every other confirmed node's black-on-white styling. */
-  --color-button-primary-bg: var(
-    --color-black
-  ); /* PLACEHOLDER, consistent with confirmed black/white palette */
-  --color-button-primary-bg-hover: var(--color-grey-900); /* PLACEHOLDER */
-  --color-button-primary-text: var(--color-white); /* PLACEHOLDER */
-  --color-button-standard-bg: var(--color-white); /* PLACEHOLDER */
-  --color-button-standard-border: var(--color-black); /* PLACEHOLDER */
-  --color-button-standard-text: var(--color-black); /* PLACEHOLDER */
-  --color-button-disabled-bg: var(--color-grey-300); /* PLACEHOLDER */
-  --color-button-disabled-text: var(--color-grey-500); /* PLACEHOLDER */
-
-  /* Spacing scale — 8px/16px/24px/40px CONFIRMED (Header padding 24px,
-     Smartphone card padding 16px + gap 24px, Cart item padding 16px + gap
-     40px). Built out to a full 8px-based scale; 8px/48/64 steps PLACEHOLDER. */
-  --space-1: 8px; /* PLACEHOLDER (base unit, inferred from confirmed multiples) */
-  --space-2: 16px; /* CONFIRMED — Smartphone card / Cart item padding */
-  --space-3: 24px; /* CONFIRMED — Header padding-block / Smartphone card gap */
-  --space-4: 32px; /* PLACEHOLDER */
-  --space-5: 40px; /* CONFIRMED — Cart item gap */
-  --space-6: 48px; /* PLACEHOLDER */
-  --space-7: 64px; /* CONFIRMED — EL-2c3e7564, Detail "Product info" gap */
-  --space-header-x: 100px; /* CONFIRMED — Header horizontal padding at desktop width 1920px */
-
-  /* Radius / borders */
-  --radius-sm: 5px; /* CONFIRMED — Cart item borderRadius */
-  --radius-md: 8px; /* PLACEHOLDER */
-  --border-width-hairline: 0.5px; /* CONFIRMED — Smartphone card stroke weight */
-  --border-width-thin: 1px; /* CONFIRMED — SDS Button / Cart item component-set stroke weight */
-
-  /* Breakpoints (px). CONFIRMED via mcp__figma__download_figma_images on the
-     final Desktop/Tablet/Mobile design frames (20620:7013 / 20620:9064 /
-     20655:2811), which returns each frame's real rendered pixel dimensions
-     directly — no longer a placeholder guess. */
-  --breakpoint-desktop: 1920px; /* CONFIRMED */
-  --breakpoint-tablet: 834px; /* CONFIRMED */
-  --breakpoint-mobile: 393px; /* CONFIRMED */
-
-  /* Layout */
-  --header-height: 80px; /* CONFIRMED — Header instance designedHeight */
+  --color-border-subtle: var(--color-grey-300);
+  --color-button-primary-bg: var(--color-black);
+  --color-button-primary-bg-hover: var(--color-grey-900);
+  --color-button-primary-text: var(--color-white);
+  --color-button-standard-bg: var(--color-white);
+  --color-button-standard-border: var(--color-black);
+  --color-button-standard-text: var(--color-black);
+  --color-button-disabled-bg: var(--color-grey-300);
+  --color-button-disabled-text: var(--color-grey-500);
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-7: 64px;
+  --space-header-x: 100px;
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --border-width-hairline: 0.5px;
+  --border-width-thin: 1px;
+  --breakpoint-desktop: 1920px;
+  --breakpoint-tablet: 834px;
+  --breakpoint-mobile: 393px;
+  --header-height: 80px;
   --z-header: 100;
   --z-overlay: 200;
 }

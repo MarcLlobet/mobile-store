@@ -1,9 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import type { Decorator } from "@storybook/nextjs-vite";
+import { type Decorator, type Meta, type StoryObj } from "@storybook/nextjs-vite";
 import { QueryClientProvider } from "@tanstack/react-query";
-import type { ProductListItem } from "@/lib/api/types";
+
 import { LISTING_LIMIT, listingQuery } from "@/lib/api/queries";
+import type { ProductListItem } from "@/lib/api/types";
 import { makeQueryClient } from "@/lib/query";
+
 import { PhoneListing } from "./PhoneListing";
 
 const products: ProductListItem[] = [
@@ -30,15 +31,8 @@ const products: ProductListItem[] = [
   },
 ];
 
-/**
- * PhoneListing takes no props — it reads the catalog from React Query. In the
- * app that cache arrives hydrated from the build-time prefetch (app/page.tsx);
- * here each story seeds the same query key directly, which is why the story
- * renders without ever reaching the network. Typing in the search box *would*
- * fire a real request, so these stories are static by design.
- */
-function withSeededListing(seed: ProductListItem[]): Decorator {
-  return function SeededListing(Story) {
+const withSeededListing = (seed: ProductListItem[]): Decorator =>
+  function SeededListing(Story) {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(listingQuery().queryKey, seed);
     return (
@@ -47,7 +41,6 @@ function withSeededListing(seed: ProductListItem[]): Decorator {
       </QueryClientProvider>
     );
   };
-}
 
 const meta: Meta<typeof PhoneListing> = {
   title: "Listing/PhoneListing",

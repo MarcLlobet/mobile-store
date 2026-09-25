@@ -1,14 +1,10 @@
 .wrapper {
   width: 100%;
-  max-width: 510px; /* CONFIRMED — EL-e4c6e429 "Img" frame width */
+  max-width: 510px;
   box-sizing: border-box;
   padding: var(--space-4);
 }
 
-/* Tablet's hero is narrower than desktop's. Without this cap the hero is a
-   flex item that grows to fill whatever the 260px info column leaves, which
-   pushed the info flush to the right gutter; the frame instead ends the hero
-   at x=392 so the info sits at 432 with slack after it. */
 @media (min-width: 834px) {
   .wrapper {
     max-width: 352px;
@@ -21,10 +17,6 @@
   }
 }
 
-/* All color variants share a single grid cell, so the box is as tall as the
-   tallest photo and selecting a color never reflows the page. `start` keeps
-   the top-aligned hero (grid's default `stretch` would squash a photo whose
-   intrinsic ratio differs from the tallest one). */
 .stack {
   display: grid;
   grid-template-areas: "stack";
@@ -35,10 +27,8 @@
   grid-area: stack;
   display: block;
   width: 100%;
-  height: auto; /* follows the real photo's own aspect ratio, not a forced box */
+  height: auto;
   opacity: 0;
-  /* Hidden variants are loaded-but-inert: they must not catch clicks or
-     drags meant for the visible photo. */
   pointer-events: none;
   transition: opacity 120ms ease;
 }

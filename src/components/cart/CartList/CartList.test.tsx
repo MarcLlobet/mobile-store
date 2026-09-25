@@ -1,8 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { CartList } from "./CartList";
+
 import type { CartItem as CartItemModel } from "@/types/cart";
+
+import { CartList } from "./CartList";
 
 const items: CartItemModel[] = [
   {

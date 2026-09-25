@@ -1,19 +1,14 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5); /* CONFIRMED — EL-c45b16e5 "Similar items" gap, 40px */
-  /* The gap before this section (between it and the Specifications table
-     above) needs to read as clearly larger than the other section gaps
-     on this page — .page's own flex gap (--space-4, 32px) plus this
-     extra margin totals --space-7 (64px), the same "distinct section"
-     gap already used for Product info's own internal spacing. */
+  gap: var(--space-5);
   margin-top: var(--space-4);
 }
 
 .heading {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-lg); /* CONFIRMED — style_60414b43, same as SpecsList's heading */
-  font-weight: var(--font-weight-light); /* CONFIRMED — no bold anywhere in this design */
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-light);
   color: var(--color-text-primary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -24,19 +19,11 @@
   display: flex;
   gap: 0;
   overflow-x: auto;
-  /* Flex items default to min-width:auto, i.e. "don't shrink below content
-     size" — without this, the row of fixed-width items forces this list
-     (and every flex/grid ancestor up to <body>) to grow to their combined
-     width instead of clipping/scrolling within the viewport. */
   min-width: 0;
   margin: 0;
-  /* No compensating padding: only `.item + .item` is pulled, so the first
-     card already starts flush with the content edge. */
   padding: 0;
   list-style: none;
   scroll-snap-type: x proximity;
-  /* Hide the native scrollbar — replaced by .scrollTrack/.scrollThumb below,
-     matching the real Figma "Bar"/"Scroll" elements. */
   scrollbar-width: none;
 }
 
@@ -45,30 +32,10 @@
 }
 
 .item {
-  /* CONFIRMED — Figma card box is 344x344 here (377x377 at tablet). The width
-     carries +1 because `.item + .item` pulls each card 1px left to merge the
-     shared border, so the *pitch* — the visible card — lands on 344. The
-     height gets no such pull (single row, nothing overlaps vertically), so it
-     is the Figma number exactly. */
   width: 345px;
   height: 344px;
   flex: 0 0 auto;
-  /* CONFIRMED — the Figma "Smartphone card" is 344px wide here, the same
-     width it has in the listing grid (measured on both the desktop and
-     mobile detail frames in design/figma-reference/). It was 200px, which
-     is why the same card looked a different size in this row than in the
-     grid. Fixed rather than fluid: on the mobile frame the card stays 344
-     against a 361px content width, so the next card peeks in. */
   scroll-snap-align: start;
-  /* Merges this card's left border onto the previous card's right border so
-     only one line paints between them.
-     The pull is a whole pixel, NOT `-1 * --border-width-hairline`. A 0.5px
-     border is rounded UP to a full device pixel when it paints at 1x, so a
-     0.5px pull only half-covers it: the leftover half-pixel lands on a
-     different device pixel for every other card, and the seams alternate
-     between one and two pixels — which reads as the cards being different
-     widths. Pulling a whole pixel also keeps every card's left edge on an
-     integer x, so nothing is left to round inconsistently. */
 }
 
 @media (min-width: 834px) {
@@ -94,12 +61,12 @@
   width: 100%;
   height: 1px;
   margin-top: var(--space-2);
-  background-color: var(--color-border-subtle); /* CONFIRMED — EL-09a2d9fa fill, #CCCCCC */
+  background-color: var(--color-border-subtle);
 }
 
 .scrollThumb {
   position: absolute;
   top: 0;
   height: 1px;
-  background-color: var(--color-black); /* CONFIRMED — EL-08916288 fill */
+  background-color: var(--color-black);
 }

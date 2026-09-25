@@ -1,7 +1,10 @@
 import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+
 import type { ColorOption, StorageOption } from "@/lib/api/types";
+
 import { SelectorsPanel } from "./SelectorsPanel";
+
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 const colors: ColorOption[] = [
   { name: "Black", hexCode: "#1c1c1e", imageUrl: "" },
@@ -21,12 +24,9 @@ const meta: Meta<typeof SelectorsPanel> = {
 export default meta;
 type Story = StoryObj<typeof SelectorsPanel>;
 
-// SelectorsPanel is deliberately stateless (controlled), so its story wraps
-// it with local state to demonstrate real interaction — exactly how
-// PhoneDetailView drives it in the app.
 export const Interactive: Story = {
   render: () => {
-    function Wrapper() {
+    const Wrapper = () => {
       const [selectedColor, setSelectedColor] = useState<ColorOption | null>(null);
       const [selectedStorage, setSelectedStorage] = useState<StorageOption | null>(null);
       return (
@@ -39,7 +39,7 @@ export const Interactive: Story = {
           onSelectStorage={setSelectedStorage}
         />
       );
-    }
+    };
     return <Wrapper />;
   },
 };

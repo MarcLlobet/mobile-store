@@ -10,9 +10,6 @@
   color: var(--color-text-primary);
 }
 
-/* CONFIRMED — the tablet frame's side margin is 40px, not the mobile 16px.
-   That is what makes the grid resolve to Figma's 2 columns of 377 rather than
-   2 of 401: `minmax(320px, 1fr)` over a 754px content box, not an 802px one. */
 @media (min-width: 834px) {
   .listing {
     padding: var(--space-3) var(--space-5);

@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+
 import { Skeleton } from "./Skeleton";
 
 describe("Skeleton", () => {
@@ -17,7 +18,7 @@ describe("Skeleton", () => {
   it("applies width/height as inline styles", () => {
     const { container } = render(<Skeleton width={120} height={40} />);
     const el = container.firstChild as HTMLElement;
-    expect(el.style.width).toBe("120px");
-    expect(el.style.height).toBe("40px");
+    expect(el).toHaveStyle({ width: "120px" });
+    expect(el).toHaveStyle({ height: "40px" });
   });
 });
