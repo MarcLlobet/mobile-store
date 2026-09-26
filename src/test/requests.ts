@@ -2,7 +2,7 @@ import { afterEach, beforeEach } from "vitest";
 
 import { server } from "@mocks/server";
 
-export const trackRequests = (): { readonly urls: () => readonly string[] } => {
+export const trackRequests = (): { urls: () => readonly string[] } => {
   const urls: string[] = [];
 
   const record = ({ request }: { request: Request }) => {

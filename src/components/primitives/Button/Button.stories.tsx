@@ -7,27 +7,23 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 const meta: Meta<typeof Button> = {
   title: "Primitives/Button",
   component: Button,
+  argTypes: {
+    variant: { control: "inline-radio", options: ["primary", "standard"] },
+    type: { control: "inline-radio", options: ["button", "submit", "reset"] },
+    disabled: { control: "boolean" },
+    children: { control: "text" },
+    ariaLabel: { control: "text" },
+  },
   args: {
+    variant: "primary",
+    type: "button",
+    disabled: false,
     children: "Add to cart",
+    ariaLabel: undefined,
     onClick: fn(),
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof Button>;
 
-export const Primary: Story = {
-  args: { variant: "primary" },
-};
-
-export const Standard: Story = {
-  args: { variant: "standard" },
-};
-
-export const PrimaryDisabled: Story = {
-  args: { variant: "primary", disabled: true },
-};
-
-export const StandardDisabled: Story = {
-  args: { variant: "standard", disabled: true },
-};
+export const Playground: StoryObj<typeof Button> = {};

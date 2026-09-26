@@ -1,16 +1,23 @@
+"use client";
+
 import Link from "next/link";
 
 import { Icon } from "@/components/primitives/Icon";
+import { useTranslation } from "@/i18n";
 
 import styles from "./BackButton.module.css";
 
 export interface BackButtonProps {
-  readonly href?: string;
+  href?: string;
 }
 
-export const BackButton = ({ href = "/" }: BackButtonProps) => (
-  <Link href={href} className={styles.link} aria-label="Back to listing">
-    <Icon name="back" ariaHidden />
-    <span>Back</span>
-  </Link>
-);
+export const BackButton = ({ href = "/" }: BackButtonProps) => {
+  const { t } = useTranslation();
+
+  return (
+    <Link href={href} className={styles.link} aria-label={t("detail.back_label")}>
+      <Icon name="back" ariaHidden />
+      <span>{t("detail.back")}</span>
+    </Link>
+  );
+};

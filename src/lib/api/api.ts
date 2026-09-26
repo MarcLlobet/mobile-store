@@ -13,12 +13,7 @@ const RETRY_DELAY_MS = 750;
 const SERVER_ERROR_STATUS = 500;
 const NOT_FOUND_STATUS = 404;
 
-/**
- * `Error` subclassing is the platform's own contract for failures: it is what
- * gives callers `instanceof`, a stack trace and correct logging. A plain tagged
- * object would lose all three, so this is the one class the codebase keeps.
- */
-/* eslint-disable functional/no-classes, functional/no-this-expressions -- see the note above */
+/* eslint-disable functional/no-classes, functional/no-this-expressions */
 export class ApiError extends Error {
   readonly status: number;
   readonly code?: string;
@@ -60,11 +55,6 @@ const apiError = async (response: Response, context: string): Promise<ApiError> 
 
 const buildHeaders = (): HeadersInit => ({ "x-api-key": API_KEY });
 
-/**
- * The API ships no runtime schema, so a caller's type argument is a trusted
- * assertion rather than a checked guarantee. Funnelling every response through
- * here keeps that to one auditable place to validate once a schema exists.
- */
 const readJson = async <T>(response: Response): Promise<T> =>
   // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
   (await response.json()) as T;
@@ -74,7 +64,6 @@ const delay = (ms: number): Promise<void> =>
     setTimeout(resolve, ms);
   });
 
-/** Back off a little further on each successive retry. */
 const retryDelayFor = (attempt: number): number => RETRY_DELAY_MS * (attempt + 1);
 
 const buildUrl = (path: string, searchParams: Readonly<Record<string, string>> = {}): string => {
@@ -85,36 +74,38 @@ const buildUrl = (path: string, searchParams: Readonly<Record<string, string>> =
   return query === "" ? url : `${url}?${query}`;
 };
 
-const apiFetchOnce = async (url: string): Promise<Response> => {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => {
-    controller.abort();
-  }, FETCH_TIMEOUT_MS);
+export interface RequestOptions {
+  signal?: AbortSignal;
+  retries?: number;
+}
 
-  try {
-    return await fetch(url, { headers: buildHeaders(), signal: controller.signal });
-  } finally {
-    clearTimeout(timeout);
-  }
+const apiFetchOnce = async (url: string, signal?: AbortSignal): Promise<Response> => {
+  const timeoutSignal = AbortSignal.timeout(FETCH_TIMEOUT_MS);
+  const combined = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
+
+  return fetch(url, { headers: buildHeaders(), signal: combined });
 };
 
-/**
- * Retries transport failures and 5xx responses, recursing rather than looping so
- * each attempt is a value handed to the next rather than shared mutable state.
- */
-const apiFetchWithRetry = async (url: string, attempt = 0): Promise<Response> => {
-  const isFinalAttempt = attempt >= RETRY_ATTEMPTS;
+const isFinalAttempt = (attempt: number, options: RequestOptions): boolean =>
+  attempt >= (options.retries ?? RETRY_ATTEMPTS) || options.signal?.aborted === true;
+
+const apiFetchWithRetry = async (
+  url: string,
+  options: RequestOptions,
+  attempt = 0,
+): Promise<Response> => {
+  const isFinal = isFinalAttempt(attempt, options);
 
   const retry = async (): Promise<Response> => {
     await delay(retryDelayFor(attempt));
-    return apiFetchWithRetry(url, attempt + 1);
+    return apiFetchWithRetry(url, options, attempt + 1);
   };
 
   try {
-    const response = await apiFetchOnce(url);
-    return response.status >= SERVER_ERROR_STATUS && !isFinalAttempt ? await retry() : response;
+    const response = await apiFetchOnce(url, options.signal);
+    return response.status >= SERVER_ERROR_STATUS && !isFinal ? await retry() : response;
   } catch (error) {
-    if (isFinalAttempt) {
+    if (isFinal) {
       throw error;
     }
     return await retry();
@@ -123,18 +114,24 @@ const apiFetchWithRetry = async (url: string, attempt = 0): Promise<Response> =>
 
 const apiFetch = async (
   path: string,
-  searchParams?: Readonly<Record<string, string>>,
-): Promise<Response> => apiFetchWithRetry(buildUrl(path, searchParams));
+  searchParams: Readonly<Record<string, string>> = {},
+  options: RequestOptions = {},
+): Promise<Response> => apiFetchWithRetry(buildUrl(path, searchParams), options);
 
 export const fetchProducts = async (
   params: FetchProductsParams = {},
+  options: RequestOptions = {},
 ): Promise<readonly ProductListItem[]> => {
   const { search, limit, offset } = params;
-  const response = await apiFetch("/products", {
-    search: search ?? "",
-    limit: limit === undefined ? "" : String(limit),
-    offset: offset === undefined ? "" : String(offset),
-  });
+  const response = await apiFetch(
+    "/products",
+    {
+      search: search ?? "",
+      limit: limit === undefined ? "" : String(limit),
+      offset: offset === undefined ? "" : String(offset),
+    },
+    options,
+  );
 
   if (!response.ok) {
     throw await apiError(response, "fetchProducts");
@@ -144,8 +141,11 @@ export const fetchProducts = async (
   return products.map((product) => normalizeListItem(product));
 };
 
-export const fetchProductById = async (id: string): Promise<ProductDetail | null> => {
-  const response = await apiFetch(`/products/${encodeURIComponent(id)}`);
+export const fetchProductById = async (
+  id: string,
+  options: RequestOptions = {},
+): Promise<ProductDetail | null> => {
+  const response = await apiFetch(`/products/${encodeURIComponent(id)}`, {}, options);
 
   if (response.status === NOT_FOUND_STATUS) {
     return null;

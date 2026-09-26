@@ -1,20 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { PhoneDetail } from "@/components/detail/PhoneDetail";
+import { PhoneDetailView } from "@/components/detail/PhoneDetailView";
 import { PhoneListing } from "@/components/listing/PhoneListing";
 import { CartProvider } from "@/context/CartContext";
+import { fetchProductById } from "@/lib/api/api";
+import { normalizeListItem, normalizeProductDetail } from "@/lib/api/transform";
+import type { ProductDetail } from "@/lib/api/types";
 import { formatPrice } from "@/lib/utils/formatPrice";
-import { createTestQueryClient, renderWithQuery } from "@/test/query";
 import { trackRequests } from "@/test/requests";
-import { productDetail } from "@mocks/fixtures";
+import { products, productDetail } from "@mocks/fixtures";
 
 import CartPage from "./cart/page";
 
-const product = productDetail;
+const product = normalizeProductDetail(productDetail);
+const initialProducts = products.slice(0, 20).map((item) => normalizeListItem(item));
 const secondColor = product.colorOptions[1]!;
 const topStorage = product.storageOptions.at(-1)!;
 
@@ -25,6 +28,15 @@ type Screen = "listing" | "detail" | "cart";
 const TestApp = () => {
   const [screen, setScreen] = useState<Screen>("listing");
   const [productId, setProductId] = useState<string | null>(null);
+
+  const [detail, setDetail] = useState<ProductDetail | null>(null);
+
+  useEffect(() => {
+    if (productId === null) {
+      return;
+    }
+    void fetchProductById(productId).then(setDetail);
+  }, [productId]);
 
   const handleClickCapture = (event: React.MouseEvent) => {
     const anchor = (event.target as HTMLElement).closest("a");
@@ -38,8 +50,8 @@ const TestApp = () => {
 
   return (
     <div onClickCapture={handleClickCapture}>
-      {screen === "listing" ? <PhoneListing /> : null}
-      {screen === "detail" && productId ? <PhoneDetail id={productId} /> : null}
+      {screen === "listing" ? <PhoneListing initialProducts={initialProducts} /> : null}
+      {screen === "detail" && detail ? <PhoneDetailView product={detail} /> : null}
       {screen === "cart" ? <CartPage /> : null}
       {screen === "cart" ? null : (
         <button type="button" onClick={() => setScreen("cart")}>
@@ -56,10 +68,11 @@ const TestApp = () => {
 };
 
 const renderApp = () =>
-  renderWithQuery(<TestApp />, {
-    queryClient: createTestQueryClient(),
-    wrap: (children) => <CartProvider>{children}</CartProvider>,
-  });
+  render(
+    <CartProvider>
+      <TestApp />
+    </CartProvider>,
+  );
 
 beforeEach(() => {
   window.localStorage.clear();

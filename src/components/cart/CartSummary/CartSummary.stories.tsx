@@ -1,3 +1,5 @@
+import { fn } from "storybook/test";
+
 import { CartSummary } from "./CartSummary";
 
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
@@ -5,7 +7,10 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 const meta: Meta<typeof CartSummary> = {
   title: "Cart/CartSummary",
   component: CartSummary,
-  args: { totalPrice: 2818 },
+  argTypes: {
+    totalPrice: { control: { type: "number", min: 0 } },
+  },
+  args: { totalPrice: 2818, onPay: fn() },
   decorators: [
     (Story) => (
       <div style={{ maxWidth: 480 }}>
@@ -16,10 +21,5 @@ const meta: Meta<typeof CartSummary> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof CartSummary>;
 
-export const Default: Story = {};
-
-export const SmallTotal: Story = {
-  args: { totalPrice: 349 },
-};
+export const Playground: StoryObj<typeof CartSummary> = {};

@@ -17,6 +17,5 @@ const meta: Meta<typeof Header> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof Header>;
 
-export const Default: Story = {};
+export const Playground: StoryObj<typeof Header> = {};

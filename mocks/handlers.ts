@@ -1,10 +1,9 @@
 import { http, HttpResponse } from "msw";
 
-import type { ApiErrorBody, ProductListItem } from "@/lib/api/types";
+import type { ApiErrorBody, ProductDetail, ProductListItem } from "@/lib/api/types";
 
 import { invalidKeyError, notFoundError, productDetailsById, products } from "./fixtures";
 
-/** Trims trailing slashes one at a time; `/\/+$/` backtracks super-linearly (Sonar S5852). */
 const withoutTrailingSlashes = (url: string): string =>
   url.endsWith("/") ? withoutTrailingSlashes(url.slice(0, -1)) : url;
 
@@ -42,8 +41,30 @@ const matchesSearch = (product: ProductListItem, search: string): boolean => {
   );
 };
 
-export const handlers = [
+export interface HandlerOverride<TBody> {
+  body?: TBody | ApiErrorBody;
+  status?: number;
+  networkError?: boolean;
+}
+
+const overriddenResponse = <TBody>(override: HandlerOverride<TBody>): Response | null => {
+  if (override.networkError === true) {
+    return HttpResponse.error();
+  }
+  if (override.body !== undefined) {
+    return HttpResponse.json(override.body, { status: override.status ?? 200 });
+  }
+  if (override.status !== undefined) {
+    return new HttpResponse(null, { status: override.status });
+  }
+  return null;
+};
+
+export const getProducts = (override: HandlerOverride<readonly ProductListItem[]> = {}) =>
   http.get(endpoints.products, ({ request }) => {
+    const forced = overriddenResponse(override);
+    if (forced) return forced;
+
     const unauthorized = rejectUnauthorized(request);
     if (unauthorized) return unauthorized;
 
@@ -58,9 +79,13 @@ export const handlers = [
       limit === undefined ? matched.slice(offset) : matched.slice(offset, offset + limit);
 
     return HttpResponse.json(page);
-  }),
+  });
 
+export const getProduct = (override: HandlerOverride<ProductDetail> = {}) =>
   http.get(endpoints.product, ({ request, params }) => {
+    const forced = overriddenResponse(override);
+    if (forced) return forced;
+
     const unauthorized = rejectUnauthorized(request);
     if (unauthorized) return unauthorized;
 
@@ -69,26 +94,6 @@ export const handlers = [
       return HttpResponse.json(notFoundError, { status: 404 });
     }
     return HttpResponse.json(detail);
-  }),
-];
+  });
 
-export const scenarios = {
-  invalidApiKey: () => [
-    http.get(endpoints.products, () => HttpResponse.json(invalidKeyError, { status: 401 })),
-    http.get(endpoints.product, () => HttpResponse.json(invalidKeyError, { status: 401 })),
-  ],
-
-  productNotFound: () => [
-    http.get(endpoints.product, () => HttpResponse.json(notFoundError, { status: 404 })),
-  ],
-
-  serverError: (status = 503) => [
-    http.get(endpoints.products, () => new HttpResponse(null, { status })),
-    http.get(endpoints.product, () => new HttpResponse(null, { status })),
-  ],
-
-  networkError: () => [
-    http.get(endpoints.products, () => HttpResponse.error()),
-    http.get(endpoints.product, () => HttpResponse.error()),
-  ],
-};
+export const handlers = [getProducts(), getProduct()];

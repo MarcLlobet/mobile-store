@@ -2,16 +2,17 @@
 
 import { Button } from "@/components/primitives/Button";
 import { useCart } from "@/context/CartContext";
+import { useTranslation } from "@/i18n";
 import type { ColorOption, StorageOption } from "@/lib/api/types";
 
 import styles from "./AddToCartButton.module.css";
 
 export interface AddToCartButtonProps {
-  readonly productId: string;
-  readonly name: string;
-  readonly brand: string;
-  readonly selectedColor: ColorOption | null;
-  readonly selectedStorage: StorageOption | null;
+  productId: string;
+  name: string;
+  brand: string;
+  selectedColor: ColorOption | null;
+  selectedStorage: StorageOption | null;
 }
 
 export const AddToCartButton = ({
@@ -22,6 +23,7 @@ export const AddToCartButton = ({
   selectedStorage,
 }: AddToCartButtonProps) => {
   const { addItem } = useCart();
+  const { t } = useTranslation();
   const canAddToCart = selectedColor !== null && selectedStorage !== null;
 
   const handleClick = () => {
@@ -40,7 +42,7 @@ export const AddToCartButton = ({
   return (
     <div className={styles.wrapper}>
       <Button variant="primary" disabled={!canAddToCart} onClick={handleClick}>
-        Añadir
+        {t("detail.add_to_cart")}
       </Button>
     </div>
   );

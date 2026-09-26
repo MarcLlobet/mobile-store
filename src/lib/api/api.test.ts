@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { PRODUCT_WITH_DETAIL_ID, productDetail, products } from "@mocks/fixtures";
-import { scenarios } from "@mocks/handlers";
+import { PRODUCT_WITH_DETAIL_ID, invalidKeyError, productDetail, products } from "@mocks/fixtures";
+import { getProduct, getProducts } from "@mocks/handlers";
 import { server } from "@mocks/server";
 
 import { ApiError, fetchProductById, fetchProducts } from "./api";
@@ -72,19 +72,18 @@ describe("fetchProducts", () => {
   });
 
   it("surfaces an invalid API key as an ApiError carrying the API's own code", async () => {
-    server.use(...scenarios.invalidApiKey());
+    server.use(getProducts({ body: invalidKeyError, status: 401 }));
 
     await expect(fetchProducts()).rejects.toMatchObject({
       name: "ApiError",
       status: 401,
       code: "UNAUTHORIZED",
-      // `expect.stringContaining` is typed `any` by Vitest; pin it so the object stays typed.
       message: expect.stringContaining("Invalid API key") as string,
     });
   });
 
   it("retries a 5xx before giving up, then throws", async () => {
-    server.use(...scenarios.serverError(503));
+    server.use(getProducts({ status: 503 }));
 
     const error = await fetchProducts().catch((error_: unknown) => error_);
 
@@ -140,12 +139,27 @@ describe("fetchProductById", () => {
   });
 
   it("still throws for a non-404 failure", async () => {
-    server.use(...scenarios.invalidApiKey());
+    server.use(getProduct({ body: invalidKeyError, status: 401 }));
 
     await expect(fetchProductById(PRODUCT_WITH_DETAIL_ID)).rejects.toMatchObject({
       status: 401,
       code: "UNAUTHORIZED",
     });
+  });
+
+  it("throws rather than returning null when the detail endpoint 5xxs", async () => {
+    server.use(getProduct({ status: 500 }));
+
+    const error = await fetchProductById(PRODUCT_WITH_DETAIL_ID).catch((error_: unknown) => error_);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ status: 500 });
+  }, 15_000);
+
+  it("treats an empty catalogue as a valid answer, not a failure", async () => {
+    server.use(getProducts({ body: [] }));
+
+    await expect(fetchProducts()).resolves.toEqual([]);
   });
 
   it("url-encodes the id", async () => {

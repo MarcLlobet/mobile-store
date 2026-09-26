@@ -1,19 +1,37 @@
 import { CartProvider } from "@/context/CartContext";
+import { productDetail } from "@mocks/fixtures";
 
 import { AddToCartButton } from "./AddToCartButton";
 
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-const color = { name: "Black", hexCode: "#000000", imageUrl: "https://example.com/black.png" };
-const storage = { capacity: "256GB", price: 1319 };
+const colors = productDetail.colorOptions;
+const storageOptions = productDetail.storageOptions;
 
 const meta: Meta<typeof AddToCartButton> = {
   title: "Detail/AddToCartButton",
   component: AddToCartButton,
+  argTypes: {
+    productId: { control: "text" },
+    brand: { control: "text" },
+    name: { control: "text" },
+    selectedColor: {
+      control: "select",
+      options: ["none", ...colors.map((color) => color.name)],
+      mapping: { none: null, ...Object.fromEntries(colors.map((c) => [c.name, c])) },
+    },
+    selectedStorage: {
+      control: "select",
+      options: ["none", ...storageOptions.map((option) => option.capacity)],
+      mapping: { none: null, ...Object.fromEntries(storageOptions.map((o) => [o.capacity, o])) },
+    },
+  },
   args: {
-    productId: "APL-IP15PM",
-    name: "iPhone 15 Pro Max",
-    brand: "Apple",
+    productId: productDetail.id,
+    brand: productDetail.brand,
+    name: productDetail.name,
+    selectedColor: null,
+    selectedStorage: null,
   },
   decorators: [
     (Story) => (
@@ -25,16 +43,5 @@ const meta: Meta<typeof AddToCartButton> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof AddToCartButton>;
 
-export const Disabled: Story = {
-  args: { selectedColor: null, selectedStorage: null },
-};
-
-export const ColorOnlySelected: Story = {
-  args: { selectedColor: color, selectedStorage: null },
-};
-
-export const Enabled: Story = {
-  args: { selectedColor: color, selectedStorage: storage },
-};
+export const Playground: StoryObj<typeof AddToCartButton> = {};

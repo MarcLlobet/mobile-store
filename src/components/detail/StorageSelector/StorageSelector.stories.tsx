@@ -1,40 +1,43 @@
-import { useState } from "react";
+import { useArgs } from "storybook/preview-api";
+import { fn } from "storybook/test";
 
-import type { StorageOption } from "@/lib/api/types";
+import { productDetail } from "@mocks/fixtures";
 
 import { StorageSelector } from "./StorageSelector";
 
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-const options: StorageOption[] = [
-  { capacity: "256GB", price: 1319 },
-  { capacity: "512GB", price: 1449 },
-  { capacity: "1TB", price: 1699 },
-];
+const options = productDetail.storageOptions;
 
 const meta: Meta<typeof StorageSelector> = {
   title: "Detail/StorageSelector",
   component: StorageSelector,
-  args: { options },
+  argTypes: {
+    options: { control: "object" },
+    selected: {
+      control: "select",
+      options: ["none", ...options.map((option) => option.capacity)],
+      mapping: {
+        none: null,
+        ...Object.fromEntries(options.map((option) => [option.capacity, option])),
+      },
+    },
+  },
+  args: { options, selected: null, onSelect: fn() },
+  render: function Render(args) {
+    const [, updateArgs] = useArgs();
+    return (
+      <StorageSelector
+        {...args}
+        onSelect={(option) => {
+          updateArgs({ selected: option.capacity });
+          args.onSelect(option);
+        }}
+      />
+    );
+  },
 };
 
 export default meta;
-type Story = StoryObj<typeof StorageSelector>;
 
-export const NoneSelected: Story = {
-  args: { selected: null },
-};
-
-export const OneSelected: Story = {
-  args: { selected: options[1] },
-};
-
-export const Interactive: Story = {
-  render: (args) => {
-    const Wrapper = () => {
-      const [selected, setSelected] = useState<StorageOption | null>(null);
-      return <StorageSelector {...args} selected={selected} onSelect={setSelected} />;
-    };
-    return <Wrapper />;
-  },
-};
+export const Playground: StoryObj<typeof StorageSelector> = {};

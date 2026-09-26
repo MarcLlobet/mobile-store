@@ -226,7 +226,6 @@ describe("PhoneDetailView", () => {
       seedCart({ color: "Discontinued Pink", storage: "4 TB" });
 
       renderView();
-      // Let the cart's post-mount hydration effect settle before asserting.
       await waitFor(() => {
         expect(screen.getAllByRole("radio").length).toBeGreaterThan(0);
       });

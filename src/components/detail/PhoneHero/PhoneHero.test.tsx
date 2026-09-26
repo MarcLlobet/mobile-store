@@ -11,7 +11,6 @@ const variants = [
   { key: "Blue", imageUrl: BLUE },
 ];
 
-/** Installs a stub `HTMLImageElement.decode`, which jsdom does not implement. */
 const stubDecode = () => {
   const decode = vi.fn(() => Promise.resolve());
   (HTMLImageElement.prototype as { decode?: unknown }).decode = decode;

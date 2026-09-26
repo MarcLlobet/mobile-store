@@ -1,29 +1,32 @@
 "use client";
 
-import { useCallback, useState } from "react";
-
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-
 import { EmptyState } from "@/components/listing/EmptyState";
 import { PhoneGrid } from "@/components/listing/PhoneGrid";
 import { ResultsCount } from "@/components/listing/ResultsCount";
 import { SearchBar } from "@/components/listing/SearchBar";
-import { listingQuery } from "@/lib/api/queries";
+import { useTranslation } from "@/i18n";
 import type { ProductListItem } from "@/lib/api/types";
 
 import styles from "./PhoneListing.module.css";
+import { useProductSearch } from "./useProductSearch";
 
-interface ListingResultsProps {
-  readonly isError: boolean;
-  readonly products: readonly ProductListItem[];
-  readonly query: string;
+export interface PhoneListingProps {
+  initialProducts: readonly ProductListItem[];
 }
 
-const ListingResults = ({ isError, products, query }: ListingResultsProps) => {
-  if (isError) {
+interface ListingResultsProps {
+  hasError: boolean;
+  products: readonly ProductListItem[];
+  query: string;
+}
+
+const ListingResults = ({ hasError, products, query }: ListingResultsProps) => {
+  const { t } = useTranslation();
+
+  if (hasError) {
     return (
       <p role="alert" className={styles.error}>
-        Something went wrong loading phones. Please try again.
+        {t("listing.error")}
       </p>
     );
   }
@@ -33,27 +36,14 @@ const ListingResults = ({ isError, products, query }: ListingResultsProps) => {
   return <PhoneGrid products={products} />;
 };
 
-export const PhoneListing = () => {
-  const [query, setQuery] = useState("");
-
-  const handleSearch = useCallback((nextQuery: string) => {
-    setQuery(nextQuery);
-  }, []);
-
-  const {
-    data: products = [],
-    isFetching,
-    isError,
-  } = useQuery({
-    ...listingQuery(query),
-    placeholderData: keepPreviousData,
-  });
+export const PhoneListing = ({ initialProducts }: PhoneListingProps) => {
+  const { query, products, status, search } = useProductSearch(initialProducts);
 
   return (
     <section className={styles.listing}>
-      <SearchBar onSearch={handleSearch} />
-      <ResultsCount count={products.length} isLoading={isFetching} />
-      <ListingResults isError={isError} products={products} query={query} />
+      <SearchBar onSearch={search} />
+      <ResultsCount count={products.length} isLoading={status === "searching"} />
+      <ListingResults hasError={status === "error"} products={products} query={query} />
     </section>
   );
 };

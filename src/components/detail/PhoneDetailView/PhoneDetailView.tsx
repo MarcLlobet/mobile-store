@@ -12,7 +12,7 @@ import styles from "./PhoneDetailView.module.css";
 import { useProductSelection } from "./useProductSelection";
 
 export interface PhoneDetailViewProps {
-  readonly product: ProductDetail;
+  product: ProductDetail;
 }
 
 export const PhoneDetailView = ({ product }: PhoneDetailViewProps) => {

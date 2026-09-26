@@ -3,12 +3,12 @@ import type { ReactNode } from "react";
 import styles from "./Button.module.css";
 
 export interface ButtonProps {
-  readonly variant: "primary" | "standard";
-  readonly disabled?: boolean;
-  readonly onClick?: () => void;
-  readonly type?: "button" | "submit" | "reset";
-  readonly ariaLabel?: string;
-  readonly children: ReactNode;
+  variant: "primary" | "standard";
+  disabled?: boolean;
+  onClick?: () => void;
+  type?: "button" | "submit" | "reset";
+  ariaLabel?: string;
+  children: ReactNode;
 }
 
 export const Button = ({

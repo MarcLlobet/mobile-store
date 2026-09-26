@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ProductListItem } from "@/lib/api/types";
 
@@ -57,5 +57,45 @@ describe("PhoneGrid", () => {
   it("renders nothing but the empty list when given no products", () => {
     render(<PhoneGrid products={[]} />);
     expect(screen.getByRole("list")).toBeEmptyDOMElement();
+  });
+});
+
+describe("a tile that fails to render", () => {
+  // Distinct from the fixture above, which repeats an id on purpose.
+  const distinct: ProductListItem[] = [
+    { id: "A", brand: "Apple", name: "Alpha", basePrice: 1, imageUrl: "https://e.test/a.png" },
+    { id: "B", brand: "Bosch", name: "Bravo", basePrice: 2, imageUrl: "https://e.test/b.png" },
+    { id: "C", brand: "Casio", name: "Charlie", basePrice: 3, imageUrl: "https://e.test/c.png" },
+  ];
+
+  beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(vi.fn());
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.doUnmock("@/components/shared/ProductTile");
+    vi.resetModules();
+  });
+
+  it("is isolated, so one bad product does not take the whole grid down", async () => {
+    vi.resetModules();
+    vi.doMock("@/components/shared/ProductTile", () => ({
+      ProductTile: ({ name }: { name: string }) => {
+        if (name === "Bravo") {
+          throw new Error("tile exploded");
+        }
+        return <span>{name}</span>;
+      },
+    }));
+
+    const { PhoneGrid: Grid } = await import("./PhoneGrid");
+    render(<Grid products={distinct} />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent("This product could not be shown.");
+    expect(screen.getAllByRole("listitem")).toHaveLength(3);
+    expect(screen.getByText("Alpha")).toBeInTheDocument();
+    expect(screen.getByText("Charlie")).toBeInTheDocument();
+    expect(screen.queryByText("Bravo")).not.toBeInTheDocument();
   });
 });

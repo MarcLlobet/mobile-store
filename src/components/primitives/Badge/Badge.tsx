@@ -1,7 +1,7 @@
 import styles from "./Badge.module.css";
 
 export interface BadgeProps {
-  readonly count: number;
+  count: number;
 }
 
 export const Badge = ({ count }: BadgeProps) => {

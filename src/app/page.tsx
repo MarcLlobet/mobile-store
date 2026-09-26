@@ -1,17 +1,13 @@
-import { HydrationBoundary } from "@tanstack/react-query";
-
 import { PhoneListing } from "@/components/listing/PhoneListing";
-import { listingQuery } from "@/lib/api/queries";
-import { fetchAndDehydrate } from "@/lib/query";
+import { LISTING_LIMIT } from "@/components/listing/PhoneListing/useProductSearch";
+import { fetchProducts } from "@/lib/api/api";
 
 const HomePage = async () => {
-  const { state } = await fetchAndDehydrate(listingQuery());
+  const products = await fetchProducts({ limit: LISTING_LIMIT, offset: 0 });
 
   return (
     <main>
-      <HydrationBoundary state={state}>
-        <PhoneListing />
-      </HydrationBoundary>
+      <PhoneListing initialProducts={products} />
     </main>
   );
 };

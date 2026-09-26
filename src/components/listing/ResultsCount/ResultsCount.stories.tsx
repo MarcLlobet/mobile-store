@@ -5,24 +5,13 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 const meta: Meta<typeof ResultsCount> = {
   title: "Listing/ResultsCount",
   component: ResultsCount,
-  args: {
-    count: 24,
+  argTypes: {
+    count: { control: { type: "number", min: 0 } },
+    isLoading: { control: "boolean" },
   },
+  args: { count: 20, isLoading: false },
 };
 
 export default meta;
-type Story = StoryObj<typeof ResultsCount>;
 
-export const ManyResults: Story = {};
-
-export const SingleResult: Story = {
-  args: { count: 1 },
-};
-
-export const NoResults: Story = {
-  args: { count: 0 },
-};
-
-export const Loading: Story = {
-  args: { count: 0, isLoading: true },
-};
+export const Playground: StoryObj<typeof ResultsCount> = {};

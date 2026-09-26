@@ -7,15 +7,15 @@ import type { ColorOption, ProductDetail, StorageOption } from "@/lib/api/types"
 import type { CartItem } from "@/types/cart";
 
 export interface ProductSelection {
-  readonly color: ColorOption | null;
-  readonly storage: StorageOption | null;
+  color: ColorOption | null;
+  storage: StorageOption | null;
 }
 
 export interface UseProductSelectionResult {
-  readonly selection: ProductSelection;
-  readonly heroColor: ColorOption | null;
-  readonly selectColor: (color: ColorOption) => void;
-  readonly selectStorage: (storage: StorageOption) => void;
+  selection: ProductSelection;
+  heroColor: ColorOption | null;
+  selectColor: (color: ColorOption) => void;
+  selectStorage: (storage: StorageOption) => void;
 }
 
 const colorFromCart = (product: ProductDetail, line: CartItem | undefined): ColorOption | null =>

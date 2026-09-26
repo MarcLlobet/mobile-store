@@ -7,9 +7,11 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 const meta: Meta<typeof SearchBar> = {
   title: "Listing/SearchBar",
   component: SearchBar,
-  args: {
-    onSearch: fn(),
+  argTypes: {
+    placeholder: { control: "text" },
+    initialValue: { control: "text" },
   },
+  args: { placeholder: undefined, initialValue: "", onSearch: fn() },
   decorators: [
     (Story) => (
       <div style={{ maxWidth: 360 }}>
@@ -20,10 +22,5 @@ const meta: Meta<typeof SearchBar> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof SearchBar>;
 
-export const Default: Story = {};
-
-export const WithInitialValue: Story = {
-  args: { initialValue: "iPhone" },
-};
+export const Playground: StoryObj<typeof SearchBar> = {};

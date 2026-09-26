@@ -1,20 +1,25 @@
+import { products } from "@mocks/fixtures";
+
 import { ProductTile } from "./ProductTile";
 
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
+const sample = products[0];
+
 const meta: Meta<typeof ProductTile> = {
   title: "Shared/ProductTile",
   component: ProductTile,
-  args: {
-    id: "APL-IP15PM",
-    name: "iPhone 15 Pro Max",
-    brand: "Apple",
-    basePrice: 1319,
-    imageUrl: "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/apl-ip15pm.png",
+  argTypes: {
+    id: { control: "text" },
+    brand: { control: "text" },
+    name: { control: "text" },
+    basePrice: { control: { type: "number", min: 0 } },
+    imageUrl: { control: "text" },
   },
+  args: { ...sample },
   decorators: [
     (Story) => (
-      <div style={{ maxWidth: 260 }}>
+      <div style={{ maxWidth: 344 }}>
         <Story />
       </div>
     ),
@@ -22,6 +27,5 @@ const meta: Meta<typeof ProductTile> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof ProductTile>;
 
-export const Default: Story = {};
+export const Playground: StoryObj<typeof ProductTile> = {};

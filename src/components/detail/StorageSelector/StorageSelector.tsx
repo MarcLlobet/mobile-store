@@ -2,23 +2,25 @@
 
 import { useId } from "react";
 
+import { useTranslation } from "@/i18n";
 import type { StorageOption } from "@/lib/api/types";
 
 import styles from "./StorageSelector.module.css";
 
 export interface StorageSelectorProps {
-  readonly options: readonly StorageOption[];
-  readonly selected: StorageOption | null;
-  readonly onSelect: (option: StorageOption) => void;
+  options: readonly StorageOption[];
+  selected: StorageOption | null;
+  onSelect: (option: StorageOption) => void;
 }
 
 export const StorageSelector = ({ options, selected, onSelect }: StorageSelectorProps) => {
   const labelId = useId();
+  const { t } = useTranslation();
 
   return (
     <div className={styles.wrapper}>
       <span id={labelId} className={styles.label}>
-        STORAGE. HOW MUCH SPACE DO YOU NEED?
+        {t("detail.storage_label")}
       </span>
       <div className={styles.group} role="radiogroup" aria-labelledby={labelId}>
         {options.map((option) => {

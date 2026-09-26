@@ -1,61 +1,45 @@
+import { useArgs } from "storybook/preview-api";
+import { fn } from "storybook/test";
+
+import type { CartItem } from "@/types/cart";
+import { productDetail } from "@mocks/fixtures";
+
 import { CartList } from "./CartList";
 
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
+const lines: CartItem[] = productDetail.storageOptions.map((storage, index) => ({
+  cartItemId: `line-${String(index)}`,
+  productId: productDetail.id,
+  name: productDetail.name,
+  brand: productDetail.brand,
+  imageUrl: productDetail.colorOptions[index]?.imageUrl ?? "",
+  color: productDetail.colorOptions[index]?.name ?? "",
+  storage: storage.capacity,
+  unitPrice: storage.price,
+}));
+
 const meta: Meta<typeof CartList> = {
   title: "Cart/CartList",
   component: CartList,
-  args: {
-    items: [
-      {
-        cartItemId: "APL-IP15PM-Space Black-256GB",
-        productId: "APL-IP15PM",
-        name: "iPhone 15 Pro Max",
-        brand: "Apple",
-        imageUrl: "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/apl-ip15pm.png",
-        color: "Space Black",
-        storage: "256GB",
-        unitPrice: 1319,
-      },
-      {
-        cartItemId: "SAM-GS24U-Titanium Grey-512GB",
-        productId: "SAM-GS24U",
-        name: "Samsung Galaxy S24 Ultra",
-        brand: "Samsung",
-        imageUrl: "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/sam-gs24u.png",
-        color: "Titanium Grey",
-        storage: "512GB",
-        unitPrice: 1499,
-      },
-    ],
+  argTypes: {
+    items: { control: "object" },
   },
-  decorators: [
-    (Story) => (
-      <div style={{ maxWidth: 480 }}>
-        <Story />
-      </div>
-    ),
-  ],
+  args: { items: lines, onRemove: fn() },
+  render: function Render(args) {
+    const [, updateArgs] = useArgs();
+    return (
+      <CartList
+        {...args}
+        onRemove={(cartItemId) => {
+          updateArgs({ items: args.items.filter((item) => item.cartItemId !== cartItemId) });
+          args.onRemove(cartItemId);
+        }}
+      />
+    );
+  },
 };
 
 export default meta;
-type Story = StoryObj<typeof CartList>;
 
-export const Default: Story = {};
-
-export const SingleItem: Story = {
-  args: {
-    items: [
-      {
-        cartItemId: "APL-IP15PM-Space Black-256GB",
-        productId: "APL-IP15PM",
-        name: "iPhone 15 Pro Max",
-        brand: "Apple",
-        imageUrl: "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/apl-ip15pm.png",
-        color: "Space Black",
-        storage: "256GB",
-        unitPrice: 1319,
-      },
-    ],
-  },
-};
+export const Playground: StoryObj<typeof CartList> = {};

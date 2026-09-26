@@ -1,17 +1,21 @@
+"use client";
+
 import Image from "next/image";
 
 import { Price } from "@/components/primitives/Price";
+import { useTranslation } from "@/i18n";
 import type { CartItem as CartItemModel } from "@/types/cart";
 
 import styles from "./CartItem.module.css";
 
 export interface CartItemProps {
-  readonly item: CartItemModel;
-  readonly onRemove: (cartItemId: string) => void;
+  item: CartItemModel;
+  onRemove: (cartItemId: string) => void;
 }
 
 export const CartItem = ({ item, onRemove }: CartItemProps) => {
   const { cartItemId, name, imageUrl, color, storage, unitPrice } = item;
+  const { t } = useTranslation();
 
   return (
     <li className={styles.row}>
@@ -26,17 +30,17 @@ export const CartItem = ({ item, onRemove }: CartItemProps) => {
       </span>
       <div className={styles.info}>
         <span className={styles.name}>{name}</span>
-        <span className={styles.specs}>{`${storage} | ${color}`}</span>
+        <span className={styles.specs}>{t("cart.item_variant", { storage, color })}</span>
         <span className={styles.price}>
           <Price value={unitPrice} />
         </span>
         <button
           type="button"
           className={styles.remove}
-          aria-label={`Remove ${name} from cart`}
+          aria-label={t("cart.remove_label", { name })}
           onClick={() => onRemove(cartItemId)}
         >
-          Eliminar
+          {t("cart.remove")}
         </button>
       </div>
     </li>

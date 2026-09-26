@@ -1,45 +1,58 @@
-import { useState } from "react";
+import { useArgs } from "storybook/preview-api";
+import { fn } from "storybook/test";
 
-import type { ColorOption, StorageOption } from "@/lib/api/types";
+import { productDetail } from "@mocks/fixtures";
 
 import { SelectorsPanel } from "./SelectorsPanel";
 
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-const colors: ColorOption[] = [
-  { name: "Black", hexCode: "#1c1c1e", imageUrl: "" },
-  { name: "Blue", hexCode: "#3b5f8a", imageUrl: "" },
-];
-
-const storageOptions: StorageOption[] = [
-  { capacity: "256GB", price: 1319 },
-  { capacity: "512GB", price: 1449 },
-];
+const colors = productDetail.colorOptions;
+const storageOptions = productDetail.storageOptions;
 
 const meta: Meta<typeof SelectorsPanel> = {
   title: "Detail/SelectorsPanel",
   component: SelectorsPanel,
+  argTypes: {
+    colors: { control: "object" },
+    storageOptions: { control: "object" },
+    selectedColor: {
+      control: "select",
+      options: ["none", ...colors.map((color) => color.name)],
+      mapping: { none: null, ...Object.fromEntries(colors.map((c) => [c.name, c])) },
+    },
+    selectedStorage: {
+      control: "select",
+      options: ["none", ...storageOptions.map((option) => option.capacity)],
+      mapping: { none: null, ...Object.fromEntries(storageOptions.map((o) => [o.capacity, o])) },
+    },
+  },
+  args: {
+    colors,
+    storageOptions,
+    selectedColor: null,
+    selectedStorage: null,
+    onSelectColor: fn(),
+    onSelectStorage: fn(),
+  },
+  render: function Render(args) {
+    const [, updateArgs] = useArgs();
+    return (
+      <SelectorsPanel
+        {...args}
+        onSelectColor={(color) => {
+          updateArgs({ selectedColor: color.name });
+          args.onSelectColor(color);
+        }}
+        onSelectStorage={(option) => {
+          updateArgs({ selectedStorage: option.capacity });
+          args.onSelectStorage(option);
+        }}
+      />
+    );
+  },
 };
 
 export default meta;
-type Story = StoryObj<typeof SelectorsPanel>;
 
-export const Interactive: Story = {
-  render: () => {
-    const Wrapper = () => {
-      const [selectedColor, setSelectedColor] = useState<ColorOption | null>(null);
-      const [selectedStorage, setSelectedStorage] = useState<StorageOption | null>(null);
-      return (
-        <SelectorsPanel
-          colors={colors}
-          selectedColor={selectedColor}
-          onSelectColor={setSelectedColor}
-          storageOptions={storageOptions}
-          selectedStorage={selectedStorage}
-          onSelectStorage={setSelectedStorage}
-        />
-      );
-    };
-    return <Wrapper />;
-  },
-};
+export const Playground: StoryObj<typeof SelectorsPanel> = {};

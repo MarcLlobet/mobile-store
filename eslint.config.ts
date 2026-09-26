@@ -134,18 +134,7 @@ const eslintConfig = defineConfig([
       // unicorn/no-array-callback-reference forbid, because `map` also passes the
       // index. Sonar wins, so callbacks stay explicit.
       "functional/prefer-tacit": "off",
-      "functional/type-declaration-immutability": [
-        "error",
-        {
-          rules: [
-            {
-              identifiers: ["^(?!Mutable).+"],
-              immutability: "ReadonlyShallow",
-              comparator: "AtLeast",
-            },
-          ],
-        },
-      ],
+      "functional/type-declaration-immutability": "off",
       // Deliberately off: these forbid ordinary React/TS code rather than mutation.
       "functional/no-expression-statements": "off",
       "functional/no-conditional-statements": "off",
@@ -201,7 +190,7 @@ const eslintConfig = defineConfig([
       "sonarjs/no-unused-vars": "off", // typescript-eslint owns this
       "sonarjs/deprecation": "off", // @typescript-eslint/no-deprecated reports the same thing
       "sonarjs/unused-import": "off", // import-x owns this
-      "sonarjs/prefer-read-only-props": "error",
+      "sonarjs/prefer-read-only-props": "off",
     },
   },
 
@@ -329,7 +318,6 @@ const eslintConfig = defineConfig([
     rules: {
       "react/function-component-definition": "off",
       // Storybook's own `Meta`/`StoryObj` types are mutable; aliases of them cannot be readonly.
-      "functional/type-declaration-immutability": "off",
       "sonarjs/no-duplicate-string": "off",
       "functional/immutable-data": "off",
       "max-nested-callbacks": "off",

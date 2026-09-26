@@ -77,33 +77,56 @@ are served from a sub-path of `github.io`, not the domain root) with
 default Jekyll processing otherwise ignores the `_next/` output folder
 because it starts with `_`).
 
-### Data fetching: TanStack (React) Query over a direct API client
+### Data fetching: plain async functions, no client cache
 
-There are two layers, and the split matters:
+Both routes are prerendered at build time, so the data layer is two functions
+returning promises:
 
-- `lib/api/api.ts` is a thin **transport**: it builds the request, attaches the
-  `x-api-key` header, bounds it with a timeout, retries a dropped/5xx request
-  with a backoff (Render free-tier cold starts), and turns a non-OK response
-  into a typed `ApiError` carrying the API's own `{ error, message }`. It has
-  no cache and no React in it, so the same function runs at build time and in
-  the browser.
-- `lib/api/queries.ts` is the **cache contract**: one `queryOptions` per
-  endpoint, with the query keys everything else shares.
+```ts
+const products = await fetchProducts({ limit: LISTING_LIMIT }); // app/page.tsx
+const product = await fetchProductById(id); // phones/[id]/page.tsx
+```
 
-Each route's Server Component prefetches into a throwaway `QueryClient` at
-build time and serializes it into `<HydrationBoundary>`; the Client Component
-below reads the same key with `useQuery`. Because the keys match (and
-`staleTime` keeps hydrated data fresh), the browser renders the build's data
-without re-requesting it on mount — the static export still ships fully
-populated HTML — and from then on React Query owns every request: one cache
-entry per `search` value, deduplicated, with `keepPreviousData` holding the
-current grid on screen while the next search resolves. Navigating
-listing → detail → back is served from that cache, not the network.
+The page hands the result straight to the view as a prop. There is no query
+client, no hydration boundary and no cache to invalidate.
 
-There are no Route Handlers in between (`output: 'export'` has no server to
-run them), so the `queryFn` calls the external API directly from both sides.
-`src/lib/query/` holds the provider and the client factory — one client per
-server render, one long-lived client in the browser.
+This replaced TanStack Query, which was removed once it stopped paying for
+itself: the app had exactly **two** `useQuery` call sites and **zero**
+mutations, and one of those two only re-read data the server already had, so it
+existed purely to give `dehydrate()` somewhere to hydrate into. The single
+genuinely dynamic thing — the listing search — is now `useProductSearch`.
+
+`fetchProducts`/`fetchProductById` take a `RequestOptions` of `{ signal,
+retries }`. Retries default to 2 because the **build** fans 24 requests at a
+cold free-tier instance; the search passes `retries: 0` so a failed query says
+so at once instead of after two backoffs.
+
+### Search: one effect, one debounce, one abort
+
+`useProductSearch` keeps the query, the last results and a status. The empty
+query is _derived_ — no request, no state write, it just shows the products the
+build already provided — so clearing the box costs nothing.
+
+Everything else lives in one effect whose cleanup does the cancelling:
+
+- `debounce` from `lib/utils/schedule` collapses a burst of keystrokes into one
+  request; the cleanup cancels a pending one.
+- An `AbortController` per effect run cancels the in-flight request. Because
+  each run owns its own controller and the previous is aborted on cleanup, a
+  slow earlier response can never overwrite a newer one.
+
+`schedule.ts` also exports `throttle`, used by the similar-items rail to pace
+its scroll handler at 50ms instead of setting state on every scroll event.
+
+### Errors
+
+`app/error.tsx` is the boundary. It reads `ApiError.status` to distinguish a
+missing resource from an unreachable catalog, and offers `reset()`.
+
+Failures that belong to a specific part of the page stay in that part: a failed
+search renders a `role="alert"` exactly where the results would be, which is
+more useful than a toast because it is in context and does not time out. A
+detail-page 404 is resolved at build time by `notFound()` into `not-found.tsx`.
 
 ### Colour variants: prefetched, pre-decoded, previewed in CSS
 
@@ -380,6 +403,37 @@ Storybook is **published alongside the app in the same deploy**, at
 second GitHub Pages site: `ci.yml` merges `storybook-static/` into the app's
 own static export output (`cp -r storybook-static out/storybook`) before
 uploading it as one Pages artifact.
+
+## Git hooks
+
+Husky installs itself through the `prepare` script, so a fresh `pnpm install`
+wires the hooks up with no extra step.
+
+`.husky/pre-commit` runs the same checks CI does, scoped so it stays fast
+(~12s) and never becomes something worth bypassing:
+
+```sh
+pnpm lint-staged   # eslint --fix then prettier --write, staged files only
+pnpm typecheck
+pnpm test
+```
+
+`set -e` is load-bearing: without it a failing `lint-staged` would be masked by
+the exit code of whatever ran last, and the commit would go through anyway.
+
+`lint-staged` (configured in `package.json`) **fixes** rather than complains —
+`eslint --fix` first, `prettier --write` second so Prettier has the final say
+on formatting, then the fixes are re-staged into the commit. Files it cannot
+fix cleanly fail the commit and the staged state is reverted untouched.
+
+The two slow CI entries, `pnpm build` and `pnpm build-storybook`, are
+deliberately **not** in the hook: the export fetches the live catalog (24
+requests against a cold Render instance), which is not something to pay on
+every commit. CI is the gate for those.
+
+Linting is scoped to staged files, so a pre-existing error in a file this
+commit doesn't touch reaches CI rather than the hook. `pnpm verify` runs the
+whole set locally when you want it.
 
 ## CI / Deploy
 

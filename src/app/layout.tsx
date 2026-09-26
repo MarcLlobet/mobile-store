@@ -6,24 +6,26 @@ import type { ReactNode } from "react";
 
 import { Header } from "@/components/layout/Header";
 import { CartProvider } from "@/context/CartContext";
-import { QueryProvider } from "@/lib/query";
+import { TranslationProvider, getServerTranslator } from "@/i18n";
 
 import type { Metadata } from "next";
 
+const { t, locale } = getServerTranslator();
+
 export const metadata: Metadata = {
-  title: "Mobile Store",
-  description: "Browse, compare and buy mobile phones.",
+  title: t("meta.title"),
+  description: t("meta.description"),
 };
 
 const RootLayout = ({ children }: { children: ReactNode }) => (
-  <html lang="en">
+  <html lang={locale}>
     <body>
-      <QueryProvider>
+      <TranslationProvider>
         <CartProvider>
           <Header />
           {children}
         </CartProvider>
-      </QueryProvider>
+      </TranslationProvider>
     </body>
   </html>
 );

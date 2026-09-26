@@ -17,7 +17,6 @@ const baseItem: NewCartItem = {
 
 const renderCart = () => renderHook(() => useCart(), { wrapper: CartProvider });
 
-/** Adds the same line `times` over, so each call has to mint its own id. */
 const addRepeatedly = (addItem: (item: NewCartItem) => void, times: number) => {
   Array.from({ length: times }).forEach(() => {
     addItem(baseItem);

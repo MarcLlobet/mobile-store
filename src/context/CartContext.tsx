@@ -15,18 +15,17 @@ import type { CartItem, NewCartItem } from "@/types/cart";
 export const CART_STORAGE_KEY = "mobile-ecommerce:cart";
 
 export interface CartContextValue {
-  readonly items: readonly CartItem[];
-  readonly itemCount: number;
-  readonly totalPrice: number;
-  readonly addItem: (item: NewCartItem) => void;
-  readonly removeItem: (cartItemId: string) => void;
+  items: readonly CartItem[];
+  itemCount: number;
+  totalPrice: number;
+  addItem: (item: NewCartItem) => void;
+  removeItem: (cartItemId: string) => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
 
 const ID_RANDOM_BYTES = 8;
 
-/** Hex-encodes bytes so the fallback id is as collision-resistant as a UUID. */
 const randomHex = (): string =>
   [...crypto.getRandomValues(new Uint8Array(ID_RANDOM_BYTES))]
     .map((byte) => byte.toString(16).padStart(2, "0"))
@@ -37,16 +36,10 @@ const createCartItemId = (): string =>
     ? crypto.randomUUID()
     : `${Date.now().toString(36)}-${randomHex()}`;
 
-/** A line as it comes back out of storage: anything may have been written there. */
-type StoredCartItem = Omit<CartItem, "cartItemId"> & { readonly cartItemId?: unknown };
+type StoredCartItem = Omit<CartItem, "cartItemId"> & { cartItemId?: unknown };
 
-/**
- * Older builds wrote lines without ids, and duplicates crept in, so every id is
- * re-checked on the way in. Folds rather than mutating a shared `Set`, so the
- * ids already handed out travel with the accumulator.
- */
 const withUniqueIds = (items: readonly StoredCartItem[]): readonly CartItem[] =>
-  items.reduce<{ readonly seen: readonly string[]; readonly items: readonly CartItem[] }>(
+  items.reduce<{ seen: readonly string[]; items: readonly CartItem[] }>(
     (acc, item) => {
       const id = item.cartItemId;
       const isUsable = typeof id === "string" && id !== "" && !acc.seen.includes(id);
@@ -72,12 +65,12 @@ const readStoredCart = (): readonly CartItem[] => {
   }
 };
 
-export const CartProvider = ({ children }: { readonly children: ReactNode }) => {
+export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<readonly CartItem[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- see comment above; required for the frozen "read localStorage lazily post-mount" contract (plan §4)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setItems((prev) => (prev.length > 0 ? prev : readStoredCart()));
     setIsHydrated(true);
   }, []);
@@ -88,9 +81,7 @@ export const CartProvider = ({ children }: { readonly children: ReactNode }) => 
     }
     try {
       window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-    } catch {
-      // A full or disabled storage quota must not take the cart down with it.
-    }
+    } catch {}
   }, [items, isHydrated]);
 
   const addItem = useCallback((item: NewCartItem) => {

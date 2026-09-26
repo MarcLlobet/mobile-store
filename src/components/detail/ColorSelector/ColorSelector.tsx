@@ -2,23 +2,25 @@
 
 import { useId } from "react";
 
+import { useTranslation } from "@/i18n";
 import type { ColorOption } from "@/lib/api/types";
 
 import styles from "./ColorSelector.module.css";
 
 export interface ColorSelectorProps {
-  readonly colors: readonly ColorOption[];
-  readonly selected: ColorOption | null;
-  readonly onSelect: (color: ColorOption) => void;
+  colors: readonly ColorOption[];
+  selected: ColorOption | null;
+  onSelect: (color: ColorOption) => void;
 }
 
 export const ColorSelector = ({ colors, selected, onSelect }: ColorSelectorProps) => {
   const labelId = useId();
+  const { t } = useTranslation();
 
   return (
     <div className={styles.wrapper}>
       <span id={labelId} className={styles.label}>
-        COLOR. PICK YOUR FAVOURITE.
+        {t("detail.color_label")}
       </span>
       <div className={styles.group} role="radiogroup" aria-labelledby={labelId}>
         {colors.map((color, index) => {

@@ -1,53 +1,53 @@
 export interface ProductListItem {
-  readonly id: string;
-  readonly brand: string;
-  readonly name: string;
-  readonly basePrice: number;
-  readonly imageUrl: string;
+  id: string;
+  brand: string;
+  name: string;
+  basePrice: number;
+  imageUrl: string;
 }
 
 export interface ColorOption {
-  readonly name: string;
-  readonly hexCode: string;
-  readonly imageUrl: string;
+  name: string;
+  hexCode: string;
+  imageUrl: string;
 }
 
 export interface StorageOption {
-  readonly capacity: string;
-  readonly price: number;
+  capacity: string;
+  price: number;
 }
 
 export interface ProductSpecs {
-  readonly screen: string;
-  readonly resolution: string;
-  readonly processor: string;
-  readonly mainCamera: string;
-  readonly selfieCamera: string;
-  readonly battery: string;
-  readonly os: string;
-  readonly screenRefreshRate: string;
+  screen: string;
+  resolution: string;
+  processor: string;
+  mainCamera: string;
+  selfieCamera: string;
+  battery: string;
+  os: string;
+  screenRefreshRate: string;
 }
 
 export interface ProductDetail {
-  readonly id: string;
-  readonly brand: string;
-  readonly name: string;
-  readonly basePrice: number;
-  readonly description: string;
-  readonly rating: number;
-  readonly specs: ProductSpecs;
-  readonly colorOptions: readonly ColorOption[];
-  readonly storageOptions: readonly StorageOption[];
-  readonly similarProducts: readonly ProductListItem[];
+  id: string;
+  brand: string;
+  name: string;
+  basePrice: number;
+  description: string;
+  rating: number;
+  specs: ProductSpecs;
+  colorOptions: readonly ColorOption[];
+  storageOptions: readonly StorageOption[];
+  similarProducts: readonly ProductListItem[];
 }
 
 export interface FetchProductsParams {
-  readonly search?: string;
-  readonly limit?: number;
-  readonly offset?: number;
+  search?: string;
+  limit?: number;
+  offset?: number;
 }
 
 export interface ApiErrorBody {
-  readonly error: string;
-  readonly message: string;
+  error: string;
+  message: string;
 }

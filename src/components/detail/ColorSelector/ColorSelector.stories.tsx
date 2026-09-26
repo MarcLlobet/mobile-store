@@ -1,40 +1,47 @@
-import { useState } from "react";
+import { useArgs } from "storybook/preview-api";
+import { fn } from "storybook/test";
 
-import type { ColorOption } from "@/lib/api/types";
+import { productDetail } from "@mocks/fixtures";
 
 import { ColorSelector } from "./ColorSelector";
 
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-const colors: ColorOption[] = [
-  { name: "Black", hexCode: "#1c1c1e", imageUrl: "" },
-  { name: "Blue", hexCode: "#3b5f8a", imageUrl: "" },
-  { name: "Gold", hexCode: "#d4af7a", imageUrl: "" },
-];
+const colors = productDetail.colorOptions;
 
 const meta: Meta<typeof ColorSelector> = {
   title: "Detail/ColorSelector",
   component: ColorSelector,
-  args: { colors },
+  argTypes: {
+    colors: { control: "object" },
+    selected: {
+      control: "select",
+      options: ["none", ...colors.map((color) => color.name)],
+      mapping: {
+        none: null,
+        ...Object.fromEntries(colors.map((color) => [color.name, color])),
+      },
+    },
+  },
+  args: {
+    colors,
+    selected: null,
+    onSelect: fn(),
+  },
+  render: function Render(args) {
+    const [, updateArgs] = useArgs();
+    return (
+      <ColorSelector
+        {...args}
+        onSelect={(color) => {
+          updateArgs({ selected: color.name });
+          args.onSelect(color);
+        }}
+      />
+    );
+  },
 };
 
 export default meta;
-type Story = StoryObj<typeof ColorSelector>;
 
-export const NoneSelected: Story = {
-  args: { selected: null },
-};
-
-export const OneSelected: Story = {
-  args: { selected: colors[1] },
-};
-
-export const Interactive: Story = {
-  render: (args) => {
-    const Wrapper = () => {
-      const [selected, setSelected] = useState<ColorOption | null>(null);
-      return <ColorSelector {...args} selected={selected} onSelect={setSelected} />;
-    };
-    return <Wrapper />;
-  },
-};
+export const Playground: StoryObj<typeof ColorSelector> = {};

@@ -1,14 +1,22 @@
+"use client";
+
+import { useTranslation } from "@/i18n";
+
 import styles from "./EmptyState.module.css";
 
 export interface EmptyStateProps {
-  readonly query?: string;
+  query?: string;
 }
 
-export const EmptyState = ({ query }: EmptyStateProps) => (
-  <div className={styles.emptyState}>
-    <p className={styles.message}>
-      {query ? <>No phones match &ldquo;{query}&rdquo;.</> : "No phones found."}
-    </p>
-    <p className={styles.hint}>Try a different name or brand.</p>
-  </div>
-);
+export const EmptyState = ({ query }: EmptyStateProps) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className={styles.emptyState}>
+      <p className={styles.message}>
+        {query ? t("listing.empty_for_query", { query }) : t("listing.empty")}
+      </p>
+      <p className={styles.hint}>{t("listing.empty_hint")}</p>
+    </div>
+  );
+};

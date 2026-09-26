@@ -5,25 +5,15 @@ import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 const meta: Meta<typeof Skeleton> = {
   title: "Primitives/Skeleton",
   component: Skeleton,
+  argTypes: {
+    width: { control: "text" },
+    height: { control: "text" },
+    radius: { control: "text" },
+    ariaLabel: { control: "text" },
+  },
+  args: { width: "100%", height: 16, radius: 0, ariaLabel: undefined },
 };
 
 export default meta;
-type Story = StoryObj<typeof Skeleton>;
 
-export const TextLine: Story = {
-  args: { width: 200, height: 16 },
-};
-
-export const CardTile: Story = {
-  args: { width: 240, height: 240, radius: 8 },
-};
-
-export const CardComposite: Story = {
-  render: () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, width: 240 }}>
-      <Skeleton width={240} height={240} radius={8} />
-      <Skeleton width={140} height={14} />
-      <Skeleton width={80} height={14} />
-    </div>
-  ),
-};
+export const Playground: StoryObj<typeof Skeleton> = {};

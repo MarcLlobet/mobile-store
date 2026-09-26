@@ -1,19 +1,20 @@
+"use client";
+
+import { useTranslation } from "@/i18n";
+
 import styles from "./ResultsCount.module.css";
 
 export interface ResultsCountProps {
-  readonly count: number;
-  readonly isLoading?: boolean;
+  count: number;
+  isLoading?: boolean;
 }
 
-const resultsMessage = (count: number): string => {
-  if (count === 0) {
-    return "No results";
-  }
-  return count === 1 ? "1 result" : `${count} results`;
-};
+export const ResultsCount = ({ count, isLoading = false }: ResultsCountProps) => {
+  const { t, plural } = useTranslation();
 
-export const ResultsCount = ({ count, isLoading = false }: ResultsCountProps) => (
-  <p className={styles.resultsCount} role="status" aria-live="polite">
-    {isLoading ? "Searching…" : resultsMessage(count)}
-  </p>
-);
+  return (
+    <p className={styles.resultsCount} role="status" aria-live="polite">
+      {isLoading ? t("listing.searching") : plural("listing.results", count)}
+    </p>
+  );
+};

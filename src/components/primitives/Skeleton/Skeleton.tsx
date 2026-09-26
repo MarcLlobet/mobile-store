@@ -1,11 +1,11 @@
 import styles from "./Skeleton.module.css";
 
 export interface SkeletonProps {
-  readonly width?: number | string;
-  readonly height?: number | string;
-  readonly radius?: number | string;
-  readonly className?: string;
-  readonly ariaLabel?: string;
+  width?: number | string;
+  height?: number | string;
+  radius?: number | string;
+  className?: string;
+  ariaLabel?: string;
 }
 
 export const Skeleton = ({

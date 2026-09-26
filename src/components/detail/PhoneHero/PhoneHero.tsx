@@ -7,14 +7,14 @@ import Image from "next/image";
 import styles from "./PhoneHero.module.css";
 
 export interface PhoneHeroVariant {
-  readonly key: string;
-  readonly imageUrl: string;
+  key: string;
+  imageUrl: string;
 }
 
 export interface PhoneHeroProps {
-  readonly variants: readonly PhoneHeroVariant[];
-  readonly activeKey: string;
-  readonly name: string;
+  variants: readonly PhoneHeroVariant[];
+  activeKey: string;
+  name: string;
 }
 
 export const PhoneHero = ({ variants, activeKey, name }: PhoneHeroProps) => {
@@ -23,10 +23,6 @@ export const PhoneHero = ({ variants, activeKey, name }: PhoneHeroProps) => {
 
   useEffect(() => {
     const images = stackRef.current?.querySelectorAll("img") ?? [];
-    // Warm the decoder so a colour swap paints instantly rather than flashing.
-    // Best-effort twice over: `allSettled` absorbs the rejection a failed image
-    // throws, and `decode?.()` covers the runtimes (jsdom, older Safari) that do
-    // not implement it even though the DOM lib types say they must.
     void Promise.allSettled(
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       [...images].map((image) => image.decode?.()),

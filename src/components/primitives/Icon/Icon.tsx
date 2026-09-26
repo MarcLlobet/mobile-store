@@ -12,18 +12,12 @@ export type IconName =
   | "close"
   | "logo";
 
-/*
- * These props are spread onto an <svg>, so they inherit React's own `SVGProps`,
- * which is mutable and not ours to change. Every prop declared here is readonly;
- * the exemption covers only what React contributes.
- */
-// eslint-disable-next-line functional/type-declaration-immutability
 export interface IconProps extends Omit<SVGProps<SVGSVGElement>, "width" | "height" | "name"> {
-  readonly name: IconName;
-  readonly size?: number;
-  readonly ariaHidden?: boolean;
-  readonly title?: string;
-  readonly className?: string;
+  name: IconName;
+  size?: number;
+  ariaHidden?: boolean;
+  title?: string;
+  className?: string;
 }
 
 const strokePaths: Partial<Record<IconName, JSX.Element>> = {
@@ -55,9 +49,9 @@ const strokePaths: Partial<Record<IconName, JSX.Element>> = {
 const DEFAULT_ICON_SIZE = 24;
 
 interface AssetIcon {
-  readonly src: string;
-  readonly width: number;
-  readonly height: number;
+  src: string;
+  width: number;
+  height: number;
 }
 
 const assetIcons: Partial<Record<IconName, AssetIcon>> = {
@@ -68,15 +62,11 @@ const assetIcons: Partial<Record<IconName, AssetIcon>> = {
   logo: { src: "/icons/figma/logo.svg", width: 77, height: 29 },
 };
 
-/**
- * Both renderers take a resolved `accessibleName`: `undefined` means the icon is
- * decorative and should be hidden, a string means it is announced.
- */
 interface AssetIconProps {
-  readonly asset: AssetIcon;
-  readonly size: number;
-  readonly accessibleName?: string;
-  readonly className?: string;
+  asset: AssetIcon;
+  size: number;
+  accessibleName?: string;
+  className?: string;
 }
 
 const AssetBackedIcon = ({ asset, size, accessibleName, className }: AssetIconProps) => (
@@ -91,11 +81,10 @@ const AssetBackedIcon = ({ asset, size, accessibleName, className }: AssetIconPr
   />
 );
 
-// eslint-disable-next-line functional/type-declaration-immutability -- inherits React's mutable SVGProps
 interface StrokeIconProps extends Omit<SVGProps<SVGSVGElement>, "width" | "height" | "name"> {
-  readonly name: IconName;
-  readonly size: number;
-  readonly accessibleName?: string;
+  name: IconName;
+  size: number;
+  accessibleName?: string;
 }
 
 const StrokeIcon = ({ name, size, accessibleName, className, ...rest }: StrokeIconProps) => (
@@ -113,7 +102,6 @@ const StrokeIcon = ({ name, size, accessibleName, className, ...rest }: StrokeIc
     role={accessibleName === undefined ? undefined : "img"}
     {...rest}
   >
-    {/* `<title>` is what names an `<svg role="img">`; `<desc>` only describes it. */}
     {accessibleName === undefined ? null : <title>{accessibleName}</title>}
     {strokePaths[name]}
   </svg>

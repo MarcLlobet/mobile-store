@@ -5,12 +5,12 @@ import type { ColorOption, StorageOption } from "@/lib/api/types";
 import styles from "./SelectorsPanel.module.css";
 
 export interface SelectorsPanelProps {
-  readonly colors: readonly ColorOption[];
-  readonly selectedColor: ColorOption | null;
-  readonly onSelectColor: (color: ColorOption) => void;
-  readonly storageOptions: readonly StorageOption[];
-  readonly selectedStorage: StorageOption | null;
-  readonly onSelectStorage: (option: StorageOption) => void;
+  colors: readonly ColorOption[];
+  selectedColor: ColorOption | null;
+  onSelectColor: (color: ColorOption) => void;
+  storageOptions: readonly StorageOption[];
+  selectedStorage: StorageOption | null;
+  onSelectStorage: (option: StorageOption) => void;
 }
 
 export const SelectorsPanel = ({
