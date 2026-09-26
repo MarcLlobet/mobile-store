@@ -35,9 +35,16 @@
   border-color: var(--color-button-primary-bg);
 }
 
-.primary:hover:not(:disabled) {
+.primary:hover:not(:disabled),
+.primary[data-preview-state="hover"] {
   background-color: var(--color-button-primary-bg-hover);
   border-color: var(--color-button-primary-bg-hover);
+}
+
+.primary:active:not(:disabled),
+.primary[data-preview-state="active"] {
+  background-color: var(--color-button-primary-bg-active);
+  border-color: var(--color-button-primary-bg-active);
 }
 
 .standard {
@@ -46,13 +53,28 @@
   border-color: var(--color-button-standard-border);
 }
 
-.standard:hover:not(:disabled) {
-  background-color: var(--color-surface-alt);
+.standard:hover:not(:disabled),
+.standard[data-preview-state="hover"] {
+  border-color: var(--color-button-standard-border-hover);
+  color: var(--color-button-standard-text-hover);
 }
 
-.button:disabled {
+.standard:active:not(:disabled),
+.standard[data-preview-state="active"] {
+  border-color: var(--color-button-standard-border-active);
+  color: var(--color-button-standard-text);
+}
+
+.primary:disabled {
   cursor: not-allowed;
   background-color: var(--color-button-disabled-bg);
   color: var(--color-button-disabled-text);
   border-color: var(--color-button-disabled-bg);
+}
+
+.standard:disabled {
+  cursor: not-allowed;
+  background-color: var(--color-button-standard-bg);
+  color: var(--color-button-disabled-text);
+  border-color: var(--color-button-disabled-border);
 }

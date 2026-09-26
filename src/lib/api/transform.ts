@@ -1,11 +1,11 @@
 import type { ColorOption, ProductDetail, ProductListItem } from "./types";
 
 export type RawProductDetail = Omit<ProductDetail, "colorOptions" | "similarProducts"> & {
-  colorOptions?: readonly ColorOption[];
-  similarProducts?: readonly ProductListItem[];
+  colorOptions?: ColorOption[];
+  similarProducts?: ProductListItem[];
 };
 
-export const normalizeImageUrl = (url: string): string => {
+const normalizeImageUrl = (url: string): string => {
   const urlObject = new URL(url);
   if (urlObject.protocol === "https:") {
     return url;

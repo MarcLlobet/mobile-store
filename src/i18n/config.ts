@@ -29,7 +29,7 @@ export const CATALOGUES: Readonly<Record<Locale, Partial<Messages>>> = {
 
 const SUPPORTED_LOCALE_NAMES: readonly string[] = SUPPORTED_LOCALES;
 
-export const isSupportedLocale = (value: string): value is Locale =>
+const isSupportedLocale = (value: string): value is Locale =>
   SUPPORTED_LOCALE_NAMES.includes(value);
 
 export const matchLocale = (value: string | null | undefined): Locale | null =>

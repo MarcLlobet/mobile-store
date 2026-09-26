@@ -1,111 +1,99 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
+import { LISTING_LIMIT } from "@/lib/api/catalog";
 import { normalizeListItem } from "@/lib/api/transform";
+import { buildSearchTree } from "@/lib/search";
 import { trackRequests } from "@/test/requests";
-import { invalidKeyError, products } from "@mocks/fixtures";
-import { getProducts } from "@mocks/handlers";
-import { server } from "@mocks/server";
+import { products } from "@mocks/fixtures";
 
 import { PhoneListing } from "./PhoneListing";
-import { LISTING_LIMIT } from "./useProductSearch";
 
-const firstPage = products.slice(0, LISTING_LIMIT).map((product) => normalizeListItem(product));
+const catalog = products.map((product) => normalizeListItem(product));
+const searchTree = buildSearchTree(catalog);
+
 const requests = trackRequests();
 
-const renderListing = () => render(<PhoneListing initialProducts={firstPage} />);
+const renderListing = () => render(<PhoneListing catalog={catalog} searchTree={searchTree} />);
+
+const search = async (query: string) => {
+  await userEvent.type(screen.getByRole("searchbox"), query);
+};
 
 describe("PhoneListing", () => {
-  it("renders the products the build handed it, without a request on mount", async () => {
+  it("shows the first page of the catalog the build handed it", () => {
     renderListing();
 
     expect(screen.getByText("Galaxy S24 Ultra")).toBeInTheDocument();
     expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
     expect(screen.getByText(`${String(LISTING_LIMIT)} results`)).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(requests.urls()).toEqual([]);
-    });
   });
 
-  it("searches through the API and renders what it returned", async () => {
+  it.each([
+    ["a whole word", "iphone", "2 results", "iPhone 13"],
+    ["a prefix, before the word is finished", "ipho", "2 results", "iPhone 15 Pro Max"],
+    ["a brand, case-insensitively", "xiaomi", "7 results", "Redmi 13C"],
+    ["every word of a two-word query", "galaxy ultra", "1 result", "Galaxy S24 Ultra"],
+  ])("matches on %s", async (_case, query, count, visible) => {
     renderListing();
 
-    await userEvent.type(screen.getByRole("searchbox"), "iphone");
+    await search(query);
+
+    expect(await screen.findByText(count)).toBeInTheDocument();
+    expect(screen.getByText(visible)).toBeInTheDocument();
+  });
+
+  it("drops the phones that do not match", async () => {
+    renderListing();
+
+    await search("iphone");
 
     expect(await screen.findByText("2 results")).toBeInTheDocument();
-    expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
-    expect(screen.getByText("iPhone 13")).toBeInTheDocument();
     expect(screen.queryByText("Galaxy S24 Ultra")).not.toBeInTheDocument();
-
-    expect(requests.urls().at(-1)).toContain("search=iphone");
+    expect(screen.queryByText("Pixel 8a")).not.toBeInTheDocument();
   });
 
-  it("debounces a burst of keystrokes into one request", async () => {
+  it("finds a phone past the first page, because the tree covers the whole catalog", async () => {
     renderListing();
 
-    await userEvent.type(screen.getByRole("searchbox"), "oppo");
-    await waitFor(() => {
-      expect(screen.getByText("4 results")).toBeInTheDocument();
-    });
+    expect(screen.queryByText("Note 50")).not.toBeInTheDocument();
 
-    expect(requests.urls()).toHaveLength(1);
+    await search("realme");
+
+    expect(await screen.findByText("1 result")).toBeInTheDocument();
+    expect(screen.getByText("Note 50")).toBeInTheDocument();
   });
 
-  it("searches on brand as well as name, case-insensitively", async () => {
-    renderListing();
-
-    await userEvent.type(screen.getByRole("searchbox"), "xiaomi");
-
-    await waitFor(() => {
-      expect(screen.getByText("Redmi 13C")).toBeInTheDocument();
-    });
-  });
-
-  it("restores the build's products without a request when the query is cleared", async () => {
+  it("clears without waiting for the debounce", async () => {
     renderListing();
     const searchbox = screen.getByRole("searchbox");
 
     await userEvent.type(searchbox, "iphone");
-    await screen.findByText("2 results");
-    const afterSearch = requests.urls().length;
+    expect(await screen.findByText("2 results")).toBeInTheDocument();
 
     await userEvent.clear(searchbox);
 
-    await waitFor(() => {
-      expect(screen.getByText(`${String(LISTING_LIMIT)} results`)).toBeInTheDocument();
-    });
-    expect(requests.urls()).toHaveLength(afterSearch);
+    expect(screen.getByText(`${String(LISTING_LIMIT)} results`)).toBeInTheDocument();
   });
 
-  it("shows the empty state when the API returns no matches", async () => {
+  it("shows the empty state when nothing matches", async () => {
     renderListing();
 
-    await userEvent.type(screen.getByRole("searchbox"), "zzzz");
+    await search("zzzz");
 
     expect(await screen.findByText("No phones match “zzzz”.")).toBeInTheDocument();
     expect(screen.getByText("No results")).toBeInTheDocument();
   });
 
-  it("surfaces a failed search immediately, without waiting out a retry backoff", async () => {
+  it("never reaches the network — mounting or searching", async () => {
     renderListing();
-    server.use(getProducts({ networkError: true }));
 
-    const startedAt = Date.now();
-    await userEvent.type(screen.getByRole("searchbox"), "iphone");
+    await search("iphone oppo realme");
+    await userEvent.clear(screen.getByRole("searchbox"));
+    await search("galaxy");
+    await userEvent.clear(screen.getByRole("searchbox"));
 
-    expect(await screen.findByRole("alert")).toBeInTheDocument();
-    expect(Date.now() - startedAt).toBeLessThan(2000);
-  });
-
-  it("reports an invalid API key as a failure rather than an empty catalog", async () => {
-    renderListing();
-    server.use(getProducts({ body: invalidKeyError, status: 401 }));
-
-    await userEvent.type(screen.getByRole("searchbox"), "iphone");
-
-    expect(await screen.findByRole("alert")).toBeInTheDocument();
-    expect(screen.queryByText(/no phones match/i)).not.toBeInTheDocument();
+    expect(requests.urls()).toEqual([]);
   });
 });

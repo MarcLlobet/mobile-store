@@ -7,9 +7,11 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { PhoneDetailView } from "@/components/detail/PhoneDetailView";
 import { PhoneListing } from "@/components/listing/PhoneListing";
 import { CartProvider } from "@/context/CartContext";
+import { createTranslator } from "@/i18n";
 import { fetchProductById } from "@/lib/api/api";
 import { normalizeListItem, normalizeProductDetail } from "@/lib/api/transform";
 import type { ProductDetail } from "@/lib/api/types";
+import { buildSearchTree } from "@/lib/search";
 import { formatPrice } from "@/lib/utils/formatPrice";
 import { trackRequests } from "@/test/requests";
 import { products, productDetail } from "@mocks/fixtures";
@@ -17,9 +19,12 @@ import { products, productDetail } from "@mocks/fixtures";
 import CartPage from "./cart/page";
 
 const product = normalizeProductDetail(productDetail);
-const initialProducts = products.slice(0, 20).map((item) => normalizeListItem(item));
+const catalog = products.map((item) => normalizeListItem(item));
+const searchTree = buildSearchTree(catalog);
 const secondColor = product.colorOptions[1]!;
 const topStorage = product.storageOptions.at(-1)!;
+
+const { t } = createTranslator();
 
 const requests = trackRequests();
 
@@ -50,7 +55,7 @@ const TestApp = () => {
 
   return (
     <div onClickCapture={handleClickCapture}>
-      {screen === "listing" ? <PhoneListing initialProducts={initialProducts} /> : null}
+      {screen === "listing" ? <PhoneListing catalog={catalog} searchTree={searchTree} /> : null}
       {screen === "detail" && detail ? <PhoneDetailView product={detail} /> : null}
       {screen === "cart" ? <CartPage /> : null}
       {screen === "cart" ? null : (
@@ -86,7 +91,7 @@ describe("Listing -> Detail -> Cart integration", () => {
     await userEvent.type(screen.getByRole("searchbox"), product.name);
     expect(await screen.findByText("1 result")).toBeInTheDocument();
     expect(screen.queryByText("Pixel 8a")).not.toBeInTheDocument();
-    expect(requests.urls().at(-1)).toContain("search=Galaxy+S24+Ultra");
+    expect(requests.urls()).toEqual([]);
 
     await userEvent.click(screen.getByRole("link", { name: new RegExp(product.name) }));
     expect(
@@ -98,7 +103,7 @@ describe("Listing -> Detail -> Cart integration", () => {
       product.colorOptions[0]!.imageUrl.replace(/^http:/, "https:"),
     );
 
-    const addToCart = screen.getByRole("button", { name: "Añadir" });
+    const addToCart = screen.getByRole("button", { name: t("detail.add_to_cart") });
     expect(addToCart).toBeDisabled();
     await userEvent.click(screen.getByRole("radio", { name: secondColor.name }));
     await userEvent.click(screen.getByRole("radio", { name: topStorage.capacity }));

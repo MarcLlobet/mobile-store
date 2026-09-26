@@ -7,7 +7,6 @@
   "header.cart_label_other": "Carrito, {count} artículos",
   "listing.loading_label": "Cargando teléfonos",
   "listing.loading_search_label": "Cargando búsqueda",
-  "listing.error": "Se ha producido un error al cargar los teléfonos. Inténtalo de nuevo.",
   "listing.empty": "No se han encontrado teléfonos.",
   "listing.empty_for_query": "Ningún teléfono coincide con «{query}».",
   "listing.empty_hint": "Prueba con otro nombre o marca.",

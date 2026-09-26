@@ -12,7 +12,7 @@ import {
 
 import type { CartItem, NewCartItem } from "@/types/cart";
 
-export const CART_STORAGE_KEY = "mobile-ecommerce:cart";
+export const CART_STORAGE_KEY = "mobile-store:cart";
 
 export interface CartContextValue {
   items: readonly CartItem[];

@@ -20,8 +20,6 @@ const fallback = (error: Error, reset: () => void) => (
   </div>
 );
 
-// React logs every caught error to the console; silence it so a passing run
-// stays readable.
 beforeEach(() => {
   vi.spyOn(console, "error").mockImplementation(vi.fn());
 });

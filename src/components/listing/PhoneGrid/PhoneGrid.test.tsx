@@ -61,7 +61,6 @@ describe("PhoneGrid", () => {
 });
 
 describe("a tile that fails to render", () => {
-  // Distinct from the fixture above, which repeats an id on purpose.
   const distinct: ProductListItem[] = [
     { id: "A", brand: "Apple", name: "Alpha", basePrice: 1, imageUrl: "https://e.test/a.png" },
     { id: "B", brand: "Bosch", name: "Bravo", basePrice: 2, imageUrl: "https://e.test/b.png" },

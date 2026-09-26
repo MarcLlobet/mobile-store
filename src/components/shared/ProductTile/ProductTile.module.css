@@ -6,10 +6,27 @@
   border: var(--border-width-hairline) solid var(--color-border);
   color: var(--color-text-primary);
   height: 100%;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
-.tile:hover {
+.tile:hover,
+.tile[data-preview-state="hover"] {
+  background-color: var(--color-black);
   border-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.tile:hover .imageWrapper,
+.tile[data-preview-state="hover"] .imageWrapper {
+  background-color: var(--color-black);
+}
+
+.tile:hover .brand,
+.tile[data-preview-state="hover"] .brand {
+  color: var(--color-grey-300);
 }
 
 .imageWrapper {

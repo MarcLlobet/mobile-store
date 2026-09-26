@@ -2,8 +2,7 @@ import { notFound } from "next/navigation";
 
 import { PhoneDetailView } from "@/components/detail/PhoneDetailView";
 import { fetchProductById, fetchProducts } from "@/lib/api/api";
-
-const CATALOG_SIZE = 24;
+import { CATALOG_SIZE } from "@/lib/api/catalog";
 
 export const generateStaticParams = async (): Promise<{ id: string }[]> => {
   const products = await fetchProducts({ limit: CATALOG_SIZE, offset: 0 });

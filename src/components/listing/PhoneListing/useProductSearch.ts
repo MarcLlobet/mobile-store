@@ -1,74 +1,62 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { fetchProducts } from "@/lib/api/api";
+import { LISTING_LIMIT } from "@/lib/api/catalog";
 import type { ProductListItem } from "@/lib/api/types";
+import { getSearchResults, type SearchTree } from "@/lib/search";
 import { debounce } from "@/lib/utils/schedule";
 
-export const LISTING_LIMIT = 20;
-const DEFAULT_DEBOUNCE_MS = 300;
-
-export type SearchStatus = "idle" | "searching" | "error";
+export const SEARCH_DEBOUNCE_MS = 250;
 
 export interface UseProductSearchOptions {
-  debounceMs?: number;
-  limit?: number;
+  initialCount?: number;
+  delayMs?: number;
 }
 
 export interface UseProductSearchResult {
   query: string;
   products: readonly ProductListItem[];
-  status: SearchStatus;
   search: (query: string) => void;
 }
 
 export const useProductSearch = (
-  initialProducts: readonly ProductListItem[],
-  { debounceMs = DEFAULT_DEBOUNCE_MS, limit = LISTING_LIMIT }: UseProductSearchOptions = {},
+  catalog: readonly ProductListItem[],
+  searchTree: SearchTree,
+  { initialCount = LISTING_LIMIT, delayMs = SEARCH_DEBOUNCE_MS }: UseProductSearchOptions = {},
 ): UseProductSearchResult => {
   const [query, setQuery] = useState("");
-  const [searched, setSearched] = useState<readonly ProductListItem[] | null>(null);
-  const [status, setStatus] = useState<SearchStatus>("idle");
+  const [term, setTerm] = useState("");
 
-  const term = query.trim();
-  const isSearch = term !== "";
+  const scheduled = useMemo(
+    () =>
+      debounce((next: string) => {
+        setTerm(next);
+      }, delayMs),
+    [delayMs],
+  );
 
-  useEffect(() => {
-    if (!isSearch) {
-      return;
-    }
+  useEffect(() => scheduled.cancel, [scheduled]);
 
-    const controller = new AbortController();
+  const search = useCallback(
+    (next: string) => {
+      setQuery(next);
+      const trimmed = next.trim();
+      if (trimmed === "") {
+        scheduled.cancel();
+        setTerm("");
+        return;
+      }
+      scheduled.run(trimmed);
+    },
+    [scheduled],
+  );
 
-    const scheduled = debounce(() => {
-      setStatus("searching");
-      fetchProducts({ search: term, limit, offset: 0 }, { signal: controller.signal, retries: 0 })
-        .then((results) => {
-          if (!controller.signal.aborted) {
-            setSearched(results);
-            setStatus("idle");
-          }
-        })
-        .catch(() => {
-          if (!controller.signal.aborted) {
-            setStatus("error");
-          }
-        });
-    }, debounceMs);
+  const products = useMemo(
+    () =>
+      term === "" ? catalog.slice(0, initialCount) : getSearchResults(searchTree, catalog, term),
+    [term, catalog, searchTree, initialCount],
+  );
 
-    scheduled.run();
-
-    return () => {
-      scheduled.cancel();
-      controller.abort();
-    };
-  }, [term, isSearch, debounceMs, limit]);
-
-  return {
-    query,
-    products: isSearch ? (searched ?? initialProducts) : initialProducts,
-    status: isSearch ? status : "idle",
-    search: setQuery,
-  };
+  return { query, products, search };
 };

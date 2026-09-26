@@ -1,8 +1,14 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { products } from "@mocks/fixtures";
 
-import { generatePrefixedList, getSearchResults, getSearchResultsByProps, getWords } from ".";
+import {
+  buildSearchTree,
+  generatePrefixedList,
+  getSearchResults,
+  getSearchResultsByProps,
+  getWords,
+} from ".";
 
 import type { ProductListItem } from "../api/types";
 
@@ -22,9 +28,7 @@ const tinyProduct = (brand: string, name: string): ProductListItem => ({
   imageUrl: "",
 });
 
-beforeEach(() => {
-  getSearchResultsByProps(mockProducts, SEARCH_PROPS);
-});
+const searchTree = buildSearchTree(mockProducts, SEARCH_PROPS);
 
 describe("the fixtures these expectations are pinned to", () => {
   it("still hold the brands and names the prefix tree below is written for", () => {
@@ -213,23 +217,29 @@ describe("getSearchResultsByProps", () => {
 
 describe("getSearchResults", () => {
   it("returns every product reached by a whole word", () => {
-    expect(getSearchResults("Google")).toEqual([googlePixel8A]);
+    expect(getSearchResults(searchTree, mockProducts, "Google")).toEqual([googlePixel8A]);
   });
 
   it("returns every product reached by a prefix", () => {
-    expect(getSearchResults("sam")).toEqual([samsungGalaxyS24, samsungGalaxyA25]);
+    expect(getSearchResults(searchTree, mockProducts, "sam")).toEqual([
+      samsungGalaxyS24,
+      samsungGalaxyA25,
+    ]);
   });
 
   it("ignores case and surrounding whitespace", () => {
-    expect(getSearchResults("  GOOGLE  ")).toEqual([googlePixel8A]);
+    expect(getSearchResults(searchTree, mockProducts, "  GOOGLE  ")).toEqual([googlePixel8A]);
   });
 
   it("requires every word to match, not just one of them", () => {
-    expect(getSearchResults("galaxy ultra")).toEqual([samsungGalaxyS24]);
+    expect(getSearchResults(searchTree, mockProducts, "galaxy ultra")).toEqual([samsungGalaxyS24]);
   });
 
   it("keeps the products that all words agree on", () => {
-    expect(getSearchResults("samsung galaxy")).toEqual([samsungGalaxyS24, samsungGalaxyA25]);
+    expect(getSearchResults(searchTree, mockProducts, "samsung galaxy")).toEqual([
+      samsungGalaxyS24,
+      samsungGalaxyA25,
+    ]);
   });
 
   it.each([
@@ -239,6 +249,6 @@ describe("getSearchResults", () => {
     ["an empty query", ""],
     ["a whitespace-only query", " ".repeat(3)],
   ])("returns nothing for %s", (_case, query) => {
-    expect(getSearchResults(query)).toEqual([]);
+    expect(getSearchResults(searchTree, mockProducts, query)).toEqual([]);
   });
 });

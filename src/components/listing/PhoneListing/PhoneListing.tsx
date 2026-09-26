@@ -4,46 +4,26 @@ import { EmptyState } from "@/components/listing/EmptyState";
 import { PhoneGrid } from "@/components/listing/PhoneGrid";
 import { ResultsCount } from "@/components/listing/ResultsCount";
 import { SearchBar } from "@/components/listing/SearchBar";
-import { useTranslation } from "@/i18n";
 import type { ProductListItem } from "@/lib/api/types";
+import type { SearchTree } from "@/lib/search";
 
 import styles from "./PhoneListing.module.css";
 import { useProductSearch } from "./useProductSearch";
 
 export interface PhoneListingProps {
-  initialProducts: readonly ProductListItem[];
+  catalog: readonly ProductListItem[];
+  searchTree: SearchTree;
+  initialCount?: number;
 }
 
-interface ListingResultsProps {
-  hasError: boolean;
-  products: readonly ProductListItem[];
-  query: string;
-}
-
-const ListingResults = ({ hasError, products, query }: ListingResultsProps) => {
-  const { t } = useTranslation();
-
-  if (hasError) {
-    return (
-      <p role="alert" className={styles.error}>
-        {t("listing.error")}
-      </p>
-    );
-  }
-  if (products.length === 0) {
-    return <EmptyState query={query} />;
-  }
-  return <PhoneGrid products={products} />;
-};
-
-export const PhoneListing = ({ initialProducts }: PhoneListingProps) => {
-  const { query, products, status, search } = useProductSearch(initialProducts);
+export const PhoneListing = ({ catalog, searchTree, initialCount }: PhoneListingProps) => {
+  const { query, products, search } = useProductSearch(catalog, searchTree, { initialCount });
 
   return (
     <section className={styles.listing}>
       <SearchBar onSearch={search} />
-      <ResultsCount count={products.length} isLoading={status === "searching"} />
-      <ListingResults hasError={status === "error"} products={products} query={query} />
+      <ResultsCount count={products.length} />
+      {products.length === 0 ? <EmptyState query={query} /> : <PhoneGrid products={products} />}
     </section>
   );
 };

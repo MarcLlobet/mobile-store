@@ -1,13 +1,15 @@
 import { PhoneListing } from "@/components/listing/PhoneListing";
-import { LISTING_LIMIT } from "@/components/listing/PhoneListing/useProductSearch";
 import { fetchProducts } from "@/lib/api/api";
+import { CATALOG_SIZE } from "@/lib/api/catalog";
+import { buildSearchTree } from "@/lib/search";
 
 const HomePage = async () => {
-  const products = await fetchProducts({ limit: LISTING_LIMIT, offset: 0 });
+  const catalog = await fetchProducts({ limit: CATALOG_SIZE, offset: 0 });
+  const searchTree = buildSearchTree(catalog);
 
   return (
     <main>
-      <PhoneListing initialProducts={products} />
+      <PhoneListing catalog={catalog} searchTree={searchTree} />
     </main>
   );
 };

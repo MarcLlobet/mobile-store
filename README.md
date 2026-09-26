@@ -1,10 +1,10 @@
 # Mobile Store
 
 A mobile-phone catalog web app — Listing, Detail and Cart views — built for
-the Zara Frontend Challenge. See `instructions.md` for the original brief.
+the Zara Frontend Challenge.
 
-Live app: `https://<your-github-username>.github.io/mobile-ecommerce/`
-Live Storybook / design system: `https://<your-github-username>.github.io/mobile-ecommerce/storybook/`
+Live app: `https://<your-github-username>.github.io/mobile-store/`
+Live Storybook / design system: `https://<your-github-username>.github.io/mobile-store/storybook/`
 (both published by the same CI deploy — see [CI / Deploy](#ci--deploy) —
 once this repo has a remote and GitHub Pages is enabled on it).
 
@@ -35,26 +35,26 @@ pnpm build          # next build, output:'export' -> static HTML/JS in out/
 pnpm build-storybook # storybook build -> storybook-static/
 ```
 
-The production build is a **static export** with `basePath: '/mobile-ecommerce'`
+The production build is a **static export** with `basePath: '/mobile-store'`
 baked into every asset URL (see [Architecture](#architecture)), so every page
-in `out/` expects to be served from a `/mobile-ecommerce/` sub-path, not from
+in `out/` expects to be served from a `/mobile-store/` sub-path, not from
 a server's root. That means the obvious `pnpm start` (`serve out`, which
 serves `out/` **at** the root) will load with broken CSS/JS — that's a
 property of previewing a GitHub Pages project-page build locally, not a bug.
 To preview it correctly, nest it one level and serve _that_:
 
 ```bash
-mkdir -p /tmp/preview/mobile-ecommerce
-cp -r out/* /tmp/preview/mobile-ecommerce/
+mkdir -p /tmp/preview/mobile-store
+cp -r out/* /tmp/preview/mobile-store/
 npx serve /tmp/preview
-# open http://localhost:3000/mobile-ecommerce/
+# open http://localhost:3000/mobile-store/
 ```
 
 To preview the merged app+Storybook deploy exactly as CI assembles it:
 
 ```bash
 cp -r storybook-static out/storybook   # same command ci.yml runs
-# then nest + serve out/ as above; /mobile-ecommerce/storybook/ will work too
+# then nest + serve out/ as above; /mobile-store/storybook/ will work too
 ```
 
 ## Architecture
@@ -71,7 +71,7 @@ static HTML. This is what the brief's optional "use SSR with Next.js" line
 means here in practice — SSG via Next's Server Components, not a running
 Node server — and it's the reason `images.unoptimized: true` is set (the
 `next/image` optimization API needs a server) and why `basePath`/
-`assetPrefix` are pinned to `/mobile-ecommerce` (GitHub Pages project pages
+`assetPrefix` are pinned to `/mobile-store` (GitHub Pages project pages
 are served from a sub-path of `github.io`, not the domain root) with
 `trailingSlash: true` and a committed `public/.nojekyll` (GitHub Pages'
 default Jekyll processing otherwise ignores the `_next/` output folder
@@ -213,7 +213,7 @@ real backend, the key could be held server-side and proxied. Without one
 bundle** — `NEXT_PUBLIC_*` variables are inlined into the client JS by
 Next.js at build time; that inlining is the intended mechanism here, not an
 accidental leak. This is an accepted, deliberate tradeoff: the key is the
-brief's own public test fixture (printed in `instructions.md` itself), sourced
+brief's own public test fixture, sourced
 at build time from a **GitHub Actions secret** so it's never committed to the
 repo, and there is no way to keep it server-secret once this specific
 combination (no backend + GitHub Pages + live client-side search) is chosen.
@@ -277,7 +277,7 @@ The brief calls for React Context specifically, and the app's actual shared
 state is small enough that it doesn't need more: **one** piece of global
 state (the cart) that a handful of components read/write. `CartContext`
 exposes `{ items, itemCount, totalPrice, addItem, removeItem }`; the cart
-persists to `localStorage` (key `mobile-ecommerce:cart`), read back lazily
+persists to `localStorage` (key `mobile-store:cart`), read back lazily
 _after_ mount (in an effect, not during initial render) specifically to avoid
 a hydration mismatch — the server-rendered/first-client-render HTML and the
 "real" persisted cart can otherwise disagree, which the brief's "console must
@@ -399,7 +399,7 @@ a story decorator, so it's visible in the story itself, not hidden behind an
 app-wide provider.
 
 Storybook is **published alongside the app in the same deploy**, at
-`/mobile-ecommerce/storybook/` — see [CI / Deploy](#ci--deploy). There is no
+`/mobile-store/storybook/` — see [CI / Deploy](#ci--deploy). There is no
 second GitHub Pages site: `ci.yml` merges `storybook-static/` into the app's
 own static export output (`cp -r storybook-static out/storybook`) before
 uploading it as one Pages artifact.
@@ -472,8 +472,8 @@ a `pages` concurrency group so a deploy is never cancelled mid-flight. The
 workflow-level concurrency group cancels superseded **PR** runs only.
 
 Result: one deploy publishes both the app
-(`https://<user>.github.io/mobile-ecommerce/`) and the live Storybook design
-system (`https://<user>.github.io/mobile-ecommerce/storybook/`) — no second
+(`https://<user>.github.io/mobile-store/`) and the live Storybook design
+system (`https://<user>.github.io/mobile-store/storybook/`) — no second
 Pages site needed. Deploying is **not done from this workspace**: this repo has
 no git remote configured yet, and going public / wiring up the two repo secrets
 is a decision for whoever owns the GitHub repo to make explicitly.

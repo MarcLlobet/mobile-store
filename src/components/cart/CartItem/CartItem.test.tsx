@@ -2,9 +2,12 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
+import { createTranslator } from "@/i18n";
 import type { CartItem as CartItemModel } from "@/types/cart";
 
 import { CartItem } from "./CartItem";
+
+const { t } = createTranslator();
 
 const item: CartItemModel = {
   cartItemId: "APL-IP15PM-Space Black-256GB",
@@ -30,14 +33,14 @@ describe("CartItem", () => {
     expect(screen.getByText("1319 EUR")).toBeInTheDocument();
   });
 
-  it("labels the remove control 'Eliminar' while keeping a distinguishing accessible name", () => {
+  it("labels the remove control with the catalogue copy while keeping a distinguishing accessible name", () => {
     render(
       <ul>
         <CartItem item={item} onRemove={vi.fn()} />
       </ul>,
     );
     const remove = screen.getByRole("button", { name: "Remove iPhone 15 Pro Max from cart" });
-    expect(remove).toHaveTextContent("Eliminar");
+    expect(remove).toHaveTextContent(t("cart.remove"));
   });
 
   it("renders the image url it is given", () => {

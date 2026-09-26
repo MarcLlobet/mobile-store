@@ -8,12 +8,12 @@ const withoutTrailingSlashes = (url: string): string =>
   url.endsWith("/") ? withoutTrailingSlashes(url.slice(0, -1)) : url;
 
 const API_BASE_URL = withoutTrailingSlashes(
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://mobile-ecommerce.api.test",
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://mobile-store.api.test",
 );
 
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY ?? "";
 
-export const endpoints = {
+const endpoints = {
   products: `${API_BASE_URL}/products`,
   product: `${API_BASE_URL}/products/:id`,
 } as const;

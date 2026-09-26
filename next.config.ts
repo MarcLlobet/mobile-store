@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
-const basePath = isProd ? "/mobile-ecommerce" : "";
+const basePath = isProd ? "/mobile-store" : "";
 
 const nextConfig: NextConfig = {
   output: "export",

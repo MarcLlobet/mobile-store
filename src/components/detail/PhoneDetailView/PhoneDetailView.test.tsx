@@ -3,11 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, beforeEach } from "vitest";
 
 import { CartProvider, CART_STORAGE_KEY } from "@/context/CartContext";
+import { createTranslator } from "@/i18n";
 import { normalizeProductDetail } from "@/lib/api/transform";
 import { formatPrice } from "@/lib/utils/formatPrice";
 import { productDetail } from "@mocks/fixtures";
 
 import { PhoneDetailView } from "./PhoneDetailView";
+
+const { t } = createTranslator();
 
 const product = normalizeProductDetail(productDetail);
 const firstColor = product.colorOptions[0]!;
@@ -83,7 +86,7 @@ describe("PhoneDetailView", () => {
 
   it("keeps Add to cart disabled until both color and storage are selected, then enables it", async () => {
     renderView();
-    const addToCart = screen.getByRole("button", { name: "Añadir" });
+    const addToCart = screen.getByRole("button", { name: t("detail.add_to_cart") });
     expect(addToCart).toBeDisabled();
 
     await userEvent.click(screen.getByRole("radio", { name: firstColor.name }));
@@ -193,7 +196,7 @@ describe("PhoneDetailView", () => {
         expect(screen.getByRole("radio", { name: option.capacity })).not.toBeChecked();
       });
       expect(screen.getByText(formatPrice(product.basePrice))).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Añadir" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: t("detail.add_to_cart") })).toBeDisabled();
     });
 
     it("defaults to the color and storage already in the cart for this phone", async () => {
@@ -206,7 +209,7 @@ describe("PhoneDetailView", () => {
       await waitFor(() => expect(screen.getByRole("radio", { name: blue.name })).toBeChecked());
       expect(screen.getByRole("img", { name: product.name })).toHaveAttribute("src", blue.imageUrl);
       expect(screen.getByText(formatPrice(lastStorage.price))).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Añadir" })).toBeEnabled();
+      expect(screen.getByRole("button", { name: t("detail.add_to_cart") })).toBeEnabled();
     });
 
     it("uses the most recent cart line when the phone was added more than once", async () => {
@@ -237,7 +240,7 @@ describe("PhoneDetailView", () => {
         "src",
         firstColor.imageUrl,
       );
-      expect(screen.getByRole("button", { name: "Añadir" })).toBeDisabled();
+      expect(screen.getByRole("button", { name: t("detail.add_to_cart") })).toBeDisabled();
     });
 
     it("lets a fresh pick override the cart's colour, keeping the cart's storage", async () => {
