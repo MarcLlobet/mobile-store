@@ -8,8 +8,6 @@ out
 # storybook
 storybook-static
 
-# design QA — regenerated locally via `pnpm screenshots`, not source/app-screenshots
-
 # testing / coverage
 coverage
 
@@ -27,7 +25,4 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# challenge brief — kept locally, not part of the deliverable
 design
-instructions.md
-Frontend Zara.pdf

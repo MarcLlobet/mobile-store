@@ -1,3 +1,5 @@
+import { URL } from "node:url";
+
 import { normalizeListItem, normalizeProductDetail, type RawProductDetail } from "./transform";
 
 import type { ApiErrorBody, FetchProductsParams, ProductDetail, ProductListItem } from "./types";
