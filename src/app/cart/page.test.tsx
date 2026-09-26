@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { CartProvider, useCart } from "@/context/CartContext";
 import { formatPrice } from "@/lib/utils/formatPrice";
@@ -49,10 +49,6 @@ const renderWithCart = (items: NewCartItem[] = []) =>
   );
 
 describe("CartPage", () => {
-  beforeEach(() => {
-    window.localStorage.clear();
-  });
-
   it("renders the zero state as the same screen, with no rows and no empty card", () => {
     renderWithCart([]);
     expect(screen.getByRole("heading", { level: 1, name: "Cart (0)" })).toBeInTheDocument();

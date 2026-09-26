@@ -1,3 +1,6 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, beforeEach } from "vitest";
@@ -18,7 +21,7 @@ const secondColor = product.colorOptions[1]!;
 const cheapestStorage = product.storageOptions[0]!;
 
 const seedCart = (...lines: { color: string; storage: string }[]) => {
-  window.localStorage.setItem(
+  globalThis.localStorage.setItem(
     CART_STORAGE_KEY,
     JSON.stringify(
       lines.map(({ color, storage }) => ({
@@ -43,7 +46,7 @@ const renderView = () =>
   );
 
 beforeEach(() => {
-  window.localStorage.clear();
+  globalThis.localStorage.clear();
 });
 
 describe("PhoneDetailView", () => {
@@ -96,7 +99,7 @@ describe("PhoneDetailView", () => {
     expect(addToCart).toBeEnabled();
 
     await userEvent.click(addToCart);
-    const stored: unknown = JSON.parse(window.localStorage.getItem(CART_STORAGE_KEY) ?? "[]");
+    const stored: unknown = JSON.parse(globalThis.localStorage.getItem(CART_STORAGE_KEY) ?? "[]");
     expect(stored).toHaveLength(1);
     expect((stored as readonly unknown[])[0]).toMatchObject({
       productId: product.id,

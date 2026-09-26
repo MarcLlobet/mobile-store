@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { CartProvider, useCart } from "@/context/CartContext";
 import { createTranslator } from "@/i18n";
@@ -38,10 +38,6 @@ const renderWithCart = (props: Parameters<typeof Harness>[0]) =>
       <Harness {...props} />
     </CartProvider>,
   );
-
-beforeEach(() => {
-  window.localStorage.clear();
-});
 
 describe("AddToCartButton", () => {
   it("is disabled when neither color nor storage is selected", () => {

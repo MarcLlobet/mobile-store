@@ -1,3 +1,6 @@
+/**
+ * @vitest-environment jsdom
+ */
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -24,7 +27,7 @@ const addRepeatedly = (addItem: (item: NewCartItem) => void, times: number) => {
 };
 
 beforeEach(() => {
-  window.localStorage.clear();
+  globalThis.localStorage.clear();
 });
 
 describe("CartContext", () => {
@@ -144,7 +147,9 @@ describe("CartContext", () => {
         addRepeatedly(result.current.addItem, 3);
       });
       await waitFor(() =>
-        expect(JSON.parse(window.localStorage.getItem(CART_STORAGE_KEY) ?? "[]")).toHaveLength(3),
+        expect(JSON.parse(globalThis.localStorage.getItem(CART_STORAGE_KEY) ?? "[]")).toHaveLength(
+          3,
+        ),
       );
       unmount();
 
@@ -159,7 +164,7 @@ describe("CartContext", () => {
 
     it("repairs a cart persisted before ids were unique", async () => {
       const legacyId = "APL-IP15PM-Black-256GB";
-      window.localStorage.setItem(
+      globalThis.localStorage.setItem(
         CART_STORAGE_KEY,
         JSON.stringify([
           { ...baseItem, cartItemId: legacyId },
@@ -204,7 +209,7 @@ describe("CartContext", () => {
     const storedId = result.current.items[0]!.cartItemId;
 
     await waitFor(() => {
-      const raw = window.localStorage.getItem(CART_STORAGE_KEY);
+      const raw = globalThis.localStorage.getItem(CART_STORAGE_KEY);
       expect(raw).not.toBeNull();
       expect(JSON.parse(raw ?? "[]")).toHaveLength(1);
     });
@@ -219,7 +224,7 @@ describe("CartContext", () => {
   });
 
   it("does not throw on corrupt localStorage JSON, falling back to an empty cart", async () => {
-    window.localStorage.setItem(CART_STORAGE_KEY, "{not valid json");
+    globalThis.localStorage.setItem(CART_STORAGE_KEY, "{not valid json");
 
     const { result } = renderCart();
     await waitFor(() => {
@@ -228,7 +233,7 @@ describe("CartContext", () => {
   });
 
   it("does not throw when localStorage holds valid JSON that is not an array", async () => {
-    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({ not: "an array" }));
+    globalThis.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({ not: "an array" }));
 
     const { result } = renderCart();
     await waitFor(() => {

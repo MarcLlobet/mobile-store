@@ -1,5 +1,3 @@
-import { URL } from "node:url";
-
 import { normalizeListItem, normalizeProductDetail, type RawProductDetail } from "./transform";
 
 import type { ApiErrorBody, FetchProductsParams, ProductDetail, ProductListItem } from "./types";
@@ -72,7 +70,7 @@ const buildUrl = (path: string, searchParams: Readonly<Record<string, string>> =
   const query = new URLSearchParams(
     Object.entries(searchParams).filter(([, value]) => value !== ""),
   ).toString();
-  const url = new URL(path, API_BASE_URL).toString();
+  const url = `${API_BASE_URL}${path}`;
   return query === "" ? url : `${url}?${query}`;
 };
 

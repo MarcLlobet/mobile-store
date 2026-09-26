@@ -54,7 +54,7 @@ const withUniqueIds = (items: readonly StoredCartItem[]): readonly CartItem[] =>
 
 const readStoredCart = (): readonly CartItem[] => {
   try {
-    const raw = window.localStorage.getItem(CART_STORAGE_KEY);
+    const raw = globalThis.localStorage.getItem(CART_STORAGE_KEY);
     if (raw === null || raw === "") {
       return [];
     }
@@ -80,7 +80,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     try {
-      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+      globalThis.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
     } catch {}
   }, [items, isHydrated]);
 

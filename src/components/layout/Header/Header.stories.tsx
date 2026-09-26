@@ -39,7 +39,7 @@ const meta: Meta<HeaderStoryArgs> = {
   decorators: [
     (Story, { args }) => {
       const lines = Array.from({ length: args.cartItemCount }, (_unused, index) => lineAt(index));
-      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(lines));
+      globalThis.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(lines));
       return (
         <CartProvider key={args.cartItemCount}>
           <Story />

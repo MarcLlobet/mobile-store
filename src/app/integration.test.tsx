@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { PhoneDetailView } from "@/components/detail/PhoneDetailView";
 import { PhoneListing } from "@/components/listing/PhoneListing";
@@ -78,10 +78,6 @@ const renderApp = () =>
       <TestApp />
     </CartProvider>,
   );
-
-beforeEach(() => {
-  window.localStorage.clear();
-});
 
 describe("Listing -> Detail -> Cart integration", () => {
   it("walks search -> select a card -> add to cart -> cart shows it -> remove -> zero state", async () => {
