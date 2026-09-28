@@ -1,18 +1,36 @@
 import type { ComponentProps } from "react";
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ProductTile } from "./ProductTile";
+import { VIEWPORT_PREFETCH_DELAY_MS } from "./useViewportPrefetch";
 
-/*
- * `next/link` swallows `prefetch` rather than reflecting it in the DOM, so the
- * real component gives a test nothing to assert on. Standing in for it exposes
- * the prop this component is responsible for choosing; that prefetching then
- * actually happens over the wire is checked against a production build instead.
- */
 type MockLinkProps = ComponentProps<"a"> & { readonly prefetch?: boolean | "auto" | null };
+
+const {
+  prefetch,
+  observe,
+  disconnect,
+  intersect,
+  callbacks: observers,
+} = vi.hoisted(() => {
+  const callbacks = new Set<IntersectionObserverCallback>();
+  return {
+    prefetch: vi.fn(),
+    observe: vi.fn(),
+    disconnect: vi.fn(),
+    intersect: (isIntersecting: boolean) => {
+      callbacks.forEach((callback) => {
+        callback([{ isIntersecting } as IntersectionObserverEntry], {} as IntersectionObserver);
+      });
+    },
+    callbacks,
+  };
+});
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ prefetch }) }));
 
 vi.mock("next/link", () => ({
   default: ({ children, prefetch, ...rest }: MockLinkProps) => (
@@ -31,7 +49,32 @@ const product = {
   imageUrl: "https://prueba-tecnica-api-tienda-moviles.onrender.com/images/apl-ip15pm.png",
 };
 
+const noRecords = (): IntersectionObserverEntry[] => [];
+
+const FakeIntersectionObserver = function (callback: IntersectionObserverCallback) {
+  observers.add(callback);
+  return {
+    observe,
+    disconnect,
+    unobserve: vi.fn(),
+    takeRecords: noRecords,
+    root: null,
+    rootMargin: "",
+    thresholds: [],
+  };
+};
+
 describe("ProductTile", () => {
+  beforeEach(() => {
+    vi.stubGlobal("IntersectionObserver", FakeIntersectionObserver);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    prefetch.mockClear();
+    observers.clear();
+  });
+
   it("renders name, brand and image", () => {
     render(<ProductTile {...product} />);
     expect(screen.getByText("iPhone 15 Pro Max")).toBeInTheDocument();
@@ -60,43 +103,52 @@ describe("ProductTile", () => {
   });
 
   describe("prefetching the detail route", () => {
-    it("holds prefetching back until the visitor shows intent", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("leaves Link's own prefetching off, because this component drives it", () => {
       render(<ProductTile {...product} />);
 
       expect(screen.getByRole("link")).toHaveAttribute("data-prefetch", "false");
     });
 
-    const intentSignals: readonly (readonly [string, (link: HTMLElement) => Promise<void>])[] = [
-      [
-        "the pointer enters it",
-        async (link) => {
-          await userEvent.hover(link);
-        },
-      ],
-      [
-        "it takes keyboard focus",
-        (link) => {
-          fireEvent.focus(link);
-          return Promise.resolve();
-        },
-      ],
-      [
-        "a touch lands on it",
-        (link) => {
-          fireEvent.touchStart(link);
-          return Promise.resolve();
-        },
-      ],
-    ];
-
-    it.each(intentSignals)("starts prefetching once %s", async (_case, trigger) => {
+    it("prefetches nothing while the tile has not been seen", () => {
       render(<ProductTile {...product} />);
-      const link = screen.getByRole("link");
 
-      await trigger(link);
+      expect(prefetch).not.toHaveBeenCalled();
+    });
 
-      // `null` restores Link's default, which for a static route is a full prefetch.
-      expect(link).toHaveAttribute("data-prefetch", "null");
+    it("prefetches nothing the instant the tile appears", () => {
+      render(<ProductTile {...product} />);
+
+      intersect(true);
+
+      expect(prefetch).not.toHaveBeenCalled();
+    });
+
+    it("prefetches once the tile has stayed in view", () => {
+      render(<ProductTile {...product} />);
+
+      intersect(true);
+      vi.advanceTimersByTime(VIEWPORT_PREFETCH_DELAY_MS);
+
+      expect(prefetch).toHaveBeenCalledExactlyOnceWith("/phones/APL-IP15PM");
+    });
+
+    it("prefetches nothing for a tile scrolled past before it settles", () => {
+      render(<ProductTile {...product} />);
+
+      intersect(true);
+      vi.advanceTimersByTime(VIEWPORT_PREFETCH_DELAY_MS / 2);
+      intersect(false);
+      vi.advanceTimersByTime(VIEWPORT_PREFETCH_DELAY_MS);
+
+      expect(prefetch).not.toHaveBeenCalled();
     });
   });
 

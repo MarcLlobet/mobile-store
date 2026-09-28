@@ -56,6 +56,7 @@
   --header-height: 80px;
   --page-gutter: var(--space-2);
   --page-max: 1200px;
+  --page-max-wide: 1920px;
   --tile-width: 361px;
   --tile-height: 344px;
 }

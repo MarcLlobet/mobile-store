@@ -1,5 +1,6 @@
 "use client";
 
+import { Page } from "@/components/layout/Page";
 import { Button } from "@/components/primitives/Button";
 import { useTranslation } from "@/i18n";
 import { ApiError } from "@/lib/api/api";
@@ -26,13 +27,13 @@ const ErrorBoundary = ({ error, reset }: ErrorBoundaryProps) => {
   const { t } = useTranslation();
 
   return (
-    <main className={styles.wrapper} role="alert">
+    <Page className={styles.wrapper} role="alert">
       <h1 className={styles.heading}>{t("error.heading")}</h1>
       <p className={styles.message}>{t(messageKeyFor(error))}</p>
       <Button variant="primary" onClick={reset}>
         {t("error.retry")}
       </Button>
-    </main>
+    </Page>
   );
 };
 

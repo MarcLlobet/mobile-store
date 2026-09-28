@@ -1,0 +1,20 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--page-max-wide);
+  margin-inline: auto;
+}
+
+.page[data-width="wide"] {
+  padding-inline: var(--page-gutter);
+}
+
+.lead {
+  padding-inline: var(--page-gutter);
+}
+
+.column {
+  width: min(var(--page-max), 100% - 2 * var(--page-gutter));
+  margin-inline: auto;
+}

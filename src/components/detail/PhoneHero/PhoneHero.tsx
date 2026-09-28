@@ -17,7 +17,6 @@ export interface PhoneHeroProps {
   variants: readonly PhoneHeroVariant[];
   activeKey: string;
   name: string;
-  /** Pairs this hero with the grid tile of the same product, so the image morphs. */
   productId: string;
 }
 

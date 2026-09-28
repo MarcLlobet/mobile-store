@@ -1,7 +1,4 @@
 .main {
-  padding-inline: var(--page-gutter);
-  display: flex;
-  flex-direction: column;
   min-height: calc(100dvh - var(--header-height));
   gap: var(--space-5);
   padding-block: var(--space-5) var(--space-3);

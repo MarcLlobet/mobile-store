@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import Link from "next/link";
 
 import { BagIcon } from "@/components/primitives/BagIcon";
@@ -13,7 +15,12 @@ const LOGO_WIDTH = 77;
 
 export const Header = () => {
   const { itemCount } = useCart();
+  const [isCartIntended, setIsCartIntended] = useState(false);
   const { t, plural } = useTranslation();
+
+  const markCartIntended = () => {
+    setIsCartIntended(true);
+  };
 
   return (
     <header className={styles.header} data-view-transition="site-header">
@@ -25,6 +32,10 @@ export const Header = () => {
           href="/cart"
           className={styles.cartLink}
           aria-label={plural("header.cart_label", itemCount)}
+          prefetch={isCartIntended ? null : false}
+          onMouseEnter={markCartIntended}
+          onFocus={markCartIntended}
+          onTouchStart={markCartIntended}
         >
           <BagIcon filled={itemCount > 0} />
           <span className={styles.cartCount}>{itemCount}</span>

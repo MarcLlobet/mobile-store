@@ -1,9 +1,27 @@
 import "@testing-library/jest-dom/vitest";
 import React from "react";
 
-import { afterAll, afterEach, beforeAll, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, vi } from "vitest";
 
 import { server } from "@mocks/server";
+
+const noRecords = (): IntersectionObserverEntry[] => [];
+
+const fakeIntersectionObserver = function () {
+  return {
+    observe: (): void => undefined,
+    unobserve: (): void => undefined,
+    disconnect: (): void => undefined,
+    takeRecords: noRecords,
+    root: null,
+    rootMargin: "",
+    thresholds: [],
+  };
+};
+
+beforeEach(() => {
+  vi.stubGlobal("IntersectionObserver", fakeIntersectionObserver);
+});
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({

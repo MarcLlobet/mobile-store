@@ -1,5 +1,4 @@
 .listing {
-  padding-inline: var(--page-gutter);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);

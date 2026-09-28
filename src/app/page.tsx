@@ -1,5 +1,6 @@
 import { ViewTransition } from "react";
 
+import { Page } from "@/components/layout/Page";
 import { PhoneListing } from "@/components/listing/PhoneListing";
 import { fetchProducts } from "@/lib/api/api";
 import { CATALOG_SIZE } from "@/lib/api/catalog";
@@ -11,9 +12,9 @@ const HomePage = async () => {
 
   return (
     <ViewTransition exit="page-exit">
-      <main>
+      <Page>
         <PhoneListing catalog={catalog} searchTree={searchTree} />
-      </main>
+      </Page>
     </ViewTransition>
   );
 };

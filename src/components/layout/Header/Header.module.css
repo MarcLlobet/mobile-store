@@ -1,5 +1,8 @@
 .header {
   padding-inline: var(--page-gutter);
+  width: 100%;
+  max-width: var(--page-max-wide);
+  margin-inline: auto;
   display: flex;
   align-items: center;
   height: var(--header-height);

@@ -15,7 +15,7 @@ const normalizeImageUrl = (url: string): string => {
   return urlObject.href;
 };
 
-export const normalizeListItem = (product: ProductListItem): ProductListItem => ({
+const normalizeListItem = (product: ProductListItem): ProductListItem => ({
   ...product,
   imageUrl: normalizeImageUrl(product.imageUrl),
 });

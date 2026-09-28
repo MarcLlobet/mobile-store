@@ -18,7 +18,6 @@ body {
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-3);
-  padding-inline: var(--page-gutter);
   padding-block: var(--space-6);
   max-width: 600px;
 }
@@ -48,15 +47,6 @@ body {
   text-decoration: underline;
 }
 
-/*
- * Cross-page content transition.
- *
- * Only the page content animates. The header is captured under its own name
- * (see Header.module.css) so it is lifted out of the root snapshot and held
- * still across the navigation.
- */
-/* Named here rather than in Header.module.css: CSS Modules scopes the *value* of
-   view-transition-name, which would leave the rules below matching nothing. */
 [data-view-transition="site-header"] {
   view-transition-name: site-header;
 }
@@ -74,8 +64,6 @@ body {
   animation: none;
 }
 
-/* The transition overlay sits above the page and would otherwise swallow the
-   clicks made while it animates. */
 ::view-transition {
   pointer-events: none;
 }
@@ -87,14 +75,6 @@ body {
   }
 }
 
-/*
- * Only the outgoing page is animated by hand. The incoming one keeps the
- * browser's default cross-fade: React does not give a mounting <ViewTransition>
- * a group of its own here, so there is nothing to attach an entrance to, and
- * faking one by naming both wrappers the same forces a single group whose two
- * content boxes differ enough in size that interpolating them visibly stretches
- * the grid. Verified with document.getAnimations() during the transition.
- */
 ::view-transition-old(.page-exit) {
   animation: page-content-out 140ms ease-in forwards;
 }

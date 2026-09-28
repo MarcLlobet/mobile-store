@@ -1,1 +1,1 @@
-export { ViewTransitionAbortGuard, isAbortedViewTransition } from "./ViewTransitionAbortGuard";
+export { ViewTransitionAbortGuard } from "./ViewTransitionAbortGuard";
