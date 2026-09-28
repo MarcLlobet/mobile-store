@@ -12,3 +12,97 @@ body {
   background: var(--color-background);
   font-family: var(--font-family-base);
 }
+
+.not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding-inline: var(--page-gutter);
+  padding-block: var(--space-6);
+  max-width: 600px;
+}
+
+.not-found-heading {
+  margin: 0;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-light);
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+}
+
+.not-found-message {
+  margin: 0;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.not-found-link {
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-primary);
+  text-decoration: underline;
+}
+
+/*
+ * Cross-page content transition.
+ *
+ * Only the page content animates. The header is captured under its own name
+ * (see Header.module.css) so it is lifted out of the root snapshot and held
+ * still across the navigation.
+ */
+/* Named here rather than in Header.module.css: CSS Modules scopes the *value* of
+   view-transition-name, which would leave the rules below matching nothing. */
+[data-view-transition="site-header"] {
+  view-transition-name: site-header;
+}
+
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(site-header) {
+  display: none;
+}
+
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+/* The transition overlay sits above the page and would otherwise swallow the
+   clicks made while it animates. */
+::view-transition {
+  pointer-events: none;
+}
+
+@keyframes page-content-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/*
+ * Only the outgoing page is animated by hand. The incoming one keeps the
+ * browser's default cross-fade: React does not give a mounting <ViewTransition>
+ * a group of its own here, so there is nothing to attach an entrance to, and
+ * faking one by naming both wrappers the same forces a single group whose two
+ * content boxes differ enough in size that interpolating them visibly stretches
+ * the grid. Verified with document.getAnimations() during the transition.
+ */
+::view-transition-old(.page-exit) {
+  animation: page-content-out 140ms ease-in forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

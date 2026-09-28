@@ -1,8 +1,9 @@
 .header {
+  padding-inline: var(--page-gutter);
   display: flex;
   align-items: center;
   height: var(--header-height);
-  padding: var(--space-3) var(--space-2);
+  padding-block: var(--space-3);
   background-color: var(--color-white);
 }
 
@@ -11,18 +12,6 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-}
-
-@media (min-width: 834px) {
-  .header {
-    padding: var(--space-3) var(--space-5);
-  }
-}
-
-@media (min-width: 1024px) {
-  .header {
-    padding: var(--space-3) var(--space-header-x);
-  }
 }
 
 .homeLink {

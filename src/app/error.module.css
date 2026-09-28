@@ -1,9 +1,10 @@
 .wrapper {
+  padding-inline: var(--page-gutter);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-6) var(--space-2);
+  padding-block: var(--space-6);
   max-width: 600px;
 }
 
@@ -21,16 +22,4 @@
   font-family: var(--font-family-base);
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-}
-
-@media (min-width: 834px) {
-  .wrapper {
-    padding: var(--space-6) var(--space-5);
-  }
-}
-
-@media (min-width: 1024px) {
-  .wrapper {
-    padding: var(--space-6) var(--space-header-x);
-  }
 }

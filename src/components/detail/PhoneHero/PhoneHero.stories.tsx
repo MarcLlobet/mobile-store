@@ -18,7 +18,12 @@ const meta: Meta<typeof PhoneHero> = {
     activeKey: { control: "select", options: variants.map((variant) => variant.key) },
     name: { control: "text" },
   },
-  args: { variants, activeKey: variants[0]?.key ?? "", name: productDetail.name },
+  args: {
+    productId: productDetail.id,
+    variants,
+    activeKey: variants[0]?.key ?? "",
+    name: productDetail.name,
+  },
   decorators: [
     (Story) => (
       <div style={{ maxWidth: 400 }}>

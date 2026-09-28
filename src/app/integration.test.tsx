@@ -9,7 +9,7 @@ import { PhoneListing } from "@/components/listing/PhoneListing";
 import { CartProvider } from "@/context/CartContext";
 import { createTranslator } from "@/i18n";
 import { fetchProductById } from "@/lib/api/api";
-import { normalizeListItem, normalizeProductDetail } from "@/lib/api/transform";
+import { normalizeList, normalizeProductDetail } from "@/lib/api/transform";
 import type { ProductDetail } from "@/lib/api/types";
 import { buildSearchTree } from "@/lib/search";
 import { formatPrice } from "@/lib/utils/formatPrice";
@@ -19,7 +19,7 @@ import { products, productDetail } from "@mocks/fixtures";
 import CartPage from "./cart/page";
 
 const product = normalizeProductDetail(productDetail);
-const catalog = products.map((item) => normalizeListItem(item));
+const catalog = normalizeList(products);
 const searchTree = buildSearchTree(catalog);
 const secondColor = product.colorOptions[1]!;
 const topStorage = product.storageOptions.at(-1)!;

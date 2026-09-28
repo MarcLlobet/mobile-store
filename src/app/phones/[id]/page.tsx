@@ -1,3 +1,5 @@
+import { ViewTransition } from "react";
+
 import { notFound } from "next/navigation";
 
 import { PhoneDetailView } from "@/components/detail/PhoneDetailView";
@@ -18,7 +20,11 @@ const PhoneDetailPage = async ({ params }: { params: Promise<{ id: string }> }) 
     notFound();
   }
 
-  return <PhoneDetailView product={product} />;
+  return (
+    <ViewTransition exit="page-exit">
+      <PhoneDetailView product={product} />
+    </ViewTransition>
+  );
 };
 
 export default PhoneDetailPage;

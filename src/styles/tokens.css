@@ -50,9 +50,28 @@
   --space-5: 40px;
   --space-6: 48px;
   --space-7: 64px;
-  --space-header-x: 100px;
   --radius-md: 8px;
   --border-width-hairline: 0.5px;
   --border-width-thin: 1px;
   --header-height: 80px;
+  --page-gutter: var(--space-2);
+  --page-max: 1200px;
+  --tile-width: 361px;
+  --tile-height: 344px;
+}
+
+@media (min-width: 834px) {
+  :root {
+    --page-gutter: var(--space-5);
+    --tile-width: 377px;
+    --tile-height: 377px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --page-gutter: 100px;
+    --tile-width: 344px;
+    --tile-height: 344px;
+  }
 }

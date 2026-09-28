@@ -29,16 +29,14 @@ jobs:
             run: pnpm typecheck
           - name: Tests
             run: pnpm exec vitest run --coverage
+          # Builds the app and then Storybook straight into out/storybook, so the
+          # thing that gets uploaded is already the thing that gets served. The
+          # order matters: `next build` empties out/ before it writes.
           - name: Build
-            run: pnpm build
-            artifact: static-export
-            path: out
-          - name: Storybook
-            run: pnpm build-storybook
-            artifact: storybook
-            path: storybook-static
+            run: pnpm build:pages
+            pages: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup
 
@@ -48,40 +46,17 @@ jobs:
           NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
           NEXT_PUBLIC_API_KEY: ${{ secrets.NEXT_PUBLIC_API_KEY }}
 
-      - name: Keep the output for the Pages bundle
-        if: matrix.check.artifact != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.check.artifact }}
-          path: ${{ matrix.check.path }}
-          retention-days: 1
-          if-no-files-found: error
-
-  bundle:
-    name: Bundle the Pages artifact
-    needs: verify
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download the static export
-        uses: actions/download-artifact@v4
-        with:
-          name: static-export
-          path: out
-
-      - name: Nest Storybook under /storybook
-        uses: actions/download-artifact@v4
-        with:
-          name: storybook
-          path: out/storybook
-
-      - uses: actions/upload-pages-artifact@v3
+      # Uploaded once, in the job that produced it, and read only by deploy-pages.
+      - name: Upload the Pages artifact
+        if: matrix.check.pages && github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v5
         with:
           path: out
 
   deploy:
     name: Deploy to GitHub Pages
-    needs: bundle
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -94,4 +69,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

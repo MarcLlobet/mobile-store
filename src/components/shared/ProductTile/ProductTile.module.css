@@ -1,32 +1,39 @@
 .tile {
+  position: relative;
   display: flex;
-  flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-2);
   border: var(--border-width-hairline) solid var(--color-border);
   color: var(--color-text-primary);
   height: 100%;
+  width: 100%;
+  background-color: transparent;
   transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
+    background-color 200ms ease-out,
+    border-color 200ms ease-out,
+    color 150ms ease;
 }
 
 .tile:hover,
-.tile[data-preview-state="hover"] {
+.tile:focus {
   background-color: var(--color-black);
   border-color: var(--color-black);
   color: var(--color-white);
 }
 
-.tile:hover .imageWrapper,
-.tile[data-preview-state="hover"] .imageWrapper {
-  background-color: var(--color-black);
+.tile:focus {
+  outline: 0;
 }
 
 .tile:hover .brand,
-.tile[data-preview-state="hover"] .brand {
+.tile:focus .brand {
   color: var(--color-grey-300);
+}
+
+.tileInnerWrapper {
+  padding: var(--space-2);
+  flex-direction: column;
+  display: flex;
+  width: 100%;
 }
 
 .imageWrapper {
@@ -35,7 +42,6 @@
   min-height: 0;
   width: 100%;
   overflow: hidden;
-  background-color: var(--color-surface);
   display: flex;
   align-items: center;
   justify-content: center;

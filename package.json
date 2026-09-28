@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:pages": "pnpm build && storybook build -o out/storybook --quiet",
     "start": "serve out",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

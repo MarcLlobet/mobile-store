@@ -33,6 +33,7 @@ export const PhoneGrid = ({ products }: PhoneGridProps) => {
               brand={product.brand}
               basePrice={product.basePrice}
               imageUrl={product.imageUrl}
+              isFirstImages={3 >= index}
             />
           </ErrorBoundary>
         </li>

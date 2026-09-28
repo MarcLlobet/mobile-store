@@ -1,9 +1,10 @@
 .main {
+  padding-inline: var(--page-gutter);
   display: flex;
   flex-direction: column;
   min-height: calc(100dvh - var(--header-height));
   gap: var(--space-5);
-  padding: var(--space-5) var(--space-2) var(--space-3);
+  padding-block: var(--space-5) var(--space-3);
 }
 
 .heading {
@@ -23,12 +24,12 @@
 
 @media (min-width: 834px) {
   .main {
-    padding: var(--space-5) var(--space-5) var(--space-5);
+    padding-block: var(--space-5);
   }
 }
 
 @media (min-width: 1024px) {
   .main {
-    padding: var(--space-6) var(--space-header-x) var(--space-6);
+    padding-block: var(--space-6);
   }
 }

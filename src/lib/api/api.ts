@@ -1,4 +1,4 @@
-import { normalizeListItem, normalizeProductDetail, type RawProductDetail } from "./transform";
+import { normalizeList, normalizeProductDetail, type RawProductDetail } from "./transform";
 
 import type { ApiErrorBody, FetchProductsParams, ProductDetail, ProductListItem } from "./types";
 
@@ -7,11 +7,9 @@ const API_KEY = process.env.NEXT_PUBLIC_API_KEY ?? "";
 
 const FETCH_TIMEOUT_MS = 30_000;
 
-const RETRY_ATTEMPTS = 2;
-const RETRY_DELAY_MS = 750;
-
-const SERVER_ERROR_STATUS = 500;
 const NOT_FOUND_STATUS = 404;
+
+type QueryParams = Record<string, string | number | undefined>;
 
 /* eslint-disable functional/no-classes, functional/no-this-expressions */
 export class ApiError extends Error {
@@ -37,7 +35,7 @@ const isApiErrorBody = (body: unknown): body is ApiErrorBody =>
 
 const readErrorBody = async (response: Response): Promise<ApiErrorBody | null> => {
   try {
-    const body: unknown = await response.json();
+    const body = await response.json<ApiErrorBody>();
     return isApiErrorBody(body) ? body : null;
   } catch {
     return null;
@@ -53,107 +51,53 @@ const apiError = async (response: Response, context: string): Promise<ApiError> 
   );
 };
 
-const buildHeaders = (): HeadersInit => ({ "x-api-key": API_KEY });
-
-const readJson = async <T>(response: Response): Promise<T> =>
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-  (await response.json()) as T;
-
-const delay = (ms: number): Promise<void> =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-
-const retryDelayFor = (attempt: number): number => RETRY_DELAY_MS * (attempt + 1);
-
-const buildUrl = (path: string, searchParams: Readonly<Record<string, string>> = {}): string => {
+const buildUrl = (path: string, params: QueryParams): string => {
   const query = new URLSearchParams(
-    Object.entries(searchParams).filter(([, value]) => value !== ""),
+    Object.entries(params)
+      .filter(([, value]) => value !== undefined && value !== "")
+      .map(([key, value]) => [key, String(value)]),
   ).toString();
   const url = `${API_BASE_URL}${path}`;
   return query === "" ? url : `${url}?${query}`;
 };
 
-export interface RequestOptions {
-  signal?: AbortSignal;
-  retries?: number;
-}
+const apiRequest = async <T>(path: string, params: QueryParams = {}): Promise<T> => {
+  const url = buildUrl(path, params);
+  const headers = new Headers({ "x-api-key": API_KEY });
+  const response = await fetch(url, {
+    headers,
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
 
-const apiFetchOnce = async (url: string, signal?: AbortSignal): Promise<Response> => {
-  const timeoutSignal = AbortSignal.timeout(FETCH_TIMEOUT_MS);
-  const combined = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
-
-  return fetch(url, { headers: buildHeaders(), signal: combined });
-};
-
-const isFinalAttempt = (attempt: number, options: RequestOptions): boolean =>
-  attempt >= (options.retries ?? RETRY_ATTEMPTS) || options.signal?.aborted === true;
-
-const apiFetchWithRetry = async (
-  url: string,
-  options: RequestOptions,
-  attempt = 0,
-): Promise<Response> => {
-  const isFinal = isFinalAttempt(attempt, options);
-
-  const retry = async (): Promise<Response> => {
-    await delay(retryDelayFor(attempt));
-    return apiFetchWithRetry(url, options, attempt + 1);
-  };
-
-  try {
-    const response = await apiFetchOnce(url, options.signal);
-    return response.status >= SERVER_ERROR_STATUS && !isFinal ? await retry() : response;
-  } catch (error) {
-    if (isFinal) {
-      throw error;
-    }
-    return await retry();
+  if (!response.ok) {
+    throw await apiError(response, url);
   }
-};
 
-const apiFetch = async (
-  path: string,
-  searchParams: Readonly<Record<string, string>> = {},
-  options: RequestOptions = {},
-): Promise<Response> => apiFetchWithRetry(buildUrl(path, searchParams), options);
+  return await response.json<T>();
+};
 
 export const fetchProducts = async (
   params: FetchProductsParams = {},
-  options: RequestOptions = {},
 ): Promise<readonly ProductListItem[]> => {
   const { search, limit, offset } = params;
-  const response = await apiFetch(
-    "/products",
-    {
-      search: search ?? "",
-      limit: limit === undefined ? "" : String(limit),
-      offset: offset === undefined ? "" : String(offset),
-    },
-    options,
-  );
-
-  if (!response.ok) {
-    throw await apiError(response, "fetchProducts");
-  }
-
-  const products = await readJson<readonly ProductListItem[]>(response);
-  return products.map((product) => normalizeListItem(product));
+  const json = await apiRequest<ProductListItem[]>("/products", {
+    search,
+    limit,
+    offset,
+  });
+  return normalizeList(json);
 };
 
-export const fetchProductById = async (
-  id: string,
-  options: RequestOptions = {},
-): Promise<ProductDetail | null> => {
-  const response = await apiFetch(`/products/${encodeURIComponent(id)}`, {}, options);
-
-  if (response.status === NOT_FOUND_STATUS) {
-    return null;
+export const fetchProductById = async (id: string): Promise<ProductDetail | null> => {
+  try {
+    const rawProductDetail = await apiRequest<RawProductDetail>(
+      `/products/${encodeURIComponent(id)}`,
+    );
+    return normalizeProductDetail(rawProductDetail);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === NOT_FOUND_STATUS) {
+      return null;
+    }
+    throw error;
   }
-
-  if (!response.ok) {
-    throw await apiError(response, `fetchProductById(${id})`);
-  }
-
-  return normalizeProductDetail(await readJson<RawProductDetail>(response));
 };

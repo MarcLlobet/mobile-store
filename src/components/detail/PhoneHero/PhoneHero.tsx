@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 
 import Image from "next/image";
 
+import { sharedImageName } from "@/lib/view-transitions";
+
 import styles from "./PhoneHero.module.css";
 
 export interface PhoneHeroVariant {
@@ -15,9 +17,11 @@ export interface PhoneHeroProps {
   variants: readonly PhoneHeroVariant[];
   activeKey: string;
   name: string;
+  /** Pairs this hero with the grid tile of the same product, so the image morphs. */
+  productId: string;
 }
 
-export const PhoneHero = ({ variants, activeKey, name }: PhoneHeroProps) => {
+export const PhoneHero = ({ variants, activeKey, name, productId }: PhoneHeroProps) => {
   const stackRef = useRef<HTMLDivElement>(null);
   const variantKeys = variants.map((variant) => variant.key).join("\u0000");
 
@@ -38,7 +42,11 @@ export const PhoneHero = ({ variants, activeKey, name }: PhoneHeroProps) => {
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.stack} ref={stackRef}>
+      <div
+        className={styles.stack}
+        ref={stackRef}
+        style={{ viewTransitionName: sharedImageName(productId) }}
+      >
         {variants.map((variant, index) => {
           const isActive = index === activeVariantIndex;
           return (

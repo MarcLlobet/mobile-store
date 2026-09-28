@@ -28,7 +28,12 @@ export const PhoneDetailView = ({ product }: PhoneDetailViewProps) => {
     <>
       <div className={styles.layout}>
         {heroColor === null ? null : (
-          <PhoneHero variants={variants} activeKey={heroColor.name} name={product.name} />
+          <PhoneHero
+            variants={variants}
+            activeKey={heroColor.name}
+            name={product.name}
+            productId={product.id}
+          />
         )}
         <div className={styles.info}>
           <div className={styles.titlePrice}>

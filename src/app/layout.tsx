@@ -5,6 +5,7 @@ import "./globals.css";
 import type { ReactNode } from "react";
 
 import { Header } from "@/components/layout/Header";
+import { ViewTransitionAbortGuard } from "@/components/shared/ViewTransitionAbortGuard";
 import { CartProvider } from "@/context/CartContext";
 import { TranslationProvider, getServerTranslator } from "@/i18n";
 
@@ -22,6 +23,7 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
     <body>
       <TranslationProvider>
         <CartProvider>
+          <ViewTransitionAbortGuard />
           <Header />
           {children}
         </CartProvider>

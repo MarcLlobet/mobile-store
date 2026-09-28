@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
   assetPrefix: basePath,
   trailingSlash: true,
   reactStrictMode: true,
+  env: { NEXT_PUBLIC_BASE_PATH: basePath },
 };
 
 export default nextConfig;

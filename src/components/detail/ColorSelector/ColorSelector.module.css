@@ -19,7 +19,7 @@
 
 .swatchWrapper {
   display: inline-flex;
-  padding: 2px;
+  padding: 1px;
   border: var(--border-width-thin) solid var(--color-border-subtle);
   cursor: pointer;
 }
@@ -29,11 +29,11 @@
 }
 
 .swatchWrapper:focus-visible {
-  outline: var(--border-width-thin) solid var(--color-black);
-  outline-offset: 2px;
+  outline: 0;
 }
 
-.swatchWrapper.selected {
+.swatchWrapper.selected,
+.swatchWrapper:focus-visible {
   border-color: var(--color-black);
 }
 

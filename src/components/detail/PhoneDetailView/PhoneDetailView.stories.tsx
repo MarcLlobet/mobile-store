@@ -7,13 +7,15 @@ import { PhoneDetailView } from "./PhoneDetailView";
 
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
+const product = normalizeProductDetail(productDetail);
+
 const meta: Meta<typeof PhoneDetailView> = {
   title: "Detail/PhoneDetailView",
   component: PhoneDetailView,
   argTypes: {
     product: { control: "object" },
   },
-  args: { product: normalizeProductDetail(productDetail) },
+  args: { product },
   decorators: [
     (Story) => (
       <CartProvider>

@@ -32,7 +32,7 @@ values, in `.env.example`):
 
 ```bash
 pnpm build          # next build, output:'export' -> static HTML/JS in out/
-pnpm build-storybook # storybook build -> storybook-static/
+pnpm build:pages    # the above, then Storybook straight into out/storybook/
 ```
 
 The production build is a **static export** with `basePath: '/mobile-store'`
@@ -50,11 +50,12 @@ npx serve /tmp/preview
 # open http://localhost:3000/mobile-store/
 ```
 
-To preview the merged app+Storybook deploy exactly as CI assembles it:
+To preview the app+Storybook deploy exactly as CI assembles it, run the same
+one command CI runs and nest the result as above — `/mobile-store/storybook/`
+will work too:
 
 ```bash
-cp -r storybook-static out/storybook   # same command ci.yml runs
-# then nest + serve out/ as above; /mobile-store/storybook/ will work too
+pnpm build:pages
 ```
 
 ## Architecture
@@ -400,9 +401,10 @@ app-wide provider.
 
 Storybook is **published alongside the app in the same deploy**, at
 `/mobile-store/storybook/` — see [CI / Deploy](#ci--deploy). There is no
-second GitHub Pages site: `ci.yml` merges `storybook-static/` into the app's
-own static export output (`cp -r storybook-static out/storybook`) before
-uploading it as one Pages artifact.
+second GitHub Pages site: `pnpm build:pages` writes Storybook straight into
+`out/storybook/`, so what CI uploads is already what gets served. Order
+matters in that script — `next build` empties `out/` before it writes, so
+Storybook has to run second.
 
 ## Git hooks
 
@@ -443,30 +445,27 @@ whole set locally when you want it.
 runner off a shared `./.github/actions/setup` composite (pnpm + Node 22 +
 `pnpm install --frozen-lockfile`, with the pnpm store cached):
 
-| Entry     | Command                           |
-| --------- | --------------------------------- |
-| Prettier  | `pnpm format:check`               |
-| ESLint    | `pnpm lint --max-warnings=0`      |
-| Types     | `pnpm typecheck`                  |
-| Tests     | `pnpm exec vitest run --coverage` |
-| Build     | `pnpm build`                      |
-| Storybook | `pnpm build-storybook`            |
+| Entry    | Command                           |
+| -------- | --------------------------------- |
+| Prettier | `pnpm format:check`               |
+| ESLint   | `pnpm lint --max-warnings=0`      |
+| Types    | `pnpm typecheck`                  |
+| Tests    | `pnpm exec vitest run --coverage` |
+| Build    | `pnpm build:pages`                |
 
 `fail-fast: false`, so one red entry doesn't hide the others — a run tells you
 everything that's broken, not just whichever failed first. The build is in the
 matrix deliberately: a broken export or a throwing story surfaces alongside the
 lint errors rather than after them, and it fails PRs, not just `main`.
 
-The two output-producing entries upload what they built (`out/` and
-`storybook-static/`) as one-day workflow artifacts, so nothing is compiled
-twice. `NEXT_PUBLIC_API_BASE_URL` / `NEXT_PUBLIC_API_KEY` come from **GitHub
+The `Build` entry compiles the app and Storybook into one `out/` tree and, on
+pushes to `main` only, hands it straight to `actions/upload-pages-artifact` —
+uploaded once, by the job that produced it, with nothing to download again.
+Storybook is verified on every PR too, because building it is part of that same
+entry. `NEXT_PUBLIC_API_BASE_URL` / `NEXT_PUBLIC_API_KEY` come from **GitHub
 Actions secrets** of the same name, matching `.env.example`.
 
-**2. `bundle` — assembly only**, on pushes to `main`. It needs no checkout and
-no Node: it downloads the two artifacts, placing Storybook directly at
-`out/storybook`, and hands the merged tree to `actions/upload-pages-artifact`.
-
-**3. `deploy`** runs `actions/deploy-pages` under the `github-pages`
+**2. `deploy`** runs `actions/deploy-pages` under the `github-pages`
 environment, with `pages: write`/`id-token: write` scoped to that job alone and
 a `pages` concurrency group so a deploy is never cancelled mid-flight. The
 workflow-level concurrency group cancels superseded **PR** runs only.

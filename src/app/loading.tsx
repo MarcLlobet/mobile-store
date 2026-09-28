@@ -11,9 +11,7 @@ const Loading = () => {
   return (
     <main>
       <section className={styles.listing} aria-busy="true" aria-label={t("listing.loading_label")}>
-        <div className={styles.searchSkeleton}>
-          <Skeleton height={40} radius={8} ariaLabel={t("listing.loading_search_label")} />
-        </div>
+        <Skeleton height={40} radius={8} ariaLabel={t("listing.loading_search_label")} />
         <Skeleton width={120} height={16} />
         {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
         <ul className={styles.grid} role="list">

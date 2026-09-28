@@ -1,13 +1,13 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { normalizeListItem } from "@/lib/api/transform";
+import { normalizeList } from "@/lib/api/transform";
 import { buildSearchTree } from "@/lib/search";
 import { products } from "@mocks/fixtures";
 
 import { SEARCH_DEBOUNCE_MS, useProductSearch } from "./useProductSearch";
 
-const catalog = products.map((product) => normalizeListItem(product));
+const catalog = normalizeList(products);
 const searchTree = buildSearchTree(catalog);
 
 const renderSearch = (initialCount = 5) =>

@@ -3,14 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import { LISTING_LIMIT } from "@/lib/api/catalog";
-import { normalizeListItem } from "@/lib/api/transform";
+import { normalizeList } from "@/lib/api/transform";
 import { buildSearchTree } from "@/lib/search";
 import { trackRequests } from "@/test/requests";
 import { products } from "@mocks/fixtures";
 
 import { PhoneListing } from "./PhoneListing";
 
-const catalog = products.map((product) => normalizeListItem(product));
+const catalog = normalizeList(products);
 const searchTree = buildSearchTree(catalog);
 
 const requests = trackRequests();

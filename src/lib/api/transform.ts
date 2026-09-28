@@ -20,6 +20,9 @@ export const normalizeListItem = (product: ProductListItem): ProductListItem => 
   imageUrl: normalizeImageUrl(product.imageUrl),
 });
 
+export const normalizeList = (products: ProductListItem[]): ProductListItem[] =>
+  products.map((product) => normalizeListItem(product));
+
 const normalizeColorOption = (color: ColorOption): ColorOption => ({
   ...color,
   imageUrl: normalizeImageUrl(color.imageUrl),
@@ -28,7 +31,7 @@ const normalizeColorOption = (color: ColorOption): ColorOption => ({
 export const normalizeProductDetail = (product: RawProductDetail): ProductDetail => ({
   ...product,
   colorOptions: (product.colorOptions ?? []).map((color) => normalizeColorOption(color)),
-  similarProducts: (product.similarProducts ?? []).map((item) => normalizeListItem(item)),
+  similarProducts: normalizeList(product.similarProducts ?? []),
 });
 
 export const keyFor = (product: { id: string }, index: number): string => `${product.id}-${index}`;

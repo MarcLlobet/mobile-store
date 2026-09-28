@@ -1,3 +1,5 @@
+import { ViewTransition } from "react";
+
 import { PhoneListing } from "@/components/listing/PhoneListing";
 import { fetchProducts } from "@/lib/api/api";
 import { CATALOG_SIZE } from "@/lib/api/catalog";
@@ -8,9 +10,11 @@ const HomePage = async () => {
   const searchTree = buildSearchTree(catalog);
 
   return (
-    <main>
-      <PhoneListing catalog={catalog} searchTree={searchTree} />
-    </main>
+    <ViewTransition exit="page-exit">
+      <main>
+        <PhoneListing catalog={catalog} searchTree={searchTree} />
+      </main>
+    </ViewTransition>
   );
 };
 

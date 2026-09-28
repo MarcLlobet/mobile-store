@@ -1,4 +1,6 @@
-export const ICON_NAMES = ["back", "bag-empty", "bag-filled", "close", "logo"] as const;
+import { assetPath } from "@/lib/utils/assetPath";
+
+export const ICON_NAMES = ["back", "close", "logo"] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
 
@@ -18,8 +20,6 @@ interface AssetIcon {
 
 const assetIcons: Record<IconName, AssetIcon> = {
   back: { src: "/icons/figma/chevron-left.png", width: 80, height: 80 },
-  "bag-empty": { src: "/icons/figma/bag-empty.svg", width: 24, height: 24 },
-  "bag-filled": { src: "/icons/figma/bag-filled.svg", width: 24, height: 24 },
   close: { src: "/icons/figma/close.svg", width: 80, height: 80 },
   logo: { src: "/icons/figma/logo.svg", width: 77, height: 29 },
 };
@@ -39,7 +39,7 @@ export const Icon = ({
   return (
     // eslint-disable-next-line @next/next/no-img-element -- tiny decorative/static icon assets, not content images; no next/image benefit
     <img
-      src={asset.src}
+      src={assetPath(asset.src)}
       alt={accessibleName ?? ""}
       aria-hidden={accessibleName === undefined ? "true" : undefined}
       width={size}
