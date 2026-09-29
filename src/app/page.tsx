@@ -2,12 +2,11 @@ import { ViewTransition } from "react";
 
 import { Page } from "@/components/layout/Page";
 import { PhoneListing } from "@/components/listing/PhoneListing";
-import { fetchProducts } from "@/lib/api/api";
-import { CATALOG_SIZE } from "@/lib/api/catalog";
+import { getCatalog } from "@/lib/api/getCatalog";
 import { buildSearchTree } from "@/lib/search";
 
 const HomePage = async () => {
-  const catalog = await fetchProducts({ limit: CATALOG_SIZE, offset: 0 });
+  const catalog = await getCatalog();
   const searchTree = buildSearchTree(catalog);
 
   return (

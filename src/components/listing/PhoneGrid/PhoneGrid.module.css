@@ -1,7 +1,6 @@
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, min(var(--tile-width), 100%));
-  justify-content: start;
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--tile-width), 100%), 1fr));
   gap: 0;
   list-style: none;
   margin: 0;
@@ -11,17 +10,16 @@
 
 .item {
   min-width: 0;
-  height: var(--tile-height);
+  aspect-ratio: var(--tile-aspect);
   margin: calc(-1 * var(--border-width-hairline)) 0 0 calc(-1 * var(--border-width-hairline));
 }
 
-.tileError {
+.gridError {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
   margin: 0;
-  padding: var(--space-2);
+  padding: var(--space-5) var(--space-2);
   border: var(--border-width-hairline) solid var(--color-border);
   font-family: var(--font-family-base);
   font-size: var(--font-size-sm);

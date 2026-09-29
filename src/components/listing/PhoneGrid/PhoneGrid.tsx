@@ -16,17 +16,17 @@ export const PhoneGrid = ({ products }: PhoneGridProps) => {
   const { t } = useTranslation();
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-redundant-roles
-    <ul className={styles.grid} role="list">
-      {products.map((product, index) => (
-        <li key={keyFor(product, index)} className={styles.item}>
-          <ErrorBoundary
-            fallback={() => (
-              <p role="alert" className={styles.tileError}>
-                {t("error.card")}
-              </p>
-            )}
-          >
+    <ErrorBoundary
+      fallback={() => (
+        <p role="alert" className={styles.gridError}>
+          {t("error.grid")}
+        </p>
+      )}
+    >
+      {/* eslint-disable-next-line jsx-a11y/no-redundant-roles */}
+      <ul className={styles.grid} role="list">
+        {products.map((product, index) => (
+          <li key={keyFor(product, index)} className={styles.item}>
             <ProductTile
               id={product.id}
               name={product.name}
@@ -35,9 +35,9 @@ export const PhoneGrid = ({ products }: PhoneGridProps) => {
               imageUrl={product.imageUrl}
               isFirstImages={3 >= index}
             />
-          </ErrorBoundary>
-        </li>
-      ))}
-    </ul>
+          </li>
+        ))}
+      </ul>
+    </ErrorBoundary>
   );
 };

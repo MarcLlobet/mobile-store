@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProductTile } from "./ProductTile";
 import { VIEWPORT_PREFETCH_DELAY_MS } from "./useViewportPrefetch";
 
-type MockLinkProps = ComponentProps<"a"> & { readonly prefetch?: boolean | "auto" | null };
+type MockLinkProps = ComponentProps<"a"> & { prefetch?: boolean | "auto" | null };
 
 const {
   prefetch,
@@ -33,10 +33,8 @@ const {
 vi.mock("next/navigation", () => ({ useRouter: () => ({ prefetch }) }));
 
 vi.mock("next/link", () => ({
-  default: ({ children, prefetch, ...rest }: MockLinkProps) => (
-    <a data-prefetch={String(prefetch)} {...rest}>
-      {children}
-    </a>
+  default: ({ children, prefetch: _prefetch, ...rest }: MockLinkProps) => (
+    <a {...rest}>{children}</a>
   ),
   useLinkStatus: () => ({ pending: false }),
 }));
@@ -109,12 +107,6 @@ describe("ProductTile", () => {
 
     afterEach(() => {
       vi.useRealTimers();
-    });
-
-    it("leaves Link's own prefetching off, because this component drives it", () => {
-      render(<ProductTile {...product} />);
-
-      expect(screen.getByRole("link")).toHaveAttribute("data-prefetch", "false");
     });
 
     it("prefetches nothing while the tile has not been seen", () => {

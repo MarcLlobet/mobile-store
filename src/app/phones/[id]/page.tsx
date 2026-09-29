@@ -3,11 +3,11 @@ import { ViewTransition } from "react";
 import { notFound } from "next/navigation";
 
 import { PhoneDetailView } from "@/components/detail/PhoneDetailView";
-import { fetchProductById, fetchProducts } from "@/lib/api/api";
-import { CATALOG_SIZE } from "@/lib/api/catalog";
+import { fetchProductById } from "@/lib/api/api";
+import { getCatalog } from "@/lib/api/getCatalog";
 
 export const generateStaticParams = async (): Promise<{ id: string }[]> => {
-  const products = await fetchProducts({ limit: CATALOG_SIZE, offset: 0 });
+  const products = await getCatalog();
   const uniqueIds = new Set(products.map((product) => product.id));
   return [...uniqueIds].map((id) => ({ id }));
 };

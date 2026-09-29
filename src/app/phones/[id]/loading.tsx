@@ -7,7 +7,12 @@ const PhoneDetailLoading = () => {
   const { t } = getServerTranslator();
 
   return (
-    <div className={styles.layout} aria-busy="true" aria-label={t("detail.loading_label")}>
+    <div
+      className={styles.layout}
+      role="status"
+      aria-busy="true"
+      aria-label={t("detail.loading_label")}
+    >
       <Skeleton width="100%" height={360} radius={8} />
       <div className={styles.info}>
         <Skeleton width={120} height={14} />

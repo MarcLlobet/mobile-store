@@ -6,6 +6,7 @@
   "header.cart_label_one": "Cart, {count} item",
   "header.cart_label_other": "Cart, {count} items",
   "listing.loading_label": "Loading phones",
+  "listing.heading": "Smartphones",
   "listing.loading_search_label": "Loading search",
   "listing.empty": "No phones found.",
   "listing.empty_for_query": "No phones match “{query}”.",
@@ -20,14 +21,10 @@
   "detail.back": "Back",
   "detail.back_label": "Back to listing",
   "detail.loading_label": "Loading phone details",
-  "detail.error": "Something went wrong loading this phone. Please try again.",
-  "detail.unavailable": "This phone is no longer available.",
   "detail.color_label": "COLOR. PICK YOUR FAVOURITE.",
   "detail.storage_label": "STORAGE. HOW MUCH SPACE DO YOU NEED?",
   "detail.add_to_cart": "Add",
   "detail.similar_heading": "Similar items",
-  "detail.not_found_heading": "Phone not found",
-  "detail.not_found_message": "We couldn't find the phone you were looking for. It may have been removed, or the link might be incorrect.",
   "specs.heading": "Specifications",
   "specs.brand": "Brand",
   "specs.name": "Name",
@@ -57,5 +54,5 @@
   "not_found.heading": "Page not found",
   "not_found.message": "The page you were looking for doesn't exist, or the link might be incorrect.",
   "not_found.back": "Back to the catalogue",
-  "error.card": "This product could not be shown."
+  "error.grid": "The product list could not be shown."
 }

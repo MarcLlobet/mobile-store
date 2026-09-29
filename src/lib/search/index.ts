@@ -4,7 +4,7 @@ export type SearchTree = Readonly<Record<string, readonly number[]>>;
 
 const DEFAULT_SEARCH_PROPS: readonly (keyof ProductListItem)[] = ["brand", "name"];
 
-export interface PrefixEntry {
+interface PrefixEntry {
   prefix: string;
   product: ProductListItem;
 }
@@ -26,7 +26,7 @@ const wordsOf = (
     .filter((value): value is string => typeof value === "string")
     .flatMap((value) => getWords(value));
 
-export const generatePrefixedList = (
+const generatePrefixedList = (
   products: readonly ProductListItem[],
   searchProps: readonly (keyof ProductListItem)[],
 ): readonly PrefixEntry[] =>
@@ -61,17 +61,6 @@ const at = (
   positions
     .map((position) => products[position])
     .filter((product): product is ProductListItem => product !== undefined);
-
-export const getSearchResultsByProps = (
-  products: readonly ProductListItem[],
-  searchProps: readonly (keyof ProductListItem)[],
-): Record<string, ProductListItem[]> =>
-  Object.fromEntries(
-    Object.entries(buildSearchTree(products, searchProps)).map(([prefix, positions]) => [
-      prefix,
-      [...at(products, positions)],
-    ]),
-  );
 
 const positionsFor = (tree: SearchTree, word: string): readonly number[] | undefined =>
   Object.hasOwn(tree, word) ? tree[word] : undefined;

@@ -31,7 +31,8 @@ export default defineConfig({
         "out/**",
       ],
     },
-    exclude: ["node_modules/**", ".next/**", "out/**", "storybook-static/**"],
+    // `e2e/` is Playwright's; Vitest's default globs would otherwise claim its .spec files.
+    exclude: ["node_modules/**", ".next/**", "out/**", "storybook-static/**", "e2e/**"],
   },
   resolve: {
     alias: {

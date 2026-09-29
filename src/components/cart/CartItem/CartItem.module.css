@@ -62,8 +62,7 @@
   text-align: left;
 }
 
-.remove:hover,
-.remove[data-preview-state="hover"] {
+.remove:hover {
   color: var(--color-danger-hover);
 }
 

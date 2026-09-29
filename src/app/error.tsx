@@ -27,9 +27,11 @@ const ErrorBoundary = ({ error, reset }: ErrorBoundaryProps) => {
   const { t } = useTranslation();
 
   return (
-    <Page className={styles.wrapper} role="alert">
+    <Page className={styles.wrapper}>
       <h1 className={styles.heading}>{t("error.heading")}</h1>
-      <p className={styles.message}>{t(messageKeyFor(error))}</p>
+      <p className={styles.message} role="alert">
+        {t(messageKeyFor(error))}
+      </p>
       <Button variant="primary" onClick={reset}>
         {t("error.retry")}
       </Button>

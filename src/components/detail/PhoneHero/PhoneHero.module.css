@@ -1,33 +1,21 @@
 .wrapper {
-  width: 100%;
-  max-width: 510px;
-  box-sizing: border-box;
-  padding: var(--space-4);
-}
-
-@media (min-width: 834px) {
-  .wrapper {
-    max-width: 352px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .wrapper {
-    max-width: 510px;
-  }
+  flex: none;
+  width: 273px;
+  margin-left: calc(-1 * var(--page-gutter));
 }
 
 .stack {
   display: grid;
   grid-template-areas: "stack";
-  align-items: start;
+  aspect-ratio: 1;
 }
 
 .image {
   grid-area: stack;
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   opacity: 0;
   pointer-events: none;
   transition: opacity 120ms ease;
@@ -41,5 +29,26 @@
 @media (prefers-reduced-motion: reduce) {
   .image {
     transition: none;
+  }
+}
+
+@media (min-width: 834px) {
+  .wrapper {
+    width: 380px;
+    margin-left: 0;
+  }
+
+  .stack {
+    aspect-ratio: 380 / 416;
+  }
+}
+
+@media (min-width: 1024px) {
+  .wrapper {
+    width: 510px;
+  }
+
+  .stack {
+    aspect-ratio: 510 / 630;
   }
 }

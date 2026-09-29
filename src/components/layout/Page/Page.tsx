@@ -9,7 +9,6 @@ export interface PageProps {
   width?: PageWidth;
   lead?: ReactNode;
   className?: string;
-  role?: "alert";
   ariaBusy?: boolean;
   ariaLabel?: string;
 }
@@ -19,14 +18,12 @@ export const Page = ({
   width = "wide",
   lead,
   className,
-  role,
   ariaBusy,
   ariaLabel,
 }: PageProps) => (
   <main
     className={className === undefined ? styles.page : `${styles.page} ${className}`}
     data-width={width}
-    role={role}
     aria-busy={ariaBusy}
     aria-label={ariaLabel}
   >

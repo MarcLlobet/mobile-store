@@ -1,7 +1,6 @@
 # Mobile Store
 
-A mobile-phone catalog web app — Listing, Detail and Cart views — built for
-the Zara Frontend Challenge.
+A mobile-phone catalog web app — Listing, Detail and Cart views.
 
 Live app: `https://<your-github-username>.github.io/mobile-store/`
 Live Storybook / design system: `https://<your-github-username>.github.io/mobile-store/storybook/`
@@ -84,7 +83,7 @@ Both routes are prerendered at build time, so the data layer is two functions
 returning promises:
 
 ```ts
-const products = await fetchProducts({ limit: LISTING_LIMIT }); // app/page.tsx
+const catalog = await getCatalog(); // app/page.tsx
 const product = await fetchProductById(id); // phones/[id]/page.tsx
 ```
 
@@ -97,24 +96,24 @@ mutations, and one of those two only re-read data the server already had, so it
 existed purely to give `dehydrate()` somewhere to hydrate into. The single
 genuinely dynamic thing — the listing search — is now `useProductSearch`.
 
-`fetchProducts`/`fetchProductById` take a `RequestOptions` of `{ signal,
-retries }`. Retries default to 2 because the **build** fans 24 requests at a
-cold free-tier instance; the search passes `retries: 0` so a failed query says
-so at once instead of after two backoffs.
+Every request carries the `x-api-key` header and a 30s `AbortSignal.timeout`,
+which is the whole transport. There are no retries: the only caller is the
+build, and a failure there should stop the build rather than be papered over.
 
-### Search: one effect, one debounce, one abort
+### Search: a prefix tree built at build time, queried in memory
 
-`useProductSearch` keeps the query, the last results and a status. The empty
-query is _derived_ — no request, no state write, it just shows the products the
-build already provided — so clearing the box costs nothing.
+The brief asks for real-time search. Rather than call the API on every
+keystroke, the build walks the catalogue once and emits a prefix tree —
+`Record<prefix, positions[]>` — which `app/page.tsx` hands to the listing as a
+prop. Typing then resolves against that map with no network at all.
 
-Everything else lives in one effect whose cleanup does the cancelling:
+It stores **positions, not products**, which is what keeps it small: the whole
+listing page, tree included, is 47 KB of HTML.
 
-- `debounce` from `lib/utils/schedule` collapses a burst of keystrokes into one
-  request; the cleanup cancels a pending one.
-- An `AbortController` per effect run cancels the in-flight request. Because
-  each run owns its own controller and the previous is aborted on cleanup, a
-  slow earlier response can never overwrite a newer one.
+`useProductSearch` keeps two pieces of state: `query`, updated on every
+keystroke so the input never lags, and `term`, debounced by 250ms, which is
+what actually filters. Clearing the box skips the debounce entirely — there is
+nothing to coalesce, and the clear button should feel immediate.
 
 `schedule.ts` also exports `throttle`, used by the similar-items rail to pace
 its scroll handler at 50ms instead of setting state on every scroll event.
@@ -204,32 +203,26 @@ states kept in sync. Consequences worth knowing:
 - **Picking one field promotes the whole derived selection into state**, so the
   field the user didn't touch keeps whatever it had resolved to.
 
-### Why the API key ships in the client bundle
+### The API key never reaches the browser
 
-The brief requires an `x-api-key` header on every request, and requires
-real-time, API-based search — which means the browser itself calls the
-external API directly on every keystroke, not just at build time. With a
-real backend, the key could be held server-side and proxied. Without one
-(static export, no server after deploy), **the key must ship in the client
-bundle** — `NEXT_PUBLIC_*` variables are inlined into the client JS by
-Next.js at build time; that inlining is the intended mechanism here, not an
-accidental leak. This is an accepted, deliberate tradeoff: the key is the
-brief's own public test fixture, sourced
-at build time from a **GitHub Actions secret** so it's never committed to the
-repo, and there is no way to keep it server-secret once this specific
-combination (no backend + GitHub Pages + live client-side search) is chosen.
-A reviewer inspecting the built JS in `out/_next/` and finding the key there
-should read that as "working as designed," not as a vulnerability — see the
-comment in `.env.example` and `src/lib/api/api.ts` for the same explanation
-in context.
+The brief requires an `x-api-key` header on every request. Because search is
+resolved against a build-time prefix tree rather than by calling the API on
+each keystroke, **every request in this app happens at build time, in a server
+component**. `fetchProducts` and `fetchProductById` are imported by
+`app/page.tsx` and `app/phones/[id]/page.tsx` and nowhere else.
+
+The variable still carries the `NEXT_PUBLIC_` prefix, which would allow Next to
+inline it — but with no client-side reader, nothing does. Grepping the built
+`out/_next/` chunks for the key finds zero matches. It is supplied to the build
+from a **GitHub Actions secret**, so it is never committed either.
 
 ### Folder structure
 
 ```
 src/
 ├─ app/                      # Next.js App Router routes
-│  ├─ layout.tsx              # <QueryProvider><CartProvider><Header/>…, global font/reset
-│  ├─ page.tsx / loading.tsx  # "/" — Listing (Server Component: prefetches + hydrates first 20 at build)
+│  ├─ layout.tsx              # <CartProvider><Header/>…, global font/reset, icon.svg
+│  ├─ page.tsx / loading.tsx  # "/" — Listing (Server Component: catalogue + prefix tree at build)
 │  ├─ phones/[id]/            # Detail — generateStaticParams() over all product ids
 │  ├─ cart/page.tsx           # "/cart" — pure client CartContext consumer
 │  └─ integration.test.tsx    # Listing -> Detail -> Cart walk-through (see Testing)
@@ -238,16 +231,17 @@ src/
 │  ├─ shared/ProductTile/     # reused by the listing grid AND Detail's "Similar products"
 │  ├─ layout/Header/          # global nav bar, reads useCart() itself
 │  ├─ listing/                # SearchBar, ResultsCount, PhoneGrid, EmptyState
-│  ├─ detail/                 # PhoneDetail (React Query boundary), PhoneHero, Color/StorageSelector, SpecsList, AddToCartButton, SimilarProducts
+│  ├─ detail/                 # PhoneDetailView, PhoneHero, Color/StorageSelector, SpecsList, AddToCartButton, SimilarProducts, BackButton
 │  └─ cart/                   # CartList, CartItem, CartSummary
 ├─ context/CartContext.tsx    # the only piece of app state; localStorage-persisted
 ├─ lib/
 │  ├─ api/{types,api,transform}.ts  # direct-to-external-API transport + documented quirk workarounds
-│  ├─ api/queries.ts                # React Query keys + queryOptions (the shared cache contract)
-│  ├─ query/                        # QueryClient factory + the client-side QueryProvider
-│  └─ utils/useDebouncedValue.ts
+│  ├─ api/{catalog,getCatalog}.ts   # catalogue size/limits and the one call that reads them
+│  ├─ search/index.ts               # the build-time prefix tree and its lookup
+│  ├─ view-transitions.ts           # shared names for the tile → hero morph
+│  └─ utils/{schedule,formatPrice,assetPath}.ts
 ├─ styles/{tokens.css,reset.css}    # CSS custom properties + a small reset
-├─ test/                            # test-only helpers (renderWithQuery, request tracking)
+├─ test/requests.ts                 # test-only helper: tracks what the app asked the network for
 └─ types/cart.ts
 
 mocks/                    # recorded API responses + the MSW handlers that serve them
@@ -256,7 +250,7 @@ mocks/                    # recorded API responses + the MSW handlers that serve
 ├─ not_found.json         # 404 body
 ├─ invalid_key.json       # 401 body
 ├─ fixtures.ts            # typed re-exports; `satisfies` pins them to lib/api/types.ts
-├─ handlers.ts            # MSW handlers (auth + search/limit/offset) and failure scenarios
+├─ handlers.ts            # typed getProducts()/getProduct() handler factories (auth + search/limit/offset)
 └─ server.ts              # setupServer() used by vitest.setup.ts
 
 bruno/                    # Bruno collection used to record the responses above
@@ -316,9 +310,10 @@ The handlers are a faithful fake rather than a lookup table: they check the
 `x-api-key` header, and they implement `search`/`limit`/`offset` the way the
 real endpoint does. So "searching for iphone returns the two iPhones" is
 decided by the same server-side filtering the app depends on, and the real
-request-building, retry and error-parsing code in `api.ts` runs in every test.
-Failure modes are opt-in per test via `server.use(...scenarios.x())` —
-`invalidApiKey`, `productNotFound`, `serverError`, `networkError`.
+request-building and error-parsing code in `api.ts` runs in every test.
+Failure modes are opt-in per test via the same typed factories that serve the
+happy path: `server.use(getProducts({ status: 503 }))`, `getProduct({ body:
+invalidKeyError, status: 401 })`, `getProducts({ networkError: true })`.
 
 What's covered:
 
@@ -365,22 +360,21 @@ What's covered:
   from `colorOptions` because the recorded detail response has no top-level
   `imageUrl`; "Add to cart" stays disabled until both are picked, then calls
   `addItem` exactly once with the right payload; specs render all 8 fields;
-  similar products render with correct hrefs. `PhoneDetail`, the React Query
-  boundary, additionally covers a cold cache, a since-deleted product (404)
-  and a failed request.
+  similar products render with correct hrefs. `fetchProductById` additionally
+  covers a since-deleted product (404, which resolves to `null` so the route can
+  render its not-found state) and a failed request.
 - **Cart**: every item field renders, remove calls `removeItem` and the row
   disappears, the total recalculates, and the zero state is the same screen —
   heading back to "Cart (0)", no rows, and the action bar still in place with a
   0 total rather than being swapped for a bespoke empty page.
 - **`src/app/integration.test.tsx`**: the one true end-to-end walk across all
-  three views sharing a single `CartProvider` **and** a single
-  `QueryClientProvider` — search the listing,
-  click a card, land on the exact product's Detail page, select color +
-  storage, add to cart, switch to the Cart view and verify the line item has
-  the _selected_ color/storage/price (not defaults), remove it, and see the
-  zero state. A second case walks back to the listing and asserts the catalog
-  came from the shared query cache rather than a fresh request. This is the
-  seam three independently-built view "workstreams" can't verify on their own.
+  three views sharing a single `CartProvider` — search the listing, click a
+  card, land on the exact product's Detail page, select color + storage, add to
+  cart, switch to the Cart view and verify the line item has the _selected_
+  color/storage/price (not defaults), remove it, and see the zero state. A
+  second case asserts the listing search never touches the network, because it
+  resolves against the prefix tree the build handed it. This is the seam three
+  independently-built view "workstreams" can't verify on their own.
 - **Storybook** is the manual/visual agnosticism check, not a Vitest
   replacement: every component renders standalone in its own story, with any
   app-state dependency (router, cart) made explicit via a decorator.

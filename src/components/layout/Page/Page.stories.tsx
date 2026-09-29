@@ -12,9 +12,16 @@ const meta: Meta<typeof Page> = {
     lead: { control: "boolean", mapping: { true: <Link href="/">← BACK</Link>, false: undefined } },
     children: { control: "text" },
     className: { table: { disable: true } },
-    role: { table: { disable: true } },
+    ariaBusy: { control: "boolean" },
+    ariaLabel: { control: "text" },
   },
-  args: { width: "wide", lead: undefined, children: "Page content" },
+  args: {
+    width: "wide",
+    lead: undefined,
+    children: "Page content",
+    ariaBusy: false,
+    ariaLabel: undefined,
+  },
   decorators: [
     (Story) => (
       <div style={{ outline: "1px dashed #c9c9c9" }}>

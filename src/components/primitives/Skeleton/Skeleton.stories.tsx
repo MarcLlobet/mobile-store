@@ -6,6 +6,7 @@ const meta: Meta<typeof Skeleton> = {
   title: "Primitives/Skeleton",
   component: Skeleton,
   argTypes: {
+    className: { table: { disable: true } },
     width: { control: "text" },
     height: { control: "text" },
     radius: { control: "text" },

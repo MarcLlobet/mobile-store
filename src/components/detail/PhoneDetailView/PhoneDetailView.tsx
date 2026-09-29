@@ -25,7 +25,7 @@ export const PhoneDetailView = ({ product }: PhoneDetailViewProps) => {
   const displayPrice = selection.storage?.price ?? product.basePrice;
 
   return (
-    <>
+    <div className={styles.sections}>
       <div className={styles.layout}>
         {heroColor === null ? null : (
           <PhoneHero
@@ -66,6 +66,6 @@ export const PhoneDetailView = ({ product }: PhoneDetailViewProps) => {
         description={product.description}
       />
       <SimilarProducts products={product.similarProducts} />
-    </>
+    </div>
   );
 };

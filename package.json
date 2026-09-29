@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:pages": "pnpm build && storybook build -o out/storybook --quiet",
+    "build:pages": "pnpm build && NEXT_PUBLIC_BASE_PATH= storybook build -o out/storybook --quiet",
     "start": "serve out",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -16,8 +16,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    "storybook": "NEXT_PUBLIC_BASE_PATH= storybook dev -p 6006",
+    "build-storybook": "NEXT_PUBLIC_BASE_PATH= storybook build",
     "verify": "pnpm lint:strict && pnpm format:check && pnpm typecheck && pnpm test",
     "prepare": "husky"
   },
@@ -28,6 +28,8 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
     "@storybook/addon-a11y": "^10.6.0",
     "@storybook/addon-docs": "^10.6.0",
     "@storybook/nextjs-vite": "^10.6.0",

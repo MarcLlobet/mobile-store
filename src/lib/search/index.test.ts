@@ -2,13 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { products } from "@mocks/fixtures";
 
-import {
-  buildSearchTree,
-  generatePrefixedList,
-  getSearchResults,
-  getSearchResultsByProps,
-  getWords,
-} from ".";
+import { buildSearchTree, getSearchResults, getWords } from ".";
 
 import type { ProductListItem } from "../api/types";
 
@@ -77,53 +71,33 @@ describe("getWords", () => {
   });
 });
 
-describe("generatePrefixedList", () => {
-  it("emits one entry per prefix, shortest first", () => {
-    const product = tinyProduct("Ab", "Cd");
-
-    expect(generatePrefixedList([product], ["brand", "name"])).toEqual([
-      { prefix: "a", product },
-      { prefix: "ab", product },
-      { prefix: "c", product },
-      { prefix: "cd", product },
-    ]);
+describe("buildSearchTree", () => {
+  it("indexes every prefix of a word, shortest first", () => {
+    expect(buildSearchTree([tinyProduct("Ab", "Cd")], ["brand", "name"])).toEqual({
+      a: [0],
+      ab: [0],
+      c: [0],
+      cd: [0],
+    });
   });
 
-  it("walks the props in the order it was given them", () => {
-    const product = tinyProduct("Ab", "Cd");
-
-    expect(generatePrefixedList([product], ["name", "brand"]).map((entry) => entry.prefix)).toEqual(
-      ["c", "cd", "a", "ab"],
-    );
+  it("collapses a prefix a product reaches twice into a single position", () => {
+    expect(buildSearchTree([tinyProduct("Sa", "St")], ["brand", "name"])).toEqual({
+      s: [0],
+      sa: [0],
+      st: [0],
+    });
   });
 
-  it("repeats a prefix a product reaches twice, leaving buildIndex to collapse it", () => {
-    const product = tinyProduct("Sa", "St");
-
-    expect(generatePrefixedList([product], ["brand", "name"])).toEqual([
-      { prefix: "s", product },
-      { prefix: "sa", product },
-      { prefix: "s", product },
-      { prefix: "st", product },
-    ]);
-  });
-
-  it("emits an entry per product for a prefix they share", () => {
+  it("lists every product that shares a prefix, in catalogue order", () => {
     const first = tinyProduct("Ab", "Xy");
     const second = tinyProduct("Ac", "Zz");
 
-    expect(
-      generatePrefixedList([first, second], ["brand"]).filter((entry) => entry.prefix === "a"),
-    ).toEqual([
-      { prefix: "a", product: first },
-      { prefix: "a", product: second },
-    ]);
+    expect(buildSearchTree([first, second], ["brand"]).a).toEqual([0, 1]);
   });
 
   it("splits a multi-word prop into a prefix run per word", () => {
-    const product = tinyProduct("Ab", "Cd Ef");
-
-    expect(generatePrefixedList([product], ["name"]).map((entry) => entry.prefix)).toEqual([
+    expect(Object.keys(buildSearchTree([tinyProduct("Ab", "Cd Ef")], ["name"]))).toEqual([
       "c",
       "cd",
       "e",
@@ -131,87 +105,77 @@ describe("generatePrefixedList", () => {
     ]);
   });
 
+  it("indexes only the props it is asked for", () => {
+    const byBrandOnly = buildSearchTree(mockProducts, ["brand"]);
+
+    expect(Object.keys(byBrandOnly)).not.toContain("galaxy");
+    expect(byBrandOnly.samsung).toEqual([0, 1]);
+  });
+
   it("skips props that do not hold a string", () => {
-    expect(generatePrefixedList([tinyProduct("Ab", "Cd")], ["basePrice"])).toEqual([]);
+    expect(buildSearchTree([tinyProduct("Ab", "Cd")], ["basePrice"])).toEqual({});
   });
 
   it("returns nothing when there are no products", () => {
-    expect(generatePrefixedList([], ["brand"])).toEqual([]);
+    expect(buildSearchTree([], ["brand"])).toEqual({});
   });
 
   it("returns nothing when there are no props to index", () => {
-    expect(generatePrefixedList([tinyProduct("Ab", "Cd")], [])).toEqual([]);
+    expect(buildSearchTree([tinyProduct("Ab", "Cd")], [])).toEqual({});
   });
-});
 
-describe("getSearchResultsByProps", () => {
+  it("stores positions, not products, which is what keeps the payload small", () => {
+    const tree = buildSearchTree(mockProducts, SEARCH_PROPS);
+
+    expect(tree.samsung).toEqual([0, 1]);
+    expect(tree.google).toEqual([2]);
+    expect(tree.ultra).toEqual([0]);
+  });
+
   it("indexes every prefix of every word across the props it is given", () => {
-    const searchResultsByProps = getSearchResultsByProps(mockProducts, SEARCH_PROPS);
+    expect(buildSearchTree(mockProducts, SEARCH_PROPS)).toEqual({
+      s: [0, 1],
+      sa: [0, 1],
+      sam: [0, 1],
+      sams: [0, 1],
+      samsu: [0, 1],
+      samsun: [0, 1],
+      samsung: [0, 1],
 
-    expect(searchResultsByProps).toEqual({
-      s: [samsungGalaxyS24, samsungGalaxyA25],
-      sa: [samsungGalaxyS24, samsungGalaxyA25],
-      sam: [samsungGalaxyS24, samsungGalaxyA25],
-      sams: [samsungGalaxyS24, samsungGalaxyA25],
-      samsu: [samsungGalaxyS24, samsungGalaxyA25],
-      samsun: [samsungGalaxyS24, samsungGalaxyA25],
-      samsung: [samsungGalaxyS24, samsungGalaxyA25],
+      g: [0, 1, 2],
+      ga: [0, 1],
+      gal: [0, 1],
+      gala: [0, 1],
+      galax: [0, 1],
+      galaxy: [0, 1],
 
-      g: [samsungGalaxyS24, samsungGalaxyA25, googlePixel8A],
-      ga: [samsungGalaxyS24, samsungGalaxyA25],
-      gal: [samsungGalaxyS24, samsungGalaxyA25],
-      gala: [samsungGalaxyS24, samsungGalaxyA25],
-      galax: [samsungGalaxyS24, samsungGalaxyA25],
-      galaxy: [samsungGalaxyS24, samsungGalaxyA25],
+      s2: [0],
+      s24: [0],
+      u: [0],
+      ul: [0],
+      ult: [0],
+      ultr: [0],
+      ultra: [0],
 
-      s2: [samsungGalaxyS24],
-      s24: [samsungGalaxyS24],
-      u: [samsungGalaxyS24],
-      ul: [samsungGalaxyS24],
-      ult: [samsungGalaxyS24],
-      ultr: [samsungGalaxyS24],
-      ultra: [samsungGalaxyS24],
+      a: [1],
+      a2: [1],
+      a25: [1],
+      "5": [1],
+      "5g": [1],
 
-      a: [samsungGalaxyA25],
-      a2: [samsungGalaxyA25],
-      a25: [samsungGalaxyA25],
-      "5": [samsungGalaxyA25],
-      "5g": [samsungGalaxyA25],
-
-      go: [googlePixel8A],
-      goo: [googlePixel8A],
-      goog: [googlePixel8A],
-      googl: [googlePixel8A],
-      google: [googlePixel8A],
-      p: [googlePixel8A],
-      pi: [googlePixel8A],
-      pix: [googlePixel8A],
-      pixe: [googlePixel8A],
-      pixel: [googlePixel8A],
-      "8": [googlePixel8A],
-      "8a": [googlePixel8A],
+      go: [2],
+      goo: [2],
+      goog: [2],
+      googl: [2],
+      google: [2],
+      p: [2],
+      pi: [2],
+      pix: [2],
+      pixe: [2],
+      pixel: [2],
+      "8": [2],
+      "8a": [2],
     });
-  });
-
-  it("indexes only the props it is asked for", () => {
-    const byBrandOnly = getSearchResultsByProps(mockProducts, ["brand"]);
-
-    expect(Object.keys(byBrandOnly)).not.toContain("galaxy");
-    expect(byBrandOnly.samsung).toEqual([samsungGalaxyS24, samsungGalaxyA25]);
-  });
-
-  it("skips props that do not hold a string", () => {
-    const byPrice = getSearchResultsByProps(mockProducts, ["basePrice"]);
-
-    expect(byPrice).toEqual({});
-  });
-
-  it("replaces the previous index rather than accumulating across calls", () => {
-    getSearchResultsByProps(mockProducts, SEARCH_PROPS);
-    const second = getSearchResultsByProps([googlePixel8A], SEARCH_PROPS);
-
-    expect(second.samsung).toBeUndefined();
-    expect(second.google).toEqual([googlePixel8A]);
   });
 });
 

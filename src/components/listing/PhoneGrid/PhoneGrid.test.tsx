@@ -60,7 +60,7 @@ describe("PhoneGrid", () => {
   });
 });
 
-describe("a tile that fails to render", () => {
+describe("a grid that fails to render", () => {
   const distinct: ProductListItem[] = [
     { id: "A", brand: "Apple", name: "Alpha", basePrice: 1, imageUrl: "https://e.test/a.png" },
     { id: "B", brand: "Bosch", name: "Bravo", basePrice: 2, imageUrl: "https://e.test/b.png" },
@@ -77,7 +77,7 @@ describe("a tile that fails to render", () => {
     vi.resetModules();
   });
 
-  it("is isolated, so one bad product does not take the whole grid down", async () => {
+  it("replaces the whole list rather than leaving a hole where a tile was", async () => {
     vi.resetModules();
     vi.doMock("@/components/shared/ProductTile", () => ({
       ProductTile: ({ name }: { name: string }) => {
@@ -91,10 +91,20 @@ describe("a tile that fails to render", () => {
     const { PhoneGrid: Grid } = await import("./PhoneGrid");
     render(<Grid products={distinct} />);
 
-    expect(screen.getByRole("alert")).toHaveTextContent("This product could not be shown.");
+    expect(screen.getByRole("alert")).toHaveTextContent("The product list could not be shown.");
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
+  });
+
+  it("keeps the list when every tile renders", async () => {
+    vi.resetModules();
+    vi.doMock("@/components/shared/ProductTile", () => ({
+      ProductTile: ({ name }: { name: string }) => <span>{name}</span>,
+    }));
+
+    const { PhoneGrid: Grid } = await import("./PhoneGrid");
+    render(<Grid products={distinct} />);
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(screen.getAllByRole("listitem")).toHaveLength(3);
-    expect(screen.getByText("Alpha")).toBeInTheDocument();
-    expect(screen.getByText("Charlie")).toBeInTheDocument();
-    expect(screen.queryByText("Bravo")).not.toBeInTheDocument();
   });
 });

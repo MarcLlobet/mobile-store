@@ -58,14 +58,16 @@
   --page-max: 1200px;
   --page-max-wide: 1920px;
   --tile-width: 361px;
-  --tile-height: 344px;
+  --tile-aspect: 361 / 344;
+  --section-gap: 80px;
 }
 
 @media (min-width: 834px) {
   :root {
     --page-gutter: var(--space-5);
     --tile-width: 377px;
-    --tile-height: 377px;
+    --tile-aspect: 1;
+    --section-gap: 88px;
   }
 }
 
@@ -73,6 +75,6 @@
   :root {
     --page-gutter: 100px;
     --tile-width: 344px;
-    --tile-height: 344px;
+    --section-gap: 154px;
   }
 }

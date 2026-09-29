@@ -18,9 +18,15 @@
     border-color 0.15s ease;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 834px) {
   .button {
     min-height: 48px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .button {
+    min-height: 56px;
   }
 }
 
@@ -35,14 +41,12 @@
   border-color: var(--color-button-primary-bg);
 }
 
-.primary:hover:not(:disabled),
-.primary[data-preview-state="hover"] {
+.primary:hover:not(:disabled) {
   background-color: var(--color-button-primary-bg-hover);
   border-color: var(--color-button-primary-bg-hover);
 }
 
-.primary:active:not(:disabled),
-.primary[data-preview-state="active"] {
+.primary:active:not(:disabled) {
   background-color: var(--color-button-primary-bg-active);
   border-color: var(--color-button-primary-bg-active);
 }
@@ -53,14 +57,12 @@
   border-color: var(--color-button-standard-border);
 }
 
-.standard:hover:not(:disabled),
-.standard[data-preview-state="hover"] {
+.standard:hover:not(:disabled) {
   border-color: var(--color-button-standard-border-hover);
   color: var(--color-button-standard-text-hover);
 }
 
-.standard:active:not(:disabled),
-.standard[data-preview-state="active"] {
+.standard:active:not(:disabled) {
   border-color: var(--color-button-standard-border-active);
   color: var(--color-button-standard-text);
 }

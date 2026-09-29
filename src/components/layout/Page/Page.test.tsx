@@ -51,8 +51,10 @@ describe("Page", () => {
     expect(screen.getByRole("main")).toHaveAccessibleName("Loading the catalog");
   });
 
-  it("can become the alert a failed route needs", () => {
-    render(<Page role="alert">Something went wrong</Page>);
-    expect(screen.getByRole("alert")).toBeInTheDocument();
+  it("stays a main landmark, so a route cannot relabel it into something else", () => {
+    render(<Page>content</Page>);
+
+    expect(screen.getByRole("main")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });
