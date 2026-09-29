@@ -1,5 +1,4 @@
 import type { Preview } from "@storybook/nextjs-vite";
-import "@fontsource/arimo/latin-400.css";
 import "../src/styles/reset.css";
 import "../src/styles/tokens.css";
 import "../src/app/globals.css";

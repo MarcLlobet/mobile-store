@@ -1,5 +1,5 @@
 name: Setup
-description: Install pnpm, Node and the project dependencies from a warm cache.
+description: Install pnpm, Node and dependencies.
 
 runs:
   using: composite
@@ -8,7 +8,7 @@ runs:
 
     - uses: actions/setup-node@v7
       with:
-        node-version: 24
+        node-version-file: .nvmrc
         cache: pnpm
         cache-dependency-path: "pnpm-lock.yaml"
 

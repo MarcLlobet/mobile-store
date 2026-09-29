@@ -27,3 +27,8 @@ next-env.d.ts
 
 design
 .vscode
+
+# playwright
+test-results
+playwright-report
+.playwright

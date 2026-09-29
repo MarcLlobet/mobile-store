@@ -54,6 +54,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "coverage/**",
     "storybook-static/**",
+    "test-results/**",
+    "playwright-report/**",
     "next-env.d.ts",
     "public/**",
   ]),
@@ -321,6 +323,24 @@ const eslintConfig = defineConfig([
       "sonarjs/no-duplicate-string": "off",
       "functional/immutable-data": "off",
       "max-nested-callbacks": "off",
+    },
+  },
+  {
+    files: ["e2e/**"],
+    rules: {
+      // describe > test > page callback is the shape Playwright asks for.
+      "max-nested-callbacks": "off",
+      // Collecting the requests a page makes is precisely what these tests do.
+      "functional/immutable-data": "off",
+      // `networkidle` is the assertion here, not an incidental wait: several of
+      // these tests are about which requests happen and which do not.
+      "sonarjs/no-networkidle-wait": "off",
+      // Code handed to addInitScript runs in the browser, where the DOM lib types
+      // over-promise — startViewTransition is not on every engine.
+      "@typescript-eslint/no-unnecessary-condition": "off",
+      // static-server.mjs is a CLI entry point that Playwright spawns.
+      "unicorn/no-process-exit": "off",
+      "sonarjs/no-os-command-from-path": "off",
     },
   },
   {

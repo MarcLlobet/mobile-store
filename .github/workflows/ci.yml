@@ -29,12 +29,10 @@ jobs:
             run: pnpm typecheck
           - name: Tests
             run: pnpm exec vitest run --coverage
-          # Builds the app and then Storybook straight into out/storybook, so the
-          # thing that gets uploaded is already the thing that gets served. The
-          # order matters: `next build` empties out/ before it writes.
           - name: Build
             run: pnpm build:pages
             pages: true
+            e2e: true
     steps:
       - uses: actions/checkout@v7
 
@@ -46,7 +44,14 @@ jobs:
           NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
           NEXT_PUBLIC_API_KEY: ${{ secrets.NEXT_PUBLIC_API_KEY }}
 
-      # Uploaded once, in the job that produced it, and read only by deploy-pages.
+      - name: Install Chromium for the end-to-end suite
+        if: matrix.check.e2e
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run end-to-end tests
+        if: matrix.check.e2e
+        run: pnpm test:e2e
+
       - name: Upload the Pages artifact
         if: matrix.check.pages && github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: actions/upload-pages-artifact@v5
