@@ -1,52 +1,56 @@
-# 📱 Mobile Store
+# Mobile Store
 
 A mobile-phone catalog web app — Listing, Detail and Cart views.
 
-## ⚙️ The Stack
+## Live demo
 
-- Typescript
-- React 19
-- Node 24
-- React Context
-- Vitest
-- Next.js
-- CSS modules
-- Playwright
-- Prettier + Eslint
-- Github actions
-- Github pages
-- Storybook
+- [Store](https://marcllobet.github.io/mobile-store/)
+- [Storybook](https://marcllobet.github.io/mobile-store/storybook/)
 
 ## Features
 
-### UX
+- Catalogue search with O(1) client-side prefix lookup
+- Product detail with color and storage selection; cart saved in `localStorage`
+- Responsive, keyboard-accessible UI with English and Spanish (`?lang=es`)
+- Storybook component library and page transitions
 
-- Responsive
-- Lighthouse results: 100 in all (Performance, Accessibility, Best Practices and SEO)
-- Valid accessibility checks in all WCAG2A, WCAG2AA, WCAG21A and WCAG21AA
-- Accessible navigation
-- Constant O(1) search time complexity
-- Morph icon animations
-- Smooth transition between pages
-- Design system: [/storybook](https://marcllobet.github.io/mobile-store/storybook)
-- Language support with search params `?lang=es`
-- Unit test high coverage (>90%)
+## Stack
 
-### Tech
+Next.js, React 19, TypeScript, CSS Modules, Vitest, Playwright, axe-core, and Storybook. CI and static hosting use GitHub Actions and GitHub Pages.
 
-- CI parallelization
-- End to end tests
-- Enhanced DX
-- Localstorage
+## Run locally
 
-### TODO
+Requires Node.js 24 and pnpm 10.
 
-- Dark mode
-- Search autocomplete
-- Data persistence
-
-## 🧑‍💻 Dev setup
-
+```sh
 pnpm install
 cp .env.example .env.local
-pnpm dev
+```
+
+Set `NEXT_PUBLIC_API_BASE_URL` and `NEXT_PUBLIC_API_KEY` in `.env.local` using the values from the challenge brief, then run:
+
+```sh
+pnpm dev         # App at localhost:3000
+pnpm storybook   # Storybook at localhost:6006
+```
+
+## Checks
+
+```sh
+pnpm verify
+pnpm exec vitest run --coverage
+pnpm build:pages
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+CI also runs axe-core checks against WCAG 2.0/2.1 A and AA rules on key pages and states. Automated checks are not a WCAG certification.
+
+## Notes
+
+- Product data comes from an external API; cart state is local to the browser.
+- GitHub Pages serves a static export under `/mobile-store`; `pnpm build:pages` builds the app and Storybook together.
+
+## Possible next steps
+
+Dark theme, search suggestions, and cross-device cart sync with a backend.

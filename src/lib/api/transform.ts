@@ -1,18 +1,10 @@
+import { normalizeImageUrl } from "@/lib/utils/normalizeImageUrl";
+
 import type { ColorOption, ProductDetail, ProductListItem } from "./types";
 
 export type RawProductDetail = Omit<ProductDetail, "colorOptions" | "similarProducts"> & {
   colorOptions?: ColorOption[];
   similarProducts?: ProductListItem[];
-};
-
-const normalizeImageUrl = (url: string): string => {
-  const urlObject = new URL(url);
-  if (urlObject.protocol === "https:") {
-    return url;
-  }
-  // eslint-disable-next-line functional/immutable-data
-  urlObject.protocol = "https:";
-  return urlObject.href;
 };
 
 const normalizeListItem = (product: ProductListItem): ProductListItem => ({

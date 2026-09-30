@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 
 import Image from "next/image";
 
+import { normalizeImageUrl } from "@/lib/utils/normalizeImageUrl";
 import { sharedImageName } from "@/lib/view-transitions";
 
 import styles from "./PhoneHero.module.css";
@@ -51,7 +52,8 @@ export const PhoneHero = ({ variants, activeKey, name, productId }: PhoneHeroPro
           return (
             <Image
               key={variant.key}
-              src={variant.imageUrl}
+              src={normalizeImageUrl(variant.imageUrl)}
+              unoptimized
               data-variant-index={index}
               alt={isActive ? name : ""}
               aria-hidden={!isActive}

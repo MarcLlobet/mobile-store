@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Price } from "@/components/primitives/Price";
 import { TilePendingHint } from "@/components/shared/TilePendingHint";
 import { useTranslation } from "@/i18n";
+import { normalizeImageUrl } from "@/lib/utils/normalizeImageUrl";
 import {
   rememberOpenedProduct,
   sharedImageName,
@@ -74,8 +75,9 @@ export const ProductTile = ({
           }
         >
           <Image
-            src={imageUrl}
+            src={normalizeImageUrl(imageUrl)}
             alt={t("product.image_alt", { brand, name })}
+            unoptimized
             fill
             className={styles.image}
             sizes="(max-width: 768px) 50vw, 25vw"
