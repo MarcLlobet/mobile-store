@@ -5,5 +5,12 @@ const config: StorybookConfig = {
   addons: ["@storybook/addon-a11y", "@storybook/addon-docs"],
   framework: "@storybook/nextjs-vite",
   staticDirs: ["../public"],
+  viteFinal: (viteConfig) => ({
+    ...viteConfig,
+    define: {
+      ...viteConfig.define,
+      "process.env.STORYBOOK_ASSET_BASE_PATH": JSON.stringify("./"),
+    },
+  }),
 };
 export default config;

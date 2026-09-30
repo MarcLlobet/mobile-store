@@ -28,6 +28,9 @@ A mobile-phone catalog web app — Listing, Detail and Cart views.
 - Constant O(1) search time complexity
 - Morph icon animations
 - Smooth transition between pages
+- Design system: [/storybook](https://marcllobet.github.io/mobile-store/storybook)
+- Language support with search params `?lang=es`
+- Unit test high coverage (>90%)
 
 ### Tech
 
@@ -35,6 +38,12 @@ A mobile-phone catalog web app — Listing, Detail and Cart views.
 - End to end tests
 - Enhanced DX
 - Localstorage
+
+### TODO
+
+- Dark mode
+- Search autocomplete
+- Data persistence
 
 ## 🧑‍💻 Dev setup
 
